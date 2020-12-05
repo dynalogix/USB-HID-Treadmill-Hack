@@ -7,7 +7,7 @@ Requirements
 
 Hardware:
 * Treadmill with accessible buttons for speed +/- incline +/-
-* QYF-UR04 Minimum 4 Channel HID Drive-free USB Delay Relay Interface Board Module Optocoupler
+* QYF-UR04 Minimum 4 Channel HID Drive-free USB Delay Relay Interface Board Module Optocoupler (with CH551G USB chip)
 * Windows PC near treadmill, 1 USB port
 
 Software:
@@ -70,9 +70,37 @@ wait(delay)
 * delay in seconds
 * returns true if stop was pressed
 
+**How to find vidpid**
+
+    Use command:
+
+    hidapitester --list
+
+    Look for the id in the beginning of the line which has "HIDRelay":
+
+    e.g.:
+    0519/2018: Ucreatefun.com - HIDRelay
+    ↓
+    here the vidpid is 0519
+
+    Then you can open, write, close in one command.
+
+    hidapitester --vidpid 0519 --open --send-output 0,241 --close >nul
+
+    output 0,241: shorts channel 1
+    output 0,1: opens channel 1
+    output 0,242: shorts channel 2
+    etc
+
+    finally:
+    output 0,249:shorts all channels
+    output 0,9: opens all channels
+
 **Plans**
+* Make vidpid configurable
 * Make path location of *hidapitester.exe* configurable
 * Add more workout programs with selector
 * Make window moveable, resizable
 
 ...or not. Currently this is what I need, I provide it as a basis for anyone wanting to create something similar.
+
