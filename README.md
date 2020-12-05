@@ -18,7 +18,7 @@ Software:
 Fields:
 * Duration [minutes] (i.e. length of the movie you will watch during workout)
 * Speed - desired speed
-* Slope - how quickly reach desired speed: speed increase in 10 minutes (e.g. "6" → will go from 3.0 to 6.0 in 5 minutes)
+* Acceleration - how quickly reach desired speed: speed increase in 10 minutes (e.g. "6" → will go from 3.0 to 9.0 in 10 minutes)
 * Sprint - maximum speed during sprint phases
 * Hill - incline increase during "hill" phases
 * Start button - press again to Stop (prompt)
@@ -37,14 +37,14 @@ Fields:
 
 I plan to add more, currently there is one implemented:
 
-* at *slope* increase from 3.0 to desired *speed*
+* at *acceleration* increase from 3.0 to desired *speed*
 * slowly increase incline from 0 to *hill*
 * slowly decrease include from *hill* to 0
 * 5 minute *sprint*
 * slowly increase incline from 0 to half *hill*
 * slowly decrease incline from half *hill* to 0
 * 5 minute *sprint*
-* at *slope* decrease desired *speed* to 3.0
+* at (negative) *acceleration* decrease desired *speed* to 3.0
 * end of workout - end of movie
 
 The workout logic is in the function workout1:
