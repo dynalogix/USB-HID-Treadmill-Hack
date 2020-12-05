@@ -101,6 +101,7 @@ wait(delay)
 * Make path location of *hidapitester.exe* configurable
 * Add more workout programs with selector
 * Make window moveable, resizable
+* Save preferences into ini file
 
 ...or not. Currently this is what I need, I provide it as a basis for anyone wanting to create something similar.
 
