@@ -1,21 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Diagnostics;
-using System;
-using System.Windows;
 using System.Windows.Threading;
 
 namespace walk
@@ -34,6 +22,7 @@ namespace walk
         Thread thread=null;
         static bool running = false;
         private SolidColorBrush brush;
+        static int lag = 0;
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -98,12 +87,13 @@ namespace walk
                 tick = float.Parse(progress.Text) * 60;
 
                 thread = new Thread(workout1);
+                lag = Environment.TickCount;
                 thread.Start();
 
                 timer = new DispatcherTimer();
                 timer.Interval = TimeSpan.FromSeconds(1);
                 timer.Tick += updateUI;
-                timer.Start();
+                timer.Start();              
 
                 brush = new SolidColorBrush();
                 brush.Color = Color.FromRgb(0,0,0);
@@ -177,14 +167,20 @@ namespace walk
             if(delay<1f)
             {
                 Thread.Sleep((int)(delay * 1000));
+                lag += (int)(delay * 1000);
                 return false;
-            }
+            }           
 
-           
             for(;delay>0;delay-=1)
             {
                 time = String.Format("{0:0}",delay);
-                Thread.Sleep((int)(1000));
+                if(Environment.TickCount-lag < 1000) {
+                    Thread.Sleep((int)(1000 - (Environment.TickCount - lag)));
+                    lag = Environment.TickCount;
+                } else
+                {
+                    lag += 1000;
+                }
                 if (!running) return true;
             }
             time = "";
@@ -227,7 +223,7 @@ namespace walk
                 press(SPEED_UP);
             }
 
-            d = (d - 600 - 2 * (sp - mx) * 15);
+            d = (d - 600 - 4 * (sp - mx) * 15);
             if ((d - hl - hl / 2) / 2 > 300) d = d - hl - hl / 2;
             d = d / 2f;
 
@@ -292,7 +288,7 @@ namespace walk
                 press(SPEED_DOWN);
             }
 
-            End();
+            running = false;
         }
     }
 }
