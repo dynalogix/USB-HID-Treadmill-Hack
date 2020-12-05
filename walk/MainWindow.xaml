@@ -33,7 +33,7 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <Label Content="Slope" HorizontalAlignment="Left" Margin="261,53,0,0" Foreground="Gray" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Top" Padding="0,0,0,0">
+        <Label Content="Acceleration" HorizontalAlignment="Left" Margin="248,38,0,31" Foreground="Gray" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0">
             <Label.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
