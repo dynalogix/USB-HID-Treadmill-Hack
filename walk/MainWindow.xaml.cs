@@ -97,7 +97,7 @@ namespace walk
 
                 tick = float.Parse(progress.Text) * 60;
 
-                thread = new Thread(background);
+                thread = new Thread(workout1);
                 thread.Start();
 
                 timer = new DispatcherTimer();
@@ -153,91 +153,7 @@ namespace walk
 
             dispTime.Content = time;
 
-        }
-
-        private void background(object obj)
-        {
-            toggle(ALL, OFF);
-
-            p = 0;
-
-            // Start up
-
-            for (float a = 3.1f; a <= mx; a += 0.1f)
-            {
-                if(wait(i)) return;
-                d -= 2 * i + 1;
-                s+=0.1f; 
-                press(SPEED_UP);
-            }
-
-            d = (d - 600-2*(sp-mx)*15);
-            if ((d-hl-hl/2) / 2 > 300) d = d - hl - hl / 2;
-            d = d / 2f;
-
-            // middle section: climbs and sprints
-            for(int a=1;a<=2;a++)
-            {
-                if(d>300f)
-                {
-                    float c = d / (2f * (hl / a) + 2);            
-                    if (wait(c)) return;
-
-                    // climb to hl later hl/2+1
-
-                    for(int b=1;b<=hl;b+=a)
-                    {
-                        if (wait(c)) return;
-                        r++;
-                        press(INCL_UP);
-                    }
-
-                    // descend from 6 later 4
-
-                    for (int b=1;b<=hl; b+=a)
-                    {
-                        if (wait(c)) return;
-                        r--;
-                        press(INCL_DOWN);
-                    }
-
-                    if (wait(c)) return;
-                }
-                else
-                {
-                    if (wait(d)) return;
-                }
-
-                // 5 min sprint
-
-                for(int b=(int)mx*10+1;b<=sp*10;b++)
-                {
-                    s += 0.1f;
-                    press(SPEED_UP);
-                    wait(0.99f);
-                }
-
-                if (wait(300)) return;
-
-                for (int b =(int)mx*10+1; b <= sp*10; b++)
-                {
-                    s -= 0.1f;
-                    press(SPEED_DOWN);
-                    wait(0.99f);
-                }
-
-            }
-
-            // finish
-            for (float a = mx; a >= 3.1; a -= 0.1f)
-            {
-                if (wait(i)) return;               
-                s -= 0.1f;
-                press(SPEED_DOWN);
-            }
-
-            running = false;
-        }
+        }      
 
         private static void press(int v)
         {               
@@ -291,6 +207,92 @@ namespace walk
             startInfo.Arguments = "--vidpid 0519 --open --send-output 0," + (240*val+sw)+" --close";
             process.StartInfo = startInfo;
             process.Start();
+        }
+
+        private void workout1(object obj)
+        {
+            p = 999999;
+
+            toggle(ALL, OFF);
+
+            p = 0;
+
+            // Start up
+
+            for (float a = 3.1f; a <= mx; a += 0.1f)
+            {
+                if (wait(i)) return;
+                d -= 2 * i + 1;
+                s += 0.1f;
+                press(SPEED_UP);
+            }
+
+            d = (d - 600 - 2 * (sp - mx) * 15);
+            if ((d - hl - hl / 2) / 2 > 300) d = d - hl - hl / 2;
+            d = d / 2f;
+
+            // middle section: climbs and sprints
+            for (int a = 1; a <= 2; a++)
+            {
+                if (d > 300f)
+                {
+                    float c = d / (2f * (hl / a) + 2);
+                    if (wait(c)) return;
+
+                    // climb to hl later hl/2+1
+
+                    for (int b = 1; b <= hl; b += a)
+                    {
+                        if (wait(c)) return;
+                        r++;
+                        press(INCL_UP);
+                    }
+
+                    // descend from 6 later 4
+
+                    for (int b = 1; b <= hl; b += a)
+                    {
+                        if (wait(c)) return;
+                        r--;
+                        press(INCL_DOWN);
+                    }
+
+                    if (wait(c)) return;
+                }
+                else
+                {
+                    if (wait(d)) return;
+                }
+
+                // 5 min sprint
+
+                for (int b = (int)mx * 10 + 1; b <= sp * 10; b++)
+                {
+                    s += 0.1f;
+                    press(SPEED_UP);
+                    wait(0.99f);
+                }
+
+                if (wait(300)) return;
+
+                for (int b = (int)mx * 10 + 1; b <= sp * 10; b++)
+                {
+                    s -= 0.1f;
+                    press(SPEED_DOWN);
+                    wait(0.99f);
+                }
+
+            }
+
+            // finish
+            for (float a = mx; a >= 3.1; a -= 0.1f)
+            {
+                if (wait(i)) return;
+                s -= 0.1f;
+                press(SPEED_DOWN);
+            }
+
+            End();
         }
     }
 }
