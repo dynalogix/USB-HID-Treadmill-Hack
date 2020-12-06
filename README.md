@@ -8,7 +8,10 @@ Requirements
 Hardware:
 * Treadmill with accessible buttons for speed +/- incline +/-
 * QYF-UR04 Minimum 4 Channel HID Drive-free USB Delay Relay Interface Board Module Optocoupler (with CH551G USB chip)
+  e.g. https://www.ebay.co.uk/itm/283294148232
 * Windows PC near treadmill, 1 USB port
+
+![Relay board](relay.jpg?raw=true "board")
 
 Software:
 * Hidapitester https://github.com/todbot/hidapitester/releases/tag/0.1
