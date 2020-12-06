@@ -173,7 +173,7 @@ namespace walk
 
             for(;delay>0;delay-=1)
             {
-                time = String.Format("{0:0}",delay);
+                time = String.Format("{0:0.0}",delay/60f);
                 if(Environment.TickCount-lag < 1000) {
                     Thread.Sleep((int)(1000 - (Environment.TickCount - lag)));
                     lag = Environment.TickCount;
@@ -207,6 +207,8 @@ namespace walk
 
         private void workout1(object obj)
         {
+            float half = d / 2;
+
             p = 999999;
 
             toggle(ALL, OFF);
@@ -218,14 +220,17 @@ namespace walk
             for (float a = 3.1f; a <= mx; a += 0.1f)
             {
                 if (wait(i)) return;
-                d -= 2 * i + 1;
+                d -= 2 * i + 1;             // up and down + 2x 500ms 
                 s += 0.1f;
                 press(SPEED_UP);
             }
 
-            d = (d - 600 - 4 * (sp - mx) * 15);
-            if ((d - hl - hl / 2) / 2 > 300) d = d - hl - hl / 2;
+            d -= 600;                    // 2x sprint 5 minutes
+            d -= 4 * (sp - mx) * 15;     // 2x up/down sprint steps * 1000ms + 500ms
+            if ((d - hl - hl / 2) / 2 > 300) d = d - hl - hl / 2;       // 2 * hill * 500ms + 2 * hill/2 * 500ms
             d = d / 2f;
+
+            int diff = 0;
 
             // middle section: climbs and sprints
             for (int a = 1; a <= 2; a++)
@@ -233,7 +238,7 @@ namespace walk
                 if (d > 300f)
                 {
                     float c = d / (2f * (hl / a) + 2);
-                    if (wait(c)) return;
+                    if (wait(c-diff)) return;
 
                     // climb to hl later hl/2+1
 
@@ -257,7 +262,7 @@ namespace walk
                 }
                 else
                 {
-                    if (wait(d)) return;
+                    if (wait(d-diff)) return;
                 }
 
                 // 5 min sprint
@@ -277,6 +282,10 @@ namespace walk
                     press(SPEED_DOWN);
                     wait(0.99f);
                 }
+
+                // correction half way: tick should be exactly at half → Take away the 2 * difference in next round
+
+                diff = (int)((tick - half) * 2);
 
             }
 
