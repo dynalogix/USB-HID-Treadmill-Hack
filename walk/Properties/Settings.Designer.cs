@@ -82,5 +82,29 @@ namespace walk.Properties {
                 this["Warmup"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("f:\\onedrive\\install\\usbrelay\\hidapitester.exe")]
+        public string HIDAPIPath {
+            get {
+                return ((string)(this["HIDAPIPath"]));
+            }
+            set {
+                this["HIDAPIPath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0519")]
+        public string Vidpid {
+            get {
+                return ((string)(this["Vidpid"]));
+            }
+            set {
+                this["Vidpid"] = value;
+            }
+        }
     }
 }

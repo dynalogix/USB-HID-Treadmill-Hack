@@ -17,5 +17,11 @@
     <Setting Name="Warmup" Type="System.String" Scope="User">
       <Value Profile="(Default)">7</Value>
     </Setting>
+    <Setting Name="HIDAPIPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">f:\onedrive\install\usbrelay\hidapitester.exe</Value>
+    </Setting>
+    <Setting Name="Vidpid" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0519</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

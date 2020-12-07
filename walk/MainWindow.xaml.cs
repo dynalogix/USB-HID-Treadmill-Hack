@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Diagnostics;
 using System.Windows.Threading;
+using walk.Properties;
 
 namespace walk
 {
@@ -23,6 +24,7 @@ namespace walk
         static bool running = false;
         private SolidColorBrush brush;
         static int lag = 0;
+        static String path, vidpid;
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -83,6 +85,9 @@ namespace walk
                 sp = float.Parse(sprint.Text);
                 hl = float.Parse(hill.Text);
                 warm = float.Parse(warmup.Text) / (speed-3.0f);
+
+                path = Settings.Default.HIDAPIPath;
+                vidpid = Settings.Default.Vidpid;
 
                 tick = float.Parse(progress.Text) * 60;
 
@@ -199,8 +204,8 @@ namespace walk
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.CreateNoWindow = true;
             startInfo.UseShellExecute = false;
-            startInfo.FileName = "f:\\onedrive\\install\\usbrelay\\hidapitester.exe";
-            startInfo.Arguments = "--vidpid 0519 --open --send-output 0," + (240*val+sw)+" --close";
+            startInfo.FileName = path;
+            startInfo.Arguments = "--vidpid "+vidpid+" --open --send-output 0," + (240*val+sw)+" --close";
             process.StartInfo = startInfo;
             process.Start();
         }
