@@ -89,8 +89,8 @@ C:\Users\???\AppData\Local\walk\walk_???\1.0.0.0\user.config
 
 Add two settings manually (otherwise some incorrect defaults will be used):
 
-<setting name="HIDAPIPath" serializeAs="String"><value>c:\HIDAPITester\hidapitester.exe</value></setting>
-<setting name="Vidpid" serializeAs="String"><value>0519</value></setting>
+    <setting name="HIDAPIPath" serializeAs="String"><value>c:\HIDAPITester\hidapitester.exe</value></setting>
+    <setting name="Vidpid" serializeAs="String"><value>0519</value></setting>
 
 ![Notepad](config.jpg?raw=true "user.config")
 
