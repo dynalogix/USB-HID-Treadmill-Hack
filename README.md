@@ -60,13 +60,14 @@ Heart rate for a 126 minute workout (movie Shazam)
 
 The workout logic is in the function workout1:
 
-* d - duration in seconds
+* dur - duration in seconds
 * p - progress
 * s - speed
 * r - incline
-* mx - desired speed
+* speed - desired speed
 * hl - hill 
 * sp - sprint
+* warm - warmup/winddown duration between 0.1 steps (in seconds)
 
 **Calls**
 
