@@ -44,14 +44,14 @@ I plan to add more, currently there is one implemented:
 
 ![Chart](chart.png?raw=true "chart")
 
-* during *warmup* increase from 3.0 to desired *speed*
+* in *warmup* minutes increase from 3.0 to desired *speed*
 * slowly increase incline from 0 to *hill*
 * slowly decrease include from *hill* to 0
 * 5 minute *sprint*
 * slowly increase incline from 0 to half *hill*
 * slowly decrease incline from half *hill* to 0
 * 5 minute *sprint*
-* at (negative) *acceleration* decrease desired *speed* to 3.0
+* in *winddown* minutes decrease desired *speed* to 3.0
 * end of workout - end of movie
 
 Heart rate for a 126 minute workout (movie Shazam)
