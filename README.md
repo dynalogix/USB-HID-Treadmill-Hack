@@ -93,9 +93,9 @@ Add two settings manually (otherwise some incorrect defaults will be used):
      <configuration>
          <configSections>
              <sectionGroup name="userSettings" type="System.Configuration.UserSettingsGroup, System.Configuration.ConfigurationManager, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" >
-            <section name="walk.Properties.Settings" type="System.Configuration.ClientSettingsSection, System.Configuration.ConfigurationManager, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" allowExeDefinition="MachineToLocalUser" requirePermission="false" />
-        </sectionGroup>
-    </configSections>
+                <section name="walk.Properties.Settings" type="System.Configuration.ClientSettingsSection, System.Configuration.ConfigurationManager, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" allowExeDefinition="MachineToLocalUser" requirePermission="false" />
+             </sectionGroup>
+         </configSections>
          <userSettings>
              <walk.Properties.Settings>
               <setting name="Duration" serializeAs="String"><value>100</value></setting>
