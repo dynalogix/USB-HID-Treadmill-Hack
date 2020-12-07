@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using walk.Properties;
 
 namespace walk
 {
@@ -21,6 +22,9 @@ namespace walk
             base.OnStartup(e);
         }
 
-       
+        private void Application_Exit(object sender, ExitEventArgs e)
+        {
+            Settings.Default.Save();
+        }
     }
 }

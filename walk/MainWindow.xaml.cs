@@ -17,7 +17,7 @@ namespace walk
         float s = 3.0f;
         int r=0;
         static String time = "";
-        static float d, i, mx, sp, hl, tick, p;
+        static float dur, warm, speed, sp, hl, tick, p;
         DispatcherTimer timer=null;
         Thread thread=null;
         static bool running = false;
@@ -69,7 +69,7 @@ namespace walk
                 start.Content = "Stop";
                 start.Opacity = 0.3f;
                 len.Opacity = 0.3f;
-                slope.Opacity = 0.3f;
+                warmup.Opacity = 0.3f;
                 max.Opacity = 0.3f;
                 sprint.Opacity = 0.3f;
                 hill.Opacity = 0.3f;
@@ -78,11 +78,11 @@ namespace walk
 
                 r = 0; s = 3.0f;
 
-                d = float.Parse(len.Text) * 60;
-                i = 60f / float.Parse(slope.Text);
-                mx = float.Parse(max.Text);
+                dur = float.Parse(len.Text) * 60;               
+                speed = float.Parse(max.Text);
                 sp = float.Parse(sprint.Text);
                 hl = float.Parse(hill.Text);
+                warm = float.Parse(warmup.Text) / (speed-3.0f);
 
                 tick = float.Parse(progress.Text) * 60;
 
@@ -118,7 +118,7 @@ namespace walk
             dispTime.Content = "";
             start.Opacity = 1f;
             len.Opacity = 1f;
-            slope.Opacity = 1f;
+            warmup.Opacity = 1f;
             max.Opacity = 1f;
             sprint.Opacity = 1f;
             hill.Opacity = 1f;
@@ -175,7 +175,7 @@ namespace walk
             {
                 time = String.Format("{0:0.0}",delay/60f);
                 if(Environment.TickCount-lag < 1000) {
-                    Thread.Sleep((int)(1000 - (Environment.TickCount - lag)));
+                    Thread.Sleep((int)((delay<1f ? delay : 1)*1000 - (Environment.TickCount - lag)));
                     lag = Environment.TickCount;
                 } else
                 {
@@ -207,7 +207,7 @@ namespace walk
 
         private void workout1(object obj)
         {
-            float half = d / 2;
+            float half = dur / 2;
 
             p = 999999;
 
@@ -217,34 +217,36 @@ namespace walk
 
             // Start up
 
-            for (float a = 3.1f; a <= mx; a += 0.1f)
+            for (float a = 3.1f; a <= speed; a += 0.1f)
             {
-                if (wait(i)) return;
-                d -= 2 * i + 1;             // up and down + 2x 500ms 
+                if (wait(warm)) return;
+                dur -= 2 * warm + 1;             // up and down + 2x 500ms 
                 s += 0.1f;
                 press(SPEED_UP);
             }
 
-            d -= 600;                    // 2x sprint 5 minutes
-            d -= 4 * (sp - mx) * 15;     // 2x up/down sprint steps * 1000ms + 500ms
-            if ((d - hl - hl / 2) / 2 > 300) d = d - hl - hl / 2;       // 2 * hill * 500ms + 2 * hill/2 * 500ms
-            d = d / 2f;
+            dur -= 600;                    // 2x sprint 5 minutes
+            dur -= 4 * (sp - speed) * 15;     // 2x up/down sprint steps * 1000ms + 500ms
+            if ((dur - hl - hl / 2) / 2 > 300) dur = dur - hl - hl / 2;       // 2 * hill * 500ms + 2 * hill/2 * 500ms
+            dur = dur / 2f;
 
-            int diff = 0;
+            float diff = 0;
 
             // middle section: climbs and sprints
             for (int a = 1; a <= 2; a++)
             {
-                if (d > 300f)
+                if (dur > 300f)
                 {
-                    float c = d / (2f * (hl / a) + 2);
-                    if (wait(c-diff)) return;
+                    float c = dur / (2f * (hl / a) + 2);
+
+                    diff = c - diff;        // wait double before raising (adjustted by correction at half time)
 
                     // climb to hl later hl/2+1
 
                     for (int b = 1; b <= hl; b += a)
                     {
-                        if (wait(c)) return;
+                        if (wait(c+diff)) return;
+                        diff = 0;
                         r++;
                         press(INCL_UP);
                     }
@@ -262,12 +264,12 @@ namespace walk
                 }
                 else
                 {
-                    if (wait(d-diff)) return;
+                    if (wait(dur-diff)) return;
                 }
 
                 // 5 min sprint
 
-                for (int b = (int)mx * 10 + 1; b <= sp * 10; b++)
+                for (int b = (int)speed * 10 + 1; b <= sp * 10; b++)
                 {
                     s += 0.1f;
                     press(SPEED_UP);
@@ -276,7 +278,7 @@ namespace walk
 
                 if (wait(300)) return;
 
-                for (int b = (int)mx * 10 + 1; b <= sp * 10; b++)
+                for (int b = (int)speed * 10 + 1; b <= sp * 10; b++)
                 {
                     s -= 0.1f;
                     press(SPEED_DOWN);
@@ -290,9 +292,9 @@ namespace walk
             }
 
             // finish
-            for (float a = mx; a >= 3.1; a -= 0.1f)
+            for (float a = speed; a >= 3.1; a -= 0.1f)
             {
-                if (wait(i)) return;
+                if (wait(warm)) return;
                 s -= 0.1f;
                 press(SPEED_DOWN);
             }

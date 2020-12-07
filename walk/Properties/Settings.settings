@@ -1,0 +1,21 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="walk.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Duration" Type="System.String" Scope="User">
+      <Value Profile="(Default)">100</Value>
+    </Setting>
+    <Setting Name="Speed" Type="System.String" Scope="User">
+      <Value Profile="(Default)">6</Value>
+    </Setting>
+    <Setting Name="Sprint" Type="System.String" Scope="User">
+      <Value Profile="(Default)">7.2</Value>
+    </Setting>
+    <Setting Name="Hill" Type="System.String" Scope="User">
+      <Value Profile="(Default)">6</Value>
+    </Setting>
+    <Setting Name="Warmup" Type="System.String" Scope="User">
+      <Value Profile="(Default)">7</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
