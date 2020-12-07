@@ -21,16 +21,18 @@ Software:
 Fields:
 * Duration [minutes] (i.e. length of the movie you will watch during workout)
 * Speed - desired speed
-* Acceleration - how quickly reach desired speed: speed increase in 10 minutes (e.g. "6" → will go from 3.0 to 9.0 in 10 minutes)
+* Warm-up / Wind-down time [minutes] - how quickly reach desired speed
 * Sprint - maximum speed during sprint phases
 * Hill - incline increase during "hill" phases
 * Start button - press again to Stop (prompt)
 * Progress - you can edit this and restart a stopped session
 
+Settings are saved between sessions
+
 ![Screenshot](active.jpg?raw=true "active")
 
 * Progress [minutes] - how far into the duration
-* Next [seconds] - until the next change (speed or incline)
+* Next [minutes] - until the next change (speed or incline)
 * Speed - current speed (adjust treadmill if they don't match)
 * Incline - current incline (adjust treadmill if they don't match)
 * [X] - close app (prompt if session active)
@@ -40,7 +42,9 @@ Fields:
 
 I plan to add more, currently there is one implemented:
 
-* at *acceleration* increase from 3.0 to desired *speed*
+![Chart](chart.png?raw=true "chart")
+
+* during *warmup* increase from 3.0 to desired *speed*
 * slowly increase incline from 0 to *hill*
 * slowly decrease include from *hill* to 0
 * 5 minute *sprint*
@@ -49,6 +53,10 @@ I plan to add more, currently there is one implemented:
 * 5 minute *sprint*
 * at (negative) *acceleration* decrease desired *speed* to 3.0
 * end of workout - end of movie
+
+Heart rate for a 126 minute workout (movie Shazam)
+
+![Heartrate](heart.jpg?raw=true "heartrate")
 
 The workout logic is in the function workout1:
 
@@ -104,7 +112,6 @@ wait(delay)
 * Make path location of *hidapitester.exe* configurable
 * Add more workout programs with selector
 * Make window moveable, resizable
-* Save preferences into ini file
 
 ...or not. Currently this is what I need, I provide it as a basis for anyone wanting to create something similar.
 
