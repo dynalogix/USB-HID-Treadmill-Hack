@@ -84,7 +84,9 @@ namespace walk
                 speed = float.Parse(max.Text);
                 sp = float.Parse(sprint.Text);
                 hl = float.Parse(hill.Text);
-                warm = float.Parse(warmup.Text) / (speed-3.0f);
+                warm = (60f*float.Parse(warmup.Text)-5f*(speed-3.0f)) / (10f*(speed-3.0f));
+
+                MessageBox.Show("step:" + warm);
 
                 path = Settings.Default.HIDAPIPath;
                 vidpid = Settings.Default.Vidpid;
