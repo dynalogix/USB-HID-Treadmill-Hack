@@ -82,6 +82,18 @@ wait(delay)
 * delay in seconds
 * returns true if stop was pressed
 
+**Set path to HIDAPITester and your VIDPID**
+
+After opening the app at least once, find the configuration file under 
+C:\Users\???\AppData\Local\walk\walk_???\1.0.0.0\user.config
+
+Add two settings manually (otherwise some incorrect defaults will be used):
+
+<setting name="HIDAPIPath" serializeAs="String"><value>c:\HIDAPITester\hidapitester.exe</value></setting>
+<setting name="Vidpid" serializeAs="String"><value>0519</value></setting>
+
+![Notepad](config.jpg?raw=true "user.config")
+
 **How to find vidpid**
 
     Use command:
@@ -109,8 +121,6 @@ wait(delay)
     output 0,9: opens all channels
 
 **Plans**
-* Make vidpid configurable
-* Make path location of *hidapitester.exe* configurable
 * Add more workout programs with selector
 * Make window moveable, resizable
 
