@@ -89,10 +89,27 @@ C:\Users\???\AppData\Local\walk\walk_???\1.0.0.0\user.config
 
 Add two settings manually (otherwise some incorrect defaults will be used):
 
-<setting name="HIDAPIPath" serializeAs="String"><value>c:\HIDAPITester\hidapitester.exe</value></setting>
-<setting name="Vidpid" serializeAs="String"><value>0519</value></setting>
-
-![Notepad](config.jpg?raw=true "user.config")
+     <?xml version="1.0" encoding="utf-8"?>
+     <configuration>
+         <configSections>
+             <sectionGroup name="userSettings" type="System.Configuration.UserSettingsGroup, System.Configuration.ConfigurationManager, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" >
+                <section name="walk.Properties.Settings" type="System.Configuration.ClientSettingsSection, System.Configuration.ConfigurationManager, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" allowExeDefinition="MachineToLocalUser" requirePermission="false" />
+             </sectionGroup>
+         </configSections>
+         <userSettings>
+             <walk.Properties.Settings>
+              <setting name="Duration" serializeAs="String"><value>100</value></setting>
+              <setting name="Sprint" serializeAs="String"><value>7.5</value></setting>
+              <setting name="Warmup" serializeAs="String"><value>8</value></setting>
+              <setting name="Speed" serializeAs="String"><value>6.2</value></setting>
+              
+              <!-- Add these two lines -->
+              <setting name="HIDAPIPath" serializeAs="String"><value>c:\HIDAPITester\hidapitester.exe</value></setting>
+              <setting name="Vidpid" serializeAs="String"><value>0519</value></setting>
+              
+             </walk.Properties.Settings>
+         </userSettings>
+     </configuration>
 
 **How to find vidpid**
 
