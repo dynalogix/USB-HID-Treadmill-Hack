@@ -86,7 +86,7 @@ namespace walk
                 hl = float.Parse(hill.Text);
                 warm = (60f*float.Parse(warmup.Text)-5f*(speed-3.0f)) / (10f*(speed-3.0f));
 
-                MessageBox.Show("step:" + warm);
+                //MessageBox.Show("step:" + warm);
 
                 path = Settings.Default.HIDAPIPath;
                 vidpid = Settings.Default.Vidpid;
@@ -186,7 +186,7 @@ namespace walk
                     lag = Environment.TickCount;
                 } else
                 {
-                    lag += 1000;
+                    lag += delay<1f ? (int)delay*1000 : 1000;
                 }
                 if (!running) return true;
             }

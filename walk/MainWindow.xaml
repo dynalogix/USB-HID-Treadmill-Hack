@@ -111,7 +111,8 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <CheckBox Unchecked="CheckBox_Unchecked" Checked="CheckBox_Checked" HorizontalAlignment="Left" Margin="1386,64,0,0" VerticalAlignment="Top" Background="#FF8B8B8B"/>
+        <CheckBox Unchecked="CheckBox_Unchecked" Checked="CheckBox_Checked" HorizontalAlignment="Left" Margin="1386,64,0,0" VerticalAlignment="Top" Background="#FF8B8B8B" 
+                  IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=Top, Mode=TwoWay}" />
         <Button Content="X" HorizontalAlignment="Left" Margin="1378,11,0,0" VerticalAlignment="Top" FontSize="20" FontWeight="Bold" Width="29" Click="Exit_Click" Background="#FF595959"/>
         <TextBox x:Name="progress" GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="832,0,0,0" Text="0.0" TextWrapping="Wrap" VerticalAlignment="Center" Height="71" Width="129" FontSize="50" Background="{x:Null}" SelectionTextBrush="Gray" Foreground="Gray" BorderBrush="Black"/>
         <Label Content="Progress" HorizontalAlignment="Left" Margin="796,42,0,27" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0">

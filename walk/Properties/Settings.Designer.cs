@@ -106,5 +106,17 @@ namespace walk.Properties {
                 this["Vidpid"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Top {
+            get {
+                return ((bool)(this["Top"]));
+            }
+            set {
+                this["Top"] = value;
+            }
+        }
     }
 }

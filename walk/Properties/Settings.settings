@@ -23,5 +23,8 @@
     <Setting Name="Vidpid" Type="System.String" Scope="User">
       <Value Profile="(Default)">0519</Value>
     </Setting>
+    <Setting Name="Top" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
