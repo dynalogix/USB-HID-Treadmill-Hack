@@ -23,7 +23,9 @@ Fields:
 * Speed - desired speed
 * Warm-up / Wind-down time [minutes] - how quickly reach desired speed
 * Sprint - maximum speed during sprint phases
+* Sprint duration [minutes] - how long the sprint period is
 * Hill - incline increase during "hill" phases
+* Reps - how many times the (hill+sprint) section repeated (with decreasing hills)
 * Start button - press again to Stop (prompt)
 * Progress - you can edit this and restart a stopped session
 
@@ -45,12 +47,16 @@ I plan to add more, currently there is one implemented:
 ![Chart](chart.png?raw=true "chart")
 
 * in *warmup* minutes increase from 3.0 to desired *speed*
+* 
 * slowly increase incline from 0 to *hill*
 * slowly decrease include from *hill* to 0
-* 5 minute *sprint*
+* Sprint for *sprint duration* at *sprint speed*
 * slowly increase incline from 0 to half *hill*
 * slowly decrease incline from half *hill* to 0
-* 5 minute *sprint*
+* Sprint for *sprint duration* at *sprint speed*
+:
+repeat *reps* times (with decreasing hills)
+:
 * in *winddown* minutes decrease desired *speed* to 3.0
 * end of workout - end of movie
 
