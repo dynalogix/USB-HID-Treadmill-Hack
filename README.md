@@ -54,9 +54,9 @@ I plan to add more, currently there is one implemented:
 * slowly increase incline from 0 to half *hill*
 * slowly decrease incline from half *hill* to 0
 * Sprint for *sprint duration* at *sprint speed*
-:
-repeat *reps* times (with decreasing hills)
-:
+* 
+* ...repeat *reps* times (with decreasing hills)
+* 
 * in *winddown* minutes decrease desired *speed* to 3.0
 * end of workout - end of movie
 
