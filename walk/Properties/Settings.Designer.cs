@@ -130,5 +130,17 @@ namespace walk.Properties {
                 this["Rep"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public string SprintDuration {
+            get {
+                return ((string)(this["SprintDuration"]));
+            }
+            set {
+                this["SprintDuration"] = value;
+            }
+        }
     }
 }

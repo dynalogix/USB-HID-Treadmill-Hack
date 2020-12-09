@@ -18,7 +18,7 @@ namespace walk
         float s = 3.0f;
         int r=0;
         static String time = "";
-        static float dur, warm, speed, sp, hl, tick, p,reps;
+        static float dur, warm, speed, sp, hl, tick, p,reps,sdur;
         DispatcherTimer timer=null;
         Thread thread=null;
         static bool running = false;
@@ -81,6 +81,7 @@ namespace walk
                 r = 0; s = 3.0f;
 
                 dur = float.Parse(len.Text) * 60;               
+                sdur = float.Parse(sprdur.Text) * 60;               
                 speed = float.Parse(max.Text);
                 sp = float.Parse(sprint.Text);
                 hl = float.Parse(hill.Text);
@@ -88,7 +89,7 @@ namespace walk
                 warm = 60f * float.Parse(warmup.Text);
                 reps = (int)float.Parse(rep.Text);               
 
-                while(dur<2*warm+reps*8*60) 
+                while(dur<2*warm+reps*(sdur+180)) 
                 {
                     rep.Text = (--reps).ToString();
                 }
@@ -253,7 +254,7 @@ namespace walk
                 press(SPEED_UP);
             }
 
-            dur -= reps* 300;                    // 2x sprint 5 minutes
+            dur -= reps* sdur;                    // 2x sprint 5 minutes
             dur -= reps * 2 * (sp - speed) * 15;     // 2x up/down sprint steps * 1000ms + 500ms
 
             if (reps > 0)
@@ -322,7 +323,7 @@ namespace walk
                         wait(0.99f);
                     }
 
-                    if (wait(300)) return;
+                    if (wait(sdur)) return;
 
                     for (int b = (int)speed * 10 + 1; b <= sp * 10; b++)
                     {
