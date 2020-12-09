@@ -56,7 +56,7 @@ I plan to add more, currently there is one implemented:
 
 Heart rate for a 126 minute workout (movie Shazam)
 
-![Heartrate](heart.jpg?raw=true "heartrate")
+![Heartrate](heart2.jpg?raw=true "heartrate")
 
 The workout logic is in the function workout1:
 
