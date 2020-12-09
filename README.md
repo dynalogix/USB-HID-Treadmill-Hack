@@ -49,13 +49,14 @@ I plan to add more, currently there is one implemented:
 * in *warmup* minutes increase from 3.0 to desired *speed*
 * 
 * slowly increase incline from 0 to *hill*
-* slowly decrease include from *hill* to 0
+* slowly decrease include from *hill* / 1 to 0
 * Sprint for *sprint duration* at *sprint speed*
+*
 * slowly increase incline from 0 to half *hill*
-* slowly decrease incline from half *hill* to 0
+* slowly decrease incline from *hill* / 2  to 0
 * Sprint for *sprint duration* at *sprint speed*
 * 
-* ...repeat *reps* times (with decreasing hills)
+* ...repeat *reps* times (with decreasing hills: *hill* / 3, *hill* / 4 etc)
 * 
 * in *winddown* minutes decrease desired *speed* to 3.0
 * end of workout - end of movie
