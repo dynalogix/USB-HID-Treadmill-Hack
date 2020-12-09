@@ -56,7 +56,7 @@ I plan to add more, currently there is one implemented:
 
 Heart rate for a 126 minute workout (movie Shazam)
 
-![Heartrate](heart.jpg?raw=true "heartrate")
+![Heartrate](heart2.jpg?raw=true "heartrate")
 
 The workout logic is in the function workout1:
 
@@ -69,7 +69,7 @@ The workout logic is in the function workout1:
 * sp - sprint
 * warm - warmup/winddown duration between 0.1 steps (in seconds)
 
-**Calls**
+**Calls** 
 
 toggle(switch, state)
 * switch: SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL = 9
