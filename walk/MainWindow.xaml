@@ -9,7 +9,7 @@
         WindowStyle="None"
         Closing="Window_Closing"
         mc:Ignorable="d"
-        Title="MainWindow" Height="85" Width="1420"
+        Title="MainWindow" Height="85" Width="1554"
         Top="0" Left="0"       
         AllowsTransparency="True"        
         x:Name="win"              
@@ -25,6 +25,7 @@
         <TextBox x:Name="warmup" GotFocus="gotFocus" HorizontalAlignment="Left" Margin="289,0,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Warmup, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Center" Height="71" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
         <TextBox x:Name="sprint" GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="426,0,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Sprint, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Center" Height="71" Width="100" FontSize="50" SelectionTextBrush="{x:Null}" Background="{x:Null}" Foreground="Gray" BorderBrush="Black"/>
         <TextBox x:Name="hill" GotFocus="gotFocus" HorizontalAlignment="Left" Margin="560,0,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Hill, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Center" Height="71" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
+        <TextBox x:Name="rep" GotFocus="gotFocus" HorizontalAlignment="Left" Margin="694,0,0,0" Text="{Binding Path=Rep, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Center" Height="71" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
 
         <Label Content="Duration" HorizontalAlignment="Left" Margin="-6,47,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Top" Padding="0,0,0,0">
             <Label.RenderTransform>
@@ -57,10 +58,10 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <Button x:Name="start" Content="Start" HorizontalAlignment="Left" Margin="692,0,0,0" VerticalAlignment="Center" FontSize="36" Click="Start_click" Height="71" Width="100" Background="#FF595959" FontWeight="Bold" Foreground="White"/>
-        <Label x:Name="dispSpeed" Content="3.0" HorizontalAlignment="Left" Margin="1135,0,0,0" VerticalAlignment="Center" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
-        <Label x:Name="dispIncl" Content="0" HorizontalAlignment="Left" Margin="1262,0,0,0" VerticalAlignment="Center" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
-        <Label Content="Speed" Margin="1100,44,267,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Top" Padding="0,0,0,0">
+        <Button x:Name="start" Content="Start" HorizontalAlignment="Left" Margin="829,0,0,0" VerticalAlignment="Center" FontSize="36" Click="Start_click" Height="71" Width="100" Background="#FF595959" FontWeight="Bold" Foreground="White"/>
+        <Label x:Name="dispSpeed" Content="3.0" HorizontalAlignment="Left" Margin="1272,0,0,0" VerticalAlignment="Center" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
+        <Label x:Name="dispIncl" Content="0" HorizontalAlignment="Left" Margin="1399,0,0,0" VerticalAlignment="Center" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
+        <Label Content="Speed" Margin="1168,-26,199,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="16" VerticalAlignment="Top">
             <Label.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -70,7 +71,7 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <Label Content="Incline" Margin="1215,0,127,0" RenderTransformOrigin="0.5,0.5" Foreground="#FF3C3C3C" VerticalAlignment="Center" Padding="0,0,0,0">
+        <Label Content="Incline" Margin="1281,-38,61,0" RenderTransformOrigin="0.5,0.5" Foreground="#FF3C3C3C" Padding="0,0,0,0" Height="16" VerticalAlignment="Top">
             <Label.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -80,8 +81,8 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <Label x:Name="dispTime" Content="" HorizontalAlignment="Left" Margin="989,0,0,0" VerticalAlignment="Center" FontSize="45" Width="115" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
-        <Label Content="Next" HorizontalAlignment="Left" Margin="963,53,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Top" Padding="0,0,0,0">
+        <Label x:Name="dispTime" Content="" HorizontalAlignment="Left" Margin="1126,0,0,0" VerticalAlignment="Center" FontSize="45" Width="115" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
+        <Label Content="Next" HorizontalAlignment="Left" Margin="1100,53,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Top" Padding="0,0,0,0">
             <Label.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -111,11 +112,11 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <CheckBox Unchecked="CheckBox_Unchecked" Checked="CheckBox_Checked" HorizontalAlignment="Left" Margin="1386,64,0,0" VerticalAlignment="Top" Background="#FF8B8B8B" 
+        <CheckBox Unchecked="CheckBox_Unchecked" Checked="CheckBox_Checked" HorizontalAlignment="Left" Margin="1523,64,0,0" VerticalAlignment="Top" Background="#FF8B8B8B" 
                   IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=Top, Mode=TwoWay}" />
-        <Button Content="X" HorizontalAlignment="Left" Margin="1378,11,0,0" VerticalAlignment="Top" FontSize="20" FontWeight="Bold" Width="29" Click="Exit_Click" Background="#FF595959"/>
-        <TextBox x:Name="progress" GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="832,0,0,0" Text="0.0" TextWrapping="Wrap" VerticalAlignment="Center" Height="71" Width="129" FontSize="50" Background="{x:Null}" SelectionTextBrush="Gray" Foreground="Gray" BorderBrush="Black"/>
-        <Label Content="Progress" HorizontalAlignment="Left" Margin="796,42,0,27" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0">
+        <Button Content="X" HorizontalAlignment="Left" Margin="1515,11,0,0" VerticalAlignment="Top" FontSize="20" FontWeight="Bold" Width="29" Click="Exit_Click" Background="#FF595959"/>
+        <TextBox x:Name="progress" GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="969,0,0,0" Text="0.0" TextWrapping="Wrap" VerticalAlignment="Center" Height="71" Width="129" FontSize="50" Background="{x:Null}" SelectionTextBrush="Gray" Foreground="Gray" BorderBrush="Black"/>
+        <Label Content="Progress" HorizontalAlignment="Left" Margin="933,42,0,27" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0">
             <Label.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -129,7 +130,17 @@
 
         <Label Content="min" HorizontalAlignment="Left" Margin="105,61,0,8" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" />
         <Label Content="min" HorizontalAlignment="Left" Margin="367,61,0,8" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" />
-        <Label Content="min" HorizontalAlignment="Left" Margin="939,61,0,8" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" />
-        <Label Content="min" HorizontalAlignment="Left" Margin="1081,61,0,8" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" />
+        <Label Content="min" HorizontalAlignment="Left" Margin="1076,61,0,8" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" />
+        <Label Content="min" HorizontalAlignment="Left" Margin="1218,61,0,8" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" />
+        <Label Content="Reps (H+S)" HorizontalAlignment="Left" Margin="654,37,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Top" Padding="0,0,0,0">
+            <Label.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-90"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Label.RenderTransform>
+        </Label>
     </Grid>
 </Window>

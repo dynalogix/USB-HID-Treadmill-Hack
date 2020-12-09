@@ -18,7 +18,7 @@ namespace walk
         float s = 3.0f;
         int r=0;
         static String time = "";
-        static float dur, warm, speed, sp, hl, tick, p;
+        static float dur, warm, speed, sp, hl, tick, p,reps;
         DispatcherTimer timer=null;
         Thread thread=null;
         static bool running = false;
@@ -84,7 +84,16 @@ namespace walk
                 speed = float.Parse(max.Text);
                 sp = float.Parse(sprint.Text);
                 hl = float.Parse(hill.Text);
-                warm = (60f*float.Parse(warmup.Text)-5f*(speed-3.0f)) / (10f*(speed-3.0f));
+
+                warm = 60f * float.Parse(warmup.Text);
+                reps = (int)float.Parse(rep.Text);               
+
+                while(dur<2*warm+reps*8*60) 
+                {
+                    rep.Text = (--reps).ToString();
+                }
+
+                warm = (warm - 5f * (speed - 3.0f)) / (10f * (speed - 3.0f));
 
                 //MessageBox.Show("step:" + warm);
 
@@ -161,12 +170,24 @@ namespace walk
 
         private static bool wait(float delay)
         {
-
-            if (p<tick)
+            if (delay < 0)
             {
-                Debug.Write(String.Format("wait {0} ({1:0.0}) → ",delay,p/60f));
-                p += delay;
+                Debug.WriteLine("wait " + delay);
                 return !running;
+            }
+
+            if (p < tick)
+            {
+                if (delay <= tick-p)
+                {
+                    Debug.Write(String.Format("wait {0} ({1:0.0}) → ", delay, p / 60f));
+                    p += delay;
+                    return !running;
+                } else
+                {
+                    Debug.Write(String.Format("wait {0}→{1} ({2:0.0}) → ", delay,delay-(tick-p), p / 60f));
+                    delay -= tick - p;
+                }
             }
 
             p =99999;         // as soon as we catch up no need to track
@@ -232,70 +253,93 @@ namespace walk
                 press(SPEED_UP);
             }
 
-            dur -= 600;                    // 2x sprint 5 minutes
-            dur -= 4 * (sp - speed) * 15;     // 2x up/down sprint steps * 1000ms + 500ms
-            if ((dur - hl - hl / 2) / 2 > 300) dur = dur - hl - hl / 2;       // 2 * hill * 500ms + 2 * hill/2 * 500ms
-            dur = dur / 2f;
+            dur -= reps* 300;                    // 2x sprint 5 minutes
+            dur -= reps * 2 * (sp - speed) * 15;     // 2x up/down sprint steps * 1000ms + 500ms
 
-            float diff = 0;
-
-            // middle section: climbs and sprints
-            for (int a = 1; a <= 2; a++)
+            if (reps > 0)
             {
-                if (dur > 300f)
+                float adj_time = 0;
+                for (int a = 1; a <= reps; a++)
+                    for (int b = 1; b <= hl; b += a)
+                        adj_time++;
+
+                Debug.WriteLine("dur=" + ((dur - adj_time) / reps));
+
+                if ((dur - adj_time) / reps > 100) dur -= adj_time;       // 2 * hill * 500ms + 2 * hill/2 * 500ms
+                dur /= reps;
+
+                float diff = 0;
+
+                // middle section: climbs and sprints
+                for (int a = 1; a <= reps; a++)
                 {
-                    float c = dur / (2f * (hl / a) + 2);
+                    Debug.WriteLine("rep:" + a+" diff:"+diff);
 
-                    diff = c - diff;        // wait double before raising (adjustted by correction at half time)
-
-                    // climb to hl later hl/2+1
-
-                    for (int b = 1; b <= hl; b += a)
+                    if (dur > 100)
                     {
-                        if (wait(c+diff)) return;
-                        diff = 0;
-                        r++;
-                        press(INCL_UP);
-                    }
 
-                    // descend from 6 later 4
+                        float c = 2;
+                        for (int b = 1; b <= hl; b += a) c+=2;
 
-                    for (int b = 1; b <= hl; b += a)
-                    {
+                        Debug.WriteLine("section=" + c+" c="+dur/c);
+
+                        c = dur / c;
+
+                        diff = c - diff;        // wait double before raising (adjustted by correction at half time)
+
+                        // climb to hl later hl/2+1
+
+                        for (int b = 1; b <= hl; b += a)
+                        {
+                            if (wait(c + diff)) return;
+                            diff = 0;
+                            r++;
+                            press(INCL_UP);
+                        }
+
+                        // descend from 6 later 4
+
+                        for (int b = 1; b <= hl; b += a)
+                        {
+                            if (wait(c)) return;
+                            r--;
+                            press(INCL_DOWN);
+                        }
+
                         if (wait(c)) return;
-                        r--;
-                        press(INCL_DOWN);
+                    }
+                    else
+                    {
+                        if (wait(dur - diff)) return;
                     }
 
-                    if (wait(c)) return;
+                    // 5 min sprint
+
+                    for (int b = (int)speed * 10 + 1; b <= sp * 10; b++)
+                    {
+                        s += 0.1f;
+                        press(SPEED_UP);
+                        wait(0.99f);
+                    }
+
+                    if (wait(300)) return;
+
+                    for (int b = (int)speed * 10 + 1; b <= sp * 10; b++)
+                    {
+                        s -= 0.1f;
+                        press(SPEED_DOWN);
+                        wait(0.99f);
+                    }
+
+                    // correction half way: tick should be exactly at half → Take away the 2 * difference in next round
+
+                    diff = p>tick && Math.Abs(a - reps / 2f) < 0.1f ? (int)((tick - half) * 2) : 0;
+
                 }
-                else
-                {
-                    if (wait(dur-diff)) return;
-                }
 
-                // 5 min sprint
-
-                for (int b = (int)speed * 10 + 1; b <= sp * 10; b++)
-                {
-                    s += 0.1f;
-                    press(SPEED_UP);
-                    wait(0.99f);
-                }
-
-                if (wait(300)) return;
-
-                for (int b = (int)speed * 10 + 1; b <= sp * 10; b++)
-                {
-                    s -= 0.1f;
-                    press(SPEED_DOWN);
-                    wait(0.99f);
-                }
-
-                // correction half way: tick should be exactly at half → Take away the 2 * difference in next round
-
-                diff = (int)((tick - half) * 2);
-
+            } else
+            {
+                if (wait(dur)) return;
             }
 
             // finish
