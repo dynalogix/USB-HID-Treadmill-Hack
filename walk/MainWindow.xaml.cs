@@ -21,9 +21,8 @@ namespace walk
         static float dur, warm, speed, sp, hl, tick, p,reps,sdur;
         DispatcherTimer timer=null;
         Thread thread=null;
-        static bool running = false;
-        private SolidColorBrush brush;
-        static int lag = 0;
+        static bool running = false, caught_up=false;
+        private SolidColorBrush brush;       
         static String path, vidpid;
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -75,8 +74,10 @@ namespace walk
                 max.Opacity = 0.3f;
                 sprint.Opacity = 0.3f;
                 hill.Opacity = 0.3f;
+                sprdur.Opacity = 0.3f;
+                rep.Opacity = 0.3f;
 
-                running = true;
+                running = true;               
 
                 r = 0; s = 3.0f;
 
@@ -104,7 +105,7 @@ namespace walk
                 tick = float.Parse(progress.Text) * 60;
 
                 thread = new Thread(workout1);
-                lag = Environment.TickCount;
+                //lag = Environment.TickCount;
                 thread.Start();
 
                 timer = new DispatcherTimer();
@@ -139,6 +140,8 @@ namespace walk
             max.Opacity = 1f;
             sprint.Opacity = 1f;
             hill.Opacity = 1f;
+            sprdur.Opacity = 1f;
+            rep.Opacity = 1f;
 
             brush = new SolidColorBrush();
             brush.Color = Color.FromRgb(255, 255, 255);
@@ -177,49 +180,37 @@ namespace walk
                 return !running;
             }
 
-            if (p < tick)
-            {
-                if (delay <= tick-p)
-                {
-                    Debug.Write(String.Format("wait {0} ({1:0.0}) → ", delay, p / 60f));
-                    p += delay;
-                    return !running;
-                } else
-                {
-                    Debug.Write(String.Format("wait {0}→{1} ({2:0.0}) → ", delay,delay-(tick-p), p / 60f));
-                    delay -= tick - p;
-                }
-            }
+            p += delay;
 
-            p =99999;         // as soon as we catch up no need to track
+            if (!caught_up && p < tick)
+            {
+                Debug.Write(String.Format("wait {0} ({1:0.0}) → ", delay, p / 60f));               
+                return !running;
+            }
+           
+            caught_up = true;
 
             if(delay<1f)
             {
-                Thread.Sleep((int)(delay * 1000));
-                lag += (int)(delay * 1000);
+                Thread.Sleep((int)(delay * 1000));               
                 return false;
             }           
 
-            for(;delay>0;delay-=1)
+            while(p>tick)
             {
-                time = String.Format("{0:0.0}",delay/60f);
-                if(Environment.TickCount-lag < 1000) {
-                    Thread.Sleep((int)((delay<1f ? delay : 1)*1000 - (Environment.TickCount - lag)));
-                    lag = Environment.TickCount;
-                } else
-                {
-                    lag += delay<1f ? (int)delay*1000 : 1000;
-                }
+                time = String.Format("{0:0.0}", (p-tick) / 60f);
+                Thread.Sleep(200);                    
                 if (!running) return true;
             }
             time = "";
 
-            return false; 
+            return false;
+
         }
 
         private static void toggle(int sw, int val)
         {
-            if (p < tick)
+            if (!caught_up)
             {
                 Debug.WriteLineIf(val == 1,"Press " + sw) ;
                 return;
@@ -236,13 +227,12 @@ namespace walk
 
         private void workout1(object obj)
         {
-            float half = dur / 2;
-
-            p = 999999;
+            caught_up = true;
 
             toggle(ALL, OFF);
 
             p = 0;
+            caught_up = tick == 0;
 
             // Start up
 
@@ -269,12 +259,9 @@ namespace walk
                 if ((dur - adj_time) / reps > 100) dur -= adj_time;       // 2 * hill * 500ms + 2 * hill/2 * 500ms
                 dur /= reps;
 
-                float diff = 0;
-
                 // middle section: climbs and sprints
                 for (int a = 1; a <= reps; a++)
-                {
-                    Debug.WriteLine("rep:" + a+" diff:"+diff);
+                {                   
 
                     if (dur > 100)
                     {
@@ -286,14 +273,14 @@ namespace walk
 
                         c = dur / c;
 
-                        diff = c - diff;        // wait double before raising (adjustted by correction at half time)
+                        float first= c;        // wait double before raising (adjustted by correction at half time)
 
                         // climb to hl later hl/2+1
 
                         for (int b = 1; b <= hl; b += a)
                         {
-                            if (wait(c + diff)) return;
-                            diff = 0;
+                            if (wait(c + first)) return;
+                            first = 0;
                             r++;
                             press(INCL_UP);
                         }
@@ -311,7 +298,7 @@ namespace walk
                     }
                     else
                     {
-                        if (wait(dur - diff)) return;
+                        if (wait(dur)) return;
                     }
 
                     // 5 min sprint
@@ -332,16 +319,14 @@ namespace walk
                         wait(0.99f);
                     }
 
-                    // correction half way: tick should be exactly at half → Take away the 2 * difference in next round
-
-                    diff = p>tick && Math.Abs(a - reps / 2f) < 0.1f ? (int)((tick - half) * 2) : 0;
-
                 }
 
             } else
             {
                 if (wait(dur)) return;
             }
+
+            Debug.WriteLine("warm=" +warm);
 
             // finish
             for (float a = speed; a >= 3.1; a -= 0.1f)
