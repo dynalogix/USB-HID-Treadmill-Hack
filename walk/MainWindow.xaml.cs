@@ -120,8 +120,7 @@ namespace walk
             }
             else
             {
-                MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show("Are you sure?", "Stop", System.Windows.MessageBoxButton.YesNo);
-                if (messageBoxResult == MessageBoxResult.Yes) End();
+                End();
             }
 
         }
@@ -251,7 +250,7 @@ namespace walk
             {
                 float adj_time = 0;
                 for (int a = 1; a <= reps; a++)
-                    for (int b = 1; b <= hl; b += a)
+                    for (int b = 0; b < (reps+1-a)*hl/reps; b++)
                         adj_time++;
 
                 Debug.WriteLine("dur=" + ((dur - adj_time) / reps));
@@ -267,7 +266,7 @@ namespace walk
                     {
 
                         float c = 2;
-                        for (int b = 1; b <= hl; b += a) c+=2;
+                        for (int b = 0; b < (reps + 1 - a) * hl / reps; b++) c +=2;
 
                         Debug.WriteLine("section=" + c+" c="+dur/c);
 
@@ -275,9 +274,9 @@ namespace walk
 
                         float first= c;        // wait double before raising (adjustted by correction at half time)
 
-                        // climb to hl later hl/2+1
+                        // climb to 10/4 → 10,8,5,3; 9/3 → 9,6,3
 
-                        for (int b = 1; b <= hl; b += a)
+                        for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
                         {
                             if (wait(c + first)) return;
                             first = 0;
@@ -287,7 +286,7 @@ namespace walk
 
                         // descend from 6 later 4
 
-                        for (int b = 1; b <= hl; b += a)
+                        for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
                         {
                             if (wait(c)) return;
                             r--;
