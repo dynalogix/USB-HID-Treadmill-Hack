@@ -32,5 +32,14 @@
     <Setting Name="SprintDuration" Type="System.String" Scope="User">
       <Value Profile="(Default)">5</Value>
     </Setting>
+    <Setting Name="ButtonPressSec" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0.25</Value>
+    </Setting>
+    <Setting Name="DoStartStop" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="MaxDuration" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">99.9</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

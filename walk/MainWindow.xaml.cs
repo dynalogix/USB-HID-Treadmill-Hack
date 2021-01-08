@@ -14,11 +14,16 @@ namespace walk
     /// </summary>
     public partial class MainWindow : Window
     {
-        static int SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL=9, ON=1, OFF=0;
+        static int SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL=9, ON=1, OFF=0, START=5, MODE=6;
+        static bool doStartStop = true;
+
+        static float buttonPressSec = 0.5f;
+        static float maxDuration = 100;
+
         float s = 3.0f;
         int r=0;
         static String time = "";
-        static float dur, warm, speed, sp, hl, tick, p,reps,sdur;
+        static float dur, warm, speed, sp, hl, tick, p,reps,sdur,warmDur,lastRestart=0;
         DispatcherTimer timer=null;
         Thread thread=null;
         static bool running = false, caught_up=false;
@@ -57,17 +62,24 @@ namespace walk
         public MainWindow()
         {
             InitializeComponent();
-        }       
+        }
+
+        private void Stop_click(object sender, RoutedEventArgs e)
+        {
+            path = Settings.Default.HIDAPIPath;
+            vidpid = Settings.Default.Vidpid;
+            //press(STOP);
+        }
 
         private void Start_click(object sender, RoutedEventArgs e)
         {
             time = "";
 
             if (!running)
-            {
+            {                             
                 Debug.WriteLine("start =======================");
 
-                start.Content = "Stop";
+                start.Content = "Pause";
                 start.Opacity = 0.3f;
                 len.Opacity = 0.3f;
                 warmup.Opacity = 0.3f;
@@ -87,7 +99,7 @@ namespace walk
                 sp = float.Parse(sprint.Text);
                 hl = float.Parse(hill.Text);
 
-                warm = 60f * float.Parse(warmup.Text);
+                warmDur = warm = 60f * float.Parse(warmup.Text);
                 reps = (int)float.Parse(rep.Text);               
 
                 while(dur<2*warm+reps*(sdur+180)) 
@@ -101,6 +113,9 @@ namespace walk
 
                 path = Settings.Default.HIDAPIPath;
                 vidpid = Settings.Default.Vidpid;
+                doStartStop = Settings.Default.DoStartStop;
+                buttonPressSec=Settings.Default.ButtonPressSec;
+                maxDuration = Settings.Default.MaxDuration;
 
                 tick = float.Parse(progress.Text) * 60;
 
@@ -167,11 +182,12 @@ namespace walk
         private static void press(int v)
         {               
             toggle(v, ON);
-            wait(0.5f);
+            wait(buttonPressSec);
             toggle(v, OFF);
+            if (buttonPressSec<0.5f) wait(0.5f-buttonPressSec);
         }
 
-        private static bool wait(float delay)
+        private static bool wait(float delay)   // delay in seconds
         {
             if (delay < 0)
             {
@@ -228,12 +244,39 @@ namespace walk
         {
             caught_up = true;
 
-            toggle(ALL, OFF);
+            toggle(ALL, OFF);          
 
             p = 0;
             caught_up = tick == 0;
 
-            // Start up
+            //float restart = float.MaxValue, restart_dur =1+ 10 + 6 + (speed - 1.0f) * 10f;        // stop, 10s, start, 6s, (up + 0.5s)*(speed-1)
+
+            if (doStartStop)
+            {          // the 4B-550 has START and STOP buttons and speed starts at 1.0
+
+                press(SPEED_DOWN);  // wake up treadmill
+                wait(0.5f);
+                press(MODE);        // MODE MODE → target distance
+                wait(0.5f);
+                press(MODE);
+                wait(0.5f);
+                press(SPEED_DOWN);  // set target distance 99km → maximum length workout
+                wait(0.5f);
+
+                startup(3f);  // initial speed rais 1 to 3
+
+                /*if(dur>maxDuration*60)    // stop and restart when duration more than maxDuration
+                {
+                    restart = warmDur;
+                    dur -= restart_dur;
+                    float repDur = (dur - 2 * warmDur) / reps;
+                    for (int r=0;r<reps;r++) if(restart+repDur<(maxDuration-1)*60) restart += repDur;
+                    if(dur-restart>maxDuration*60) dur -= restart_dur;
+                    lastRestart = 0;
+                }*/
+            }
+
+            // Warm up
 
             for (float a = 3.1f; a <= speed; a += 0.1f)
             {
@@ -258,6 +301,12 @@ namespace walk
                 if ((dur - adj_time) / reps > 100) dur -= adj_time;       // 2 * hill * 500ms + 2 * hill/2 * 500ms
                 dur /= reps;
 
+                /*if (restart<float.MaxValue)
+                {
+                    restart = tick;                   
+                    for (int r = 0; r < reps; r++) if (restart + dur < (maxDuration - 1) * 60) restart += dur;                   
+                }*/
+
                 // middle section: climbs and sprints
                 for (int a = 1; a <= reps; a++)
                 {                   
@@ -275,6 +324,24 @@ namespace walk
                         float first= c;        // wait double before raising (adjustted by correction at half time)
 
                         // climb to 10/4 → 10,8,5,3; 9/3 → 9,6,3
+
+                        /*if(doStartStop && tick>restart)
+                        {                           
+                            float w = Math.Min((maxDuration - 1) * 60 - (tick -lastRestart), first - restart_dur / 2);
+                            if (wait(w)) return;
+                            first = first-restart_dur-w;                      // remaining wait time added 
+                            
+                            press(STOP);
+                            if (wait(10)) return;
+
+                            // find next restart point
+                            restart = 0;
+                            for (int r = a; r < reps; r++) if (restart + dur < (maxDuration - 1) * 60) restart += dur; 
+                            restart += tick;
+                            lastRestart = tick;
+
+                            startup(speed);
+                        }*/
 
                         for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
                         {
@@ -297,12 +364,22 @@ namespace walk
                     }
                     else
                     {
+                        /*if (doStartStop && tick > restart)
+                        {
+                            restart = float.MaxValue;       // no need for more
+                            if (wait(dur/2- restart_dur)) return;                           
+                            press(STOP);
+                            if (wait(10)) return;
+                            startup(speed);
+                            if (wait(dur/2)) return;
+                        }
+                        else*/ 
                         if (wait(dur)) return;
                     }
 
                     // 5 min sprint
 
-                    for (int b = (int)speed * 10 + 1; b <= sp * 10; b++)
+                    for (float b = speed +0.1f; b <= sp; b+=0.1f)
                     {
                         s += 0.1f;
                         press(SPEED_UP);
@@ -311,7 +388,7 @@ namespace walk
 
                     if (wait(sdur)) return;
 
-                    for (int b = (int)speed * 10 + 1; b <= sp * 10; b++)
+                    for (float b = speed + 0.1f; b <= sp; b+=0.1f)
                     {
                         s -= 0.1f;
                         press(SPEED_DOWN);
@@ -336,6 +413,28 @@ namespace walk
             }
 
             running = false;
+        }
+
+        private void startup(float dest)
+        {
+            //press(STOP);
+            //wait(10);
+
+            press(START);
+
+            s = 1;
+
+            if(wait(6f)) return;
+
+            // Start up
+
+            for (float a = 1.1f; a <= dest; a += 0.1f)
+            {
+                if (wait(0.5f)) return;
+                s += 0.1f;
+                press(SPEED_UP);
+            }
+        
         }
     }
 }

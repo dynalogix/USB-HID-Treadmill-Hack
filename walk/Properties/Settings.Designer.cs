@@ -142,5 +142,41 @@ namespace walk.Properties {
                 this["SprintDuration"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.25")]
+        public float ButtonPressSec {
+            get {
+                return ((float)(this["ButtonPressSec"]));
+            }
+            set {
+                this["ButtonPressSec"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DoStartStop {
+            get {
+                return ((bool)(this["DoStartStop"]));
+            }
+            set {
+                this["DoStartStop"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("99.9")]
+        public float MaxDuration {
+            get {
+                return ((float)(this["MaxDuration"]));
+            }
+            set {
+                this["MaxDuration"] = value;
+            }
+        }
     }
 }
