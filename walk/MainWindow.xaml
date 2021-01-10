@@ -61,7 +61,7 @@
             </Label.RenderTransform>
         </Label>
         <Button x:Name="start" Content="Start" HorizontalAlignment="Left" Margin="959,0,0,0" VerticalAlignment="Center" FontSize="36" Click="Start_click" Height="71" Width="100" Background="#FF595959" FontWeight="Bold" Foreground="White"/>
-        <!--Button x:Name="break" Content="Stop" HorizontalAlignment="Left" Margin="1632,0,0,0" VerticalAlignment="Center" FontSize="18" Click="Stop_click" Height="40" Width="71" Background="#FF595959" FontWeight="Bold" Foreground="White" RenderTransformOrigin="0.5,0.5">
+        <Button x:Name="breakbutton" Visibility="Hidden" Content="Stop" HorizontalAlignment="Left" Margin="1632,0,0,0" VerticalAlignment="Center" FontSize="18" Click="Stop_click" Height="40" Width="71" Background="#FF595959" FontWeight="Bold" Foreground="White" RenderTransformOrigin="0.5,0.5">
             <Button.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -70,7 +70,7 @@
                     <TranslateTransform/>
                 </TransformGroup>
             </Button.RenderTransform>
-        </Button -->
+        </Button>
 
         <Label x:Name="dispSpeed" Content="3.0" HorizontalAlignment="Left" Margin="1402,0,0,0" VerticalAlignment="Center" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
         <Label x:Name="dispIncl" Content="0" HorizontalAlignment="Left" Margin="1529,0,0,0" VerticalAlignment="Center" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>

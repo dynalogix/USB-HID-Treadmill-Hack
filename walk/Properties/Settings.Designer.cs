@@ -145,7 +145,7 @@ namespace walk.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0.25")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.3")]
         public float ButtonPressSec {
             get {
                 return ((float)(this["ButtonPressSec"]));
@@ -158,12 +158,12 @@ namespace walk.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool DoStartStop {
+        public bool ButtonStart {
             get {
-                return ((bool)(this["DoStartStop"]));
+                return ((bool)(this["ButtonStart"]));
             }
             set {
-                this["DoStartStop"] = value;
+                this["ButtonStart"] = value;
             }
         }
         
@@ -176,6 +176,30 @@ namespace walk.Properties {
             }
             set {
                 this["MaxDuration"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ButtonStop {
+            get {
+                return ((bool)(this["ButtonStop"]));
+            }
+            set {
+                this["ButtonStop"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ButtonMode {
+            get {
+                return ((bool)(this["ButtonMode"]));
+            }
+            set {
+                this["ButtonMode"] = value;
             }
         }
     }

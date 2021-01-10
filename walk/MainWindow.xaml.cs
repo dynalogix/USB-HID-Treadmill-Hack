@@ -14,8 +14,8 @@ namespace walk
     /// </summary>
     public partial class MainWindow : Window
     {
-        static int SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL=9, ON=1, OFF=0, START=5, MODE=6;
-        static bool doStartStop = true;
+        static int SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL=9, ON=1, OFF=0, START=5, MODE=6, STOP=6;
+        static bool StartButton = true, StopButton = false, ModeButton=true;
 
         static float buttonPressSec = 0.5f;
         static float maxDuration = 100;
@@ -23,7 +23,7 @@ namespace walk
         float s = 3.0f;
         int r=0;
         static String time = "";
-        static float dur, warm, speed, sp, hl, tick, p,reps,sdur,warmDur,lastRestart=0;
+        static float dur, warm, speed, sp, hl, tick, p, reps, sdur, warmDur;    //,lastRestart=0;
         DispatcherTimer timer=null;
         Thread thread=null;
         static bool running = false, caught_up=false;
@@ -62,13 +62,16 @@ namespace walk
         public MainWindow()
         {
             InitializeComponent();
+            StopButton = Settings.Default.ButtonStop;
+            breakbutton.Visibility = StopButton ? Visibility.Visible : Visibility.Hidden;
         }
 
         private void Stop_click(object sender, RoutedEventArgs e)
         {
             path = Settings.Default.HIDAPIPath;
             vidpid = Settings.Default.Vidpid;
-            //press(STOP);
+            ModeButton = Settings.Default.ButtonMode;
+            if (ModeButton) press(STOP);
         }
 
         private void Start_click(object sender, RoutedEventArgs e)
@@ -113,7 +116,9 @@ namespace walk
 
                 path = Settings.Default.HIDAPIPath;
                 vidpid = Settings.Default.Vidpid;
-                doStartStop = Settings.Default.DoStartStop;
+                StartButton = Settings.Default.ButtonStart;
+                ModeButton = Settings.Default.ButtonMode;
+                StopButton = Settings.Default.ButtonStop;
                 buttonPressSec=Settings.Default.ButtonPressSec;
                 maxDuration = Settings.Default.MaxDuration;
 
@@ -251,19 +256,24 @@ namespace walk
 
             //float restart = float.MaxValue, restart_dur =1+ 10 + 6 + (speed - 1.0f) * 10f;        // stop, 10s, start, 6s, (up + 0.5s)*(speed-1)
 
-            if (doStartStop)
+            if (StartButton)
             {          // the 4B-550 has START and STOP buttons and speed starts at 1.0
-
+               
                 press(SPEED_DOWN);  // wake up treadmill
                 wait(0.5f);
-                press(MODE);        // MODE MODE → target distance
-                wait(0.5f);
-                press(MODE);
-                wait(0.5f);
-                press(SPEED_DOWN);  // set target distance 99km → maximum length workout
-                wait(0.5f);
+                if (ModeButton)
+                {
+                    press(MODE);        // MODE MODE → target distance
+                    wait(0.5f);
+                    press(MODE);
+                    wait(0.5f);
+                    press(SPEED_DOWN);  // set target distance 99km → maximum length workout
+                    wait(0.5f);
+                }
 
-                startup(3f);  // initial speed rais 1 to 3
+                startup(3f);  // initial speed raise 1 to 3
+
+                dur -= 20 * (0.5f + 0.8f);
 
                 /*if(dur>maxDuration*60)    // stop and restart when duration more than maxDuration
                 {
@@ -430,7 +440,7 @@ namespace walk
 
             for (float a = 1.1f; a <= dest; a += 0.1f)
             {
-                if (wait(0.5f)) return;
+                if (wait(0.8f)) return;
                 s += 0.1f;
                 press(SPEED_UP);
             }
