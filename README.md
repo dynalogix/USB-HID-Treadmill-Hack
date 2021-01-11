@@ -18,6 +18,8 @@ Software:
 
 ![Screenshot](setup.jpg?raw=true "setup")
 
+Github project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
+
 Fields:
 * Duration [minutes] (i.e. length of the movie you will watch during workout)
 * Speed - desired speed
@@ -149,4 +151,6 @@ Add two settings manually (otherwise some incorrect defaults will be used):
 * Make window moveable, resizable
 
 ...or not. Currently this is what I need, I provide it as a basis for anyone wanting to create something similar.
+
+Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 
