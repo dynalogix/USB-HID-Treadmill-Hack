@@ -3,6 +3,8 @@ Control speed + incline using Windows PC + 4 channel USB HID Relay board
 
 ![App icon](icon.jpg?raw=true "Icon")
 
+Github project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
+
 Requirements
 
 Hardware:
@@ -17,8 +19,6 @@ Software:
 * Hidapitester https://github.com/todbot/hidapitester/releases/tag/0.1
 
 ![Screenshot](setup.jpg?raw=true "setup")
-
-Github project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 
 Fields:
 * Duration [minutes] (i.e. length of the movie you will watch during workout)
