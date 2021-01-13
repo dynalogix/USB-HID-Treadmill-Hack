@@ -16,7 +16,7 @@ Hardware:
 ![Relay board](relay.jpg?raw=true "board")
 
 Software:
-* Hidapitester https://github.com/todbot/hidapitester/releases/tag/0.1
+* Place hidapi.dll next to the walk.exe: https://github.com/libusb/hidapi/releases
 
 ![Screenshot](setup.jpg?raw=true "setup")
 
@@ -91,7 +91,7 @@ wait(delay)
 * delay in seconds
 * returns true if stop was pressed
 
-**Set path to HIDAPITester and your VIDPID**
+**Set your VIDPID and optional parameters **
 
 After opening the app at least once, find the configuration file under 
 C:\Users\???\AppData\Local\walk\walk_???\1.0.0.0\user.config
@@ -112,15 +112,25 @@ Add two settings manually (otherwise some incorrect defaults will be used):
               <setting name="Warmup" serializeAs="String"><value>8</value></setting>
               <setting name="Speed" serializeAs="String"><value>6.2</value></setting>
               
-              <!-- Add these two lines -->
-              <setting name="HIDAPIPath" serializeAs="String"><value>c:\HIDAPITester\hidapitester.exe</value></setting>
-              <setting name="Vidpid" serializeAs="String"><value>0519</value></setting>
+              <!-- Add these optional parameters -->             
+              <setting name="Vidpid" serializeAs="String"><value>0519/2018</value></setting>
+              <setting name="ButtonPressSec" serializeAs="float"><value>0.2</value></setting>
+              <setting name="ButtonStart" serializeAs="bool"><value>True</value></setting>
+              <setting name="ButtonStop" serializeAs="bool"><value>False</value></setting>
+              <setting name="ButtonMode" serializeAs="bool"><value>True</value></setting>
               
              </walk.Properties.Settings>
          </userSettings>
      </configuration>
 
-**How to find vidpid**
+* If connected program will press the MODE button and Speed- twice before starting to set 99km (=infinite) workout duration before staring (set ButtonMode to True)
+* It will also press the Start button if it is also connected (set ButtonStart to True)
+* The Stop on screen button will be enabled if it is connected (set ButtonStop to True)
+* Set buttonPressSec according to your device. Some devices need longer button presses (e.g. 0.5 sec) to be registered, others start repeating the button if it is pressed for too long, set a lower value here (e.g. 0.2 sec)
+
+**How to find vid/pid**
+
+Get the app Hidapitester: https://github.com/todbot/hidapitester/releases/tag/0.1
 
     Use command:
 
@@ -131,7 +141,7 @@ Add two settings manually (otherwise some incorrect defaults will be used):
     e.g.:
     0519/2018: Ucreatefun.com - HIDRelay
     ↓
-    here the vidpid is 0519
+    here the vidpid is 0519/2018
 
     Then you can open, write, close in one command.
 
