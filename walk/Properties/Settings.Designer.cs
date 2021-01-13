@@ -85,19 +85,7 @@ namespace walk.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("f:\\onedrive\\install\\usbrelay\\hidapitester.exe")]
-        public string HIDAPIPath {
-            get {
-                return ((string)(this["HIDAPIPath"]));
-            }
-            set {
-                this["HIDAPIPath"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0519")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0519/2018")]
         public string Vidpid {
             get {
                 return ((string)(this["Vidpid"]));
@@ -145,7 +133,7 @@ namespace walk.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0.3")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.2")]
         public float ButtonPressSec {
             get {
                 return ((float)(this["ButtonPressSec"]));

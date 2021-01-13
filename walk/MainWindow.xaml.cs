@@ -6,6 +6,8 @@ using System.Windows.Media;
 using System.Diagnostics;
 using System.Windows.Threading;
 using walk.Properties;
+using USBInterface;
+
 
 namespace walk
 {
@@ -20,15 +22,17 @@ namespace walk
         static float buttonPressSec = 0.5f;
         static float maxDuration = 100;
 
-        float s = 3.0f;
-        int r=0;
+        static int vid, pid=0x3f;
+
+        static float s = 3.0f;
+        static int r=0;
         static String time = "";
         static float dur, warm, speed, sp, hl, tick, p, reps, sdur, warmDur;    //,lastRestart=0;
         DispatcherTimer timer=null;
         Thread thread=null;
         static bool running = false, caught_up=false;
         private SolidColorBrush brush;       
-        static String path, vidpid;
+        //static String path, vidpid;
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -68,8 +72,7 @@ namespace walk
 
         private void Stop_click(object sender, RoutedEventArgs e)
         {
-            path = Settings.Default.HIDAPIPath;
-            vidpid = Settings.Default.Vidpid;
+            GetVidPid();
             ModeButton = Settings.Default.ButtonMode;
             if (ModeButton) press(STOP);
         }
@@ -114,13 +117,16 @@ namespace walk
 
                 //MessageBox.Show("step:" + warm);
 
-                path = Settings.Default.HIDAPIPath;
-                vidpid = Settings.Default.Vidpid;
+                //path = Settings.Default.HIDAPIPath;                
+                GetVidPid();
+
                 StartButton = Settings.Default.ButtonStart;
                 ModeButton = Settings.Default.ButtonMode;
                 StopButton = Settings.Default.ButtonStop;
                 buttonPressSec=Settings.Default.ButtonPressSec;
                 maxDuration = Settings.Default.MaxDuration;
+
+                Debug.WriteLine("Button press="+buttonPressSec.ToString());
 
                 tick = float.Parse(progress.Text) * 60;
 
@@ -142,6 +148,15 @@ namespace walk
             {
                 End();
             }
+
+        }
+
+        private void GetVidPid()
+        {
+            String[] vidpid = Settings.Default.Vidpid.Split("/");
+            vid = int.Parse(vidpid[0], System.Globalization.NumberStyles.HexNumber);
+            if (vidpid.Length > 1)
+                pid = int.Parse(vidpid[1], System.Globalization.NumberStyles.HexNumber);
 
         }
 
@@ -182,14 +197,35 @@ namespace walk
 
             dispTime.Content = time;
 
-        }      
+        }
+
+        static int lag = 0;
 
         private static void press(int v)
-        {               
+        {
             toggle(v, ON);
             wait(buttonPressSec);
             toggle(v, OFF);
-            if (buttonPressSec<0.5f) wait(0.5f-buttonPressSec);
+            if (buttonPressSec < 0.5f) wait(0.5f - buttonPressSec);
+
+            /*
+            Debug.Write(r.ToString()+"/"+String.Format("{0:0.0}", s) + ": "+(Environment.TickCount - lag).ToString()+" → ");
+            int lag0=lag = Environment.TickCount;
+            toggle(v, ON);
+            Boolean slow = (Environment.TickCount - lag) > 750;
+            Debug.Write((slow?"♥":"") +(Environment.TickCount - lag).ToString()+" (");
+            float w = buttonPressSec + (150 - (Environment.TickCount - lag)) / 1000f;
+            lag = Environment.TickCount;
+            if (w>0) wait(w);
+            Debug.Write(String.Format("{0:0}", w*1000)+ ":" +(Environment.TickCount - lag).ToString() + ") ");
+            toggle(v, OFF);
+            Debug.Write((Environment.TickCount - lag).ToString()+" (");
+            //if (buttonPressSec<0.5f) wait(0.5f-buttonPressSec);
+            slow = (Environment.TickCount - lag) > 750;
+            w = 0.5f+ (400 - (Environment.TickCount - lag0)) / 1000f;
+            if (w > 0) wait(w);
+            Debug.WriteLine(String.Format("{0:0}", w*1000) + ":"+(Environment.TickCount - lag).ToString()+") "+(slow?"♥":""));
+            */
         }
 
         private static bool wait(float delay)   // delay in seconds
@@ -235,14 +271,24 @@ namespace walk
                 Debug.WriteLineIf(val == 1,"Press " + sw) ;
                 return;
             }
-            Process process = new Process();
+
+            USBDevice dev = new USBDevice(0x0519, 0x2018, null, false, 31);
+            byte[] data = new byte[32];
+            data[0] = 0x00;
+            data[1] = ((byte)(240 * val + sw));
+            dev.Write(data);
+            dev.Dispose();
+
+            /*Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.CreateNoWindow = true;
+            startInfo.CreateNoWindow = true;           
             startInfo.UseShellExecute = false;
             startInfo.FileName = path;
             startInfo.Arguments = "--vidpid "+vidpid+" --open --send-output 0," + (240*val+sw)+" --close";
             process.StartInfo = startInfo;
             process.Start();
+            //process.WaitForExit(2000); 
+            */
         }
 
         private void workout1(object obj)

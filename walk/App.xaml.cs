@@ -22,6 +22,15 @@ namespace walk
             base.OnStartup(e);
         }
 
+        protected override void OnExit(ExitEventArgs e)
+        {
+            try {
+                Settings.Default.Save();
+            } catch (Exception) { }
+            
+            base.OnExit(e);
+        }
+
         private void Application_Exit(object sender, ExitEventArgs e)
         {
             Settings.Default.Save();
