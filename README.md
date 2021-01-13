@@ -3,6 +3,8 @@ Control speed + incline using Windows PC + 4 channel USB HID Relay board
 
 ![App icon](icon.jpg?raw=true "Icon")
 
+Github project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
+
 Requirements
 
 Hardware:
@@ -149,4 +151,6 @@ Add two settings manually (otherwise some incorrect defaults will be used):
 * Make window moveable, resizable
 
 ...or not. Currently this is what I need, I provide it as a basis for anyone wanting to create something similar.
+
+Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 
