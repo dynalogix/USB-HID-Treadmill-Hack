@@ -157,18 +157,6 @@ namespace walk.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("99.9")]
-        public float MaxDuration {
-            get {
-                return ((float)(this["MaxDuration"]));
-            }
-            set {
-                this["MaxDuration"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool ButtonStop {
             get {

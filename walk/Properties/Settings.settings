@@ -35,9 +35,6 @@
     <Setting Name="ButtonStart" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="MaxDuration" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">99.9</Value>
-    </Setting>
     <Setting Name="ButtonStop" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>

@@ -20,7 +20,7 @@ namespace walk
         static bool StartButton = true, StopButton = false, ModeButton=true;
 
         static float buttonPressSec = 0.5f;
-        static float maxDuration = 100;
+        //static float maxDuration = 100;
 
         static int vid, pid=0x3f;
 
@@ -124,7 +124,7 @@ namespace walk
                 ModeButton = Settings.Default.ButtonMode;
                 StopButton = Settings.Default.ButtonStop;
                 buttonPressSec=Settings.Default.ButtonPressSec;
-                maxDuration = Settings.Default.MaxDuration;
+                //maxDuration = Settings.Default.MaxDuration;
 
                 Debug.WriteLine("Button press="+buttonPressSec.ToString());
 
@@ -319,7 +319,7 @@ namespace walk
 
                 startup(3f);  // initial speed raise 1 to 3
 
-                dur -= 20 * (0.5f + 0.8f);
+                dur -= 20 * (0.5f + 0.0f);
 
                 /*if(dur>maxDuration*60)    // stop and restart when duration more than maxDuration
                 {
@@ -343,7 +343,7 @@ namespace walk
             }
 
             dur -= reps* sdur;                    // 2x sprint 5 minutes
-            dur -= reps * 2 * (sp - speed) * 15;     // 2x up/down sprint steps * 1000ms + 500ms
+            dur -= reps * 2 * (sp - speed) * 5;     // 2x up/down sprint steps * (500ms + 0ms)
 
             if (reps > 0)
             {
@@ -439,7 +439,7 @@ namespace walk
                     {
                         s += 0.1f;
                         press(SPEED_UP);
-                        wait(0.99f);
+                        //wait(0.99f);              // no delay
                     }
 
                     if (wait(sdur)) return;
@@ -448,7 +448,7 @@ namespace walk
                     {
                         s -= 0.1f;
                         press(SPEED_DOWN);
-                        wait(0.99f);
+                        //wait(0.99f);              // no delay
                     }
 
                 }
@@ -486,7 +486,7 @@ namespace walk
 
             for (float a = 1.1f; a <= dest; a += 0.1f)
             {
-                if (wait(0.8f)) return;
+                //if (wait(0.2f)) return;
                 s += 0.1f;
                 press(SPEED_UP);
             }
