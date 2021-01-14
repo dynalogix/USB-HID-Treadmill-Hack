@@ -1,7 +1,7 @@
 # USB-HID-Treadmill-Hack
 Control speed + incline using Windows PC + 4 channel USB HID Relay board
 
-![App icon](icon.jpg?raw=true "Icon")
+![App icon](walk/usb-hid-treadmill.ico?raw=true "Icon")
 
 Github project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 
