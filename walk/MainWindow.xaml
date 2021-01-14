@@ -21,13 +21,13 @@
         <TextBox x:Name="len"                
                  GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="27,6,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Duration, Mode=TwoWay}" 
                  TextWrapping="Wrap" VerticalAlignment="Top" Height="71" Width="100" FontSize="50" Background="{x:Null}" SelectionTextBrush="Gray" Foreground="Gray" BorderBrush="Black"/>
-        <TextBox x:Name="max" GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="156,0,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Speed, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Center" Height="71" Width="100" FontSize="50" SelectionTextBrush="{x:Null}" Background="{x:Null}" Foreground="Gray" BorderBrush="Black"/>
-        <TextBox x:Name="warmup" GotFocus="gotFocus" HorizontalAlignment="Left" Margin="289,0,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Warmup, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Center" Height="71" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
-        <TextBox x:Name="sprint" GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="426,0,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Sprint, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Center" Height="71" Width="100" FontSize="50" SelectionTextBrush="{x:Null}" Background="{x:Null}" Foreground="Gray" BorderBrush="Black"/>
-        <TextBox x:Name="sprdur" GotFocus="gotFocus" HorizontalAlignment="Left" Margin="560,0,0,0" Text="{Binding Path=SprintDuration, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Center" Height="71" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
+        <TextBox x:Name="max" GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="156,6,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Speed, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Top" Height="71" Width="100" FontSize="50" SelectionTextBrush="{x:Null}" Background="{x:Null}" Foreground="Gray" BorderBrush="Black"/>
+        <TextBox x:Name="warmup" GotFocus="gotFocus" HorizontalAlignment="Left" Margin="289,6,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Warmup, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Top" Height="71" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
+        <TextBox x:Name="sprint" GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="426,6,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Sprint, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Top" Height="71" Width="100" FontSize="50" SelectionTextBrush="{x:Null}" Background="{x:Null}" Foreground="Gray" BorderBrush="Black"/>
+        <TextBox x:Name="sprdur" GotFocus="gotFocus" HorizontalAlignment="Left" Margin="560,6,0,0" Text="{Binding Path=SprintDuration, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Height="71" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
 
-        <TextBox x:Name="hill" GotFocus="gotFocus" HorizontalAlignment="Left" Margin="690,0,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Hill, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Center" Height="71" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
-        <TextBox x:Name="rep" GotFocus="gotFocus" HorizontalAlignment="Left" Margin="824,0,0,0" Text="{Binding Path=Rep, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Center" Height="71" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
+        <TextBox x:Name="hill" GotFocus="gotFocus" HorizontalAlignment="Left" Margin="690,6,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Hill, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Top" Height="71" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
+        <TextBox x:Name="rep" GotFocus="gotFocus" HorizontalAlignment="Left" Margin="824,6,0,0" Text="{Binding Path=Rep, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Height="71" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
 
         <Label Content="Duration" HorizontalAlignment="Left" Margin="-6,47,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Top" Padding="0,0,0,0">
             <Label.RenderTransform>
@@ -60,8 +60,8 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <Button x:Name="start" Content="Start" HorizontalAlignment="Left" Margin="959,0,0,0" VerticalAlignment="Center" FontSize="36" Click="Start_click" Height="71" Width="100" Background="#FF595959" FontWeight="Bold" Foreground="White"/>
-        <Button x:Name="breakbutton" Visibility="Hidden" Content="Stop" HorizontalAlignment="Left" Margin="1632,0,0,0" VerticalAlignment="Center" FontSize="18" Click="Stop_click" Height="40" Width="71" Background="#FF595959" FontWeight="Bold" Foreground="White" RenderTransformOrigin="0.5,0.5">
+        <Button x:Name="start" Content="Start" HorizontalAlignment="Left" Margin="959,6,0,0" VerticalAlignment="Top" FontSize="36" Click="Start_click" Height="71" Width="100" Background="#FF595959" FontWeight="Bold" Foreground="White"/>
+        <Button x:Name="breakbutton" Visibility="Visible" Content="Stop" HorizontalAlignment="Left" Margin="1632,23,0,0" VerticalAlignment="Top" FontSize="18" Click="Stop_click" Height="40" Width="71" Background="#FF595959" FontWeight="Bold" Foreground="White" RenderTransformOrigin="0.5,0.5">
             <Button.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -72,8 +72,8 @@
             </Button.RenderTransform>
         </Button>
 
-        <Label x:Name="dispSpeed" Content="3.0" HorizontalAlignment="Left" Margin="1402,0,0,0" VerticalAlignment="Center" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
-        <Label x:Name="dispIncl" Content="0" HorizontalAlignment="Left" Margin="1529,0,0,0" VerticalAlignment="Center" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
+        <Label x:Name="dispSpeed" Content="3.0" HorizontalAlignment="Left" Margin="1402,6,0,0" VerticalAlignment="Top" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
+        <Label x:Name="dispIncl" Content="0" HorizontalAlignment="Left" Margin="1529,6,0,0" VerticalAlignment="Top" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
         <Label Content="Speed" Margin="1374,55,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" HorizontalAlignment="Left"  VerticalAlignment="Top" >
             <Label.RenderTransform>
                 <TransformGroup>
@@ -94,7 +94,7 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <Label x:Name="dispTime" Content="" HorizontalAlignment="Left" Margin="1256,0,0,0" VerticalAlignment="Center" FontSize="45" Width="115" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
+        <Label x:Name="dispTime" Content="" HorizontalAlignment="Left" Margin="1256,6,0,0" VerticalAlignment="Top" FontSize="45" Width="115" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
         <Label Content="Next" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="1230,55,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0">
             <Label.RenderTransform>
                 <TransformGroup>
@@ -128,7 +128,7 @@
         <CheckBox Unchecked="CheckBox_Unchecked" Checked="CheckBox_Checked" HorizontalAlignment="Left" Margin="1715,64,0,0" VerticalAlignment="Top" Background="#FF8B8B8B" 
                   IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=Top, Mode=TwoWay}" />
         <Button Content="X" HorizontalAlignment="Left" Margin="1707,11,0,0" VerticalAlignment="Top" FontSize="20" FontWeight="Bold" Width="29" Click="Exit_Click" Background="#FF595959"/>
-        <TextBox x:Name="progress" GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="1099,0,0,0" Text="0.0" TextWrapping="Wrap" VerticalAlignment="Center" Height="71" Width="129" FontSize="50" Background="{x:Null}" SelectionTextBrush="Gray" Foreground="Gray" BorderBrush="Black"/>
+        <TextBox x:Name="progress" GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="1099,6,0,0" Text="0.0" TextWrapping="Wrap" VerticalAlignment="Top" Height="71" Width="129" FontSize="50" Background="{x:Null}" SelectionTextBrush="Gray" Foreground="Gray" BorderBrush="Black"/>
         <Label Content="Progress" HorizontalAlignment="Left" VerticalAlignment="Top"  Margin="1063,43,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0">
             <Label.RenderTransform>
                 <TransformGroup>
@@ -166,5 +166,23 @@
             </Label.RenderTransform>
         </Label>
         <Label Content="min" HorizontalAlignment="Left" Margin="638,61,0,8" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" />
+        <TextBox Name="fVidpid" HorizontalAlignment="Left" Margin="118,98,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Vidpid, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Top" Width="72"/>
+        <TextBox x:Name="fButtonPressSec" HorizontalAlignment="Left" Margin="335,98,0,0" Text="{Binding ButtonPressSec, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="54"/>
+        <Label Content="VID/PID (hex):" HorizontalAlignment="Left" Margin="27,94,0,0" VerticalAlignment="Top"/>
+        <Label Content="Button press (sec):" HorizontalAlignment="Left" Margin="219,94,0,0" VerticalAlignment="Top"/>
+        <Label Content="Buttons wired:" HorizontalAlignment="Left" Margin="426,94,0,0" VerticalAlignment="Top"/>
+
+        <CheckBox Content="START" HorizontalAlignment="Left" Margin="531,99,0,0" VerticalAlignment="Top"
+                  IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ButtonStart, Mode=TwoWay}" />
+        <CheckBox Content="STOP" HorizontalAlignment="Left" Margin="602,99,0,0" VerticalAlignment="Top"
+                  IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ButtonStop, Mode=TwoWay}" 
+                  Unchecked="stop_toggle" Checked="stop_toggle" 
+                  />
+        <CheckBox Content="MODE" HorizontalAlignment="Left" Margin="665,99,0,0" VerticalAlignment="Top"
+                  IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ButtonMode, Mode=TwoWay}" />
+        <Button Content="⚙" HorizontalAlignment="Left" Margin="4,5,0,0" VerticalAlignment="Top" Background="#00DDDDDD" BorderBrush="#00707070" Click="Button_Click"/>
+
+
+
     </Grid>
 </Window>

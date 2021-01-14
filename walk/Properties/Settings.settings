@@ -30,7 +30,7 @@
       <Value Profile="(Default)">5</Value>
     </Setting>
     <Setting Name="ButtonPressSec" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">0.2</Value>
+      <Value Profile="(Default)">0.18</Value>
     </Setting>
     <Setting Name="ButtonStart" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

@@ -19,20 +19,32 @@ namespace walk
         static int SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL=9, ON=1, OFF=0, START=5, MODE=6, STOP=6;
         static bool StartButton = true, StopButton = false, ModeButton=true;
 
-        static float buttonPressSec = 0.5f;
-        //static float maxDuration = 100;
+        static float buttonPressSec = 0.5f;       
 
-        static int vid, pid=0x3f;
+        static ushort vid, pid=0x3f;
 
         static float s = 3.0f;
         static int r=0;
         static String time = "";
-        static float dur, warm, speed, sp, hl, tick, p, reps, sdur, warmDur;    //,lastRestart=0;
-        DispatcherTimer timer=null;
+        static float dur, warm, speed, sp, hl, tick, p, reps, sdur;
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (win.Height < 100) win.Height = 125; else win.Height = 85;
+            Settings.Default.Save();
+        }
+
+        private void stop_toggle(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.Save();
+            StopButton = Settings.Default.ButtonStop;
+            breakbutton.Visibility = StopButton ? Visibility.Visible : Visibility.Hidden;
+        }
+
+        DispatcherTimer timer =null;
         Thread thread=null;
         static bool running = false, caught_up=false;
-        private SolidColorBrush brush;       
-        //static String path, vidpid;
+        private SolidColorBrush brush;              
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -85,6 +97,8 @@ namespace walk
             {                             
                 Debug.WriteLine("start =======================");
 
+                Settings.Default.Save();
+
                 start.Content = "Pause";
                 start.Opacity = 0.3f;
                 len.Opacity = 0.3f;
@@ -105,7 +119,7 @@ namespace walk
                 sp = float.Parse(sprint.Text);
                 hl = float.Parse(hill.Text);
 
-                warmDur = warm = 60f * float.Parse(warmup.Text);
+                warm = 60f * float.Parse(warmup.Text);
                 reps = (int)float.Parse(rep.Text);               
 
                 while(dur<2*warm+reps*(sdur+180)) 
@@ -114,24 +128,19 @@ namespace walk
                 }
 
                 warm = (warm - 5f * (speed - 3.0f)) / (10f * (speed - 3.0f));
-
-                //MessageBox.Show("step:" + warm);
-
-                //path = Settings.Default.HIDAPIPath;                
+                               
                 GetVidPid();
 
                 StartButton = Settings.Default.ButtonStart;
                 ModeButton = Settings.Default.ButtonMode;
                 StopButton = Settings.Default.ButtonStop;
-                buttonPressSec=Settings.Default.ButtonPressSec;
-                //maxDuration = Settings.Default.MaxDuration;
+                buttonPressSec=Settings.Default.ButtonPressSec;               
 
                 Debug.WriteLine("Button press="+buttonPressSec.ToString());
 
                 tick = float.Parse(progress.Text) * 60;
 
-                thread = new Thread(workout1);
-                //lag = Environment.TickCount;
+                thread = new Thread(workout1);               
                 thread.Start();
 
                 timer = new DispatcherTimer();
@@ -154,9 +163,9 @@ namespace walk
         private void GetVidPid()
         {
             String[] vidpid = Settings.Default.Vidpid.Split("/");
-            vid = int.Parse(vidpid[0], System.Globalization.NumberStyles.HexNumber);
+            vid = ushort.Parse(vidpid[0], System.Globalization.NumberStyles.HexNumber);
             if (vidpid.Length > 1)
-                pid = int.Parse(vidpid[1], System.Globalization.NumberStyles.HexNumber);
+                pid = ushort.Parse(vidpid[1], System.Globalization.NumberStyles.HexNumber);
 
         }
 
@@ -199,8 +208,6 @@ namespace walk
 
         }
 
-        static int lag = 0;
-
         private static void press(int v)
         {
             toggle(v, ON);
@@ -208,24 +215,6 @@ namespace walk
             toggle(v, OFF);
             if (buttonPressSec < 0.5f) wait(0.5f - buttonPressSec);
 
-            /*
-            Debug.Write(r.ToString()+"/"+String.Format("{0:0.0}", s) + ": "+(Environment.TickCount - lag).ToString()+" → ");
-            int lag0=lag = Environment.TickCount;
-            toggle(v, ON);
-            Boolean slow = (Environment.TickCount - lag) > 750;
-            Debug.Write((slow?"♥":"") +(Environment.TickCount - lag).ToString()+" (");
-            float w = buttonPressSec + (150 - (Environment.TickCount - lag)) / 1000f;
-            lag = Environment.TickCount;
-            if (w>0) wait(w);
-            Debug.Write(String.Format("{0:0}", w*1000)+ ":" +(Environment.TickCount - lag).ToString() + ") ");
-            toggle(v, OFF);
-            Debug.Write((Environment.TickCount - lag).ToString()+" (");
-            //if (buttonPressSec<0.5f) wait(0.5f-buttonPressSec);
-            slow = (Environment.TickCount - lag) > 750;
-            w = 0.5f+ (400 - (Environment.TickCount - lag0)) / 1000f;
-            if (w > 0) wait(w);
-            Debug.WriteLine(String.Format("{0:0}", w*1000) + ":"+(Environment.TickCount - lag).ToString()+") "+(slow?"♥":""));
-            */
         }
 
         private static bool wait(float delay)   // delay in seconds
@@ -272,23 +261,12 @@ namespace walk
                 return;
             }
 
-            USBDevice dev = new USBDevice(0x0519, 0x2018, null, false, 31);
+            USBDevice dev = new USBDevice(vid, pid, null, false, 31);
             byte[] data = new byte[32];
             data[0] = 0x00;
             data[1] = ((byte)(240 * val + sw));
             dev.Write(data);
             dev.Dispose();
-
-            /*Process process = new Process();
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.CreateNoWindow = true;           
-            startInfo.UseShellExecute = false;
-            startInfo.FileName = path;
-            startInfo.Arguments = "--vidpid "+vidpid+" --open --send-output 0," + (240*val+sw)+" --close";
-            process.StartInfo = startInfo;
-            process.Start();
-            //process.WaitForExit(2000); 
-            */
         }
 
         private void workout1(object obj)
@@ -299,8 +277,6 @@ namespace walk
 
             p = 0;
             caught_up = tick == 0;
-
-            //float restart = float.MaxValue, restart_dur =1+ 10 + 6 + (speed - 1.0f) * 10f;        // stop, 10s, start, 6s, (up + 0.5s)*(speed-1)
 
             if (StartButton)
             {          // the 4B-550 has START and STOP buttons and speed starts at 1.0
@@ -321,15 +297,6 @@ namespace walk
 
                 dur -= 20 * (0.5f + 0.0f);
 
-                /*if(dur>maxDuration*60)    // stop and restart when duration more than maxDuration
-                {
-                    restart = warmDur;
-                    dur -= restart_dur;
-                    float repDur = (dur - 2 * warmDur) / reps;
-                    for (int r=0;r<reps;r++) if(restart+repDur<(maxDuration-1)*60) restart += repDur;
-                    if(dur-restart>maxDuration*60) dur -= restart_dur;
-                    lastRestart = 0;
-                }*/
             }
 
             // Warm up
@@ -357,12 +324,6 @@ namespace walk
                 if ((dur - adj_time) / reps > 100) dur -= adj_time;       // 2 * hill * 500ms + 2 * hill/2 * 500ms
                 dur /= reps;
 
-                /*if (restart<float.MaxValue)
-                {
-                    restart = tick;                   
-                    for (int r = 0; r < reps; r++) if (restart + dur < (maxDuration - 1) * 60) restart += dur;                   
-                }*/
-
                 // middle section: climbs and sprints
                 for (int a = 1; a <= reps; a++)
                 {                   
@@ -381,31 +342,13 @@ namespace walk
 
                         // climb to 10/4 → 10,8,5,3; 9/3 → 9,6,3
 
-                        /*if(doStartStop && tick>restart)
-                        {                           
-                            float w = Math.Min((maxDuration - 1) * 60 - (tick -lastRestart), first - restart_dur / 2);
-                            if (wait(w)) return;
-                            first = first-restart_dur-w;                      // remaining wait time added 
-                            
-                            press(STOP);
-                            if (wait(10)) return;
-
-                            // find next restart point
-                            restart = 0;
-                            for (int r = a; r < reps; r++) if (restart + dur < (maxDuration - 1) * 60) restart += dur; 
-                            restart += tick;
-                            lastRestart = tick;
-
-                            startup(speed);
-                        }*/
-
-                        for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
-                        {
+                       for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
+                       {
                             if (wait(c + first)) return;
                             first = 0;
                             r++;
                             press(INCL_UP);
-                        }
+                       }
 
                         // descend from 6 later 4
 
@@ -419,17 +362,7 @@ namespace walk
                         if (wait(c)) return;
                     }
                     else
-                    {
-                        /*if (doStartStop && tick > restart)
-                        {
-                            restart = float.MaxValue;       // no need for more
-                            if (wait(dur/2- restart_dur)) return;                           
-                            press(STOP);
-                            if (wait(10)) return;
-                            startup(speed);
-                            if (wait(dur/2)) return;
-                        }
-                        else*/ 
+                    {                        
                         if (wait(dur)) return;
                     }
 
@@ -473,8 +406,6 @@ namespace walk
 
         private void startup(float dest)
         {
-            //press(STOP);
-            //wait(10);
 
             press(START);
 

@@ -133,7 +133,7 @@ namespace walk.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0.2")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.18")]
         public float ButtonPressSec {
             get {
                 return ((float)(this["ButtonPressSec"]));
