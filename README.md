@@ -18,7 +18,7 @@ Hardware:
 Software:
 * Place hidapi.dll next to the walk.exe: https://github.com/libusb/hidapi/releases
 
-![Screenshot](setup.jpg?raw=true "setup")
+![Screenshot](setup.jpg?raw=true "setup") 
 
 Fields:
 * Duration [minutes] (i.e. length of the movie you will watch during workout)
