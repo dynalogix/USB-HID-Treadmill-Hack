@@ -11,8 +11,9 @@ Requirements
 
 Hardware:
 * Treadmill with accessible buttons for speed +/- incline +/-
-* QYF-UR04 Minimum 4 Channel HID Drive-free USB Delay Relay Interface Board Module Optocoupler (with CH551G USB chip)
-  e.g. https://www.ebay.co.uk/itm/283294148232
+* Minimum 4 Channel HID Drive-free USB Delay Relay Interface Board Module Optocoupler:
+  * QYF-UR04 ("ucreatefun.com" with CH551G USB chip) e.g. https://www.ebay.co.uk/itm/283294148232
+  * HW341 ("dcttech.com" with ULN2803 chip) e.g. https://www.ebay.com/itm/1-2-4-8-Channel-USB-Relay-Control-Switch-Computer-Control-for-Intelligent-Home
 * Windows PC near treadmill, 1 USB port
 
 ![Relay board](relay.jpg?raw=true "board")
@@ -36,10 +37,13 @@ Fields:
 * Gear icon (upper left) - toggles settings:
   * Vidpid - entered as two hex values separted by a forward slash (/) - more info below
   * ButtonPressSec - how long the buttons need to be held down (in seconds, e.g. 0.2)
-  * Checkboxes for buttons:
+  * Channel number for each button (set it to "0" if not connected):
+    * SPEED_UP, SPEED_DOWN - necessary
+    * INCL_UP, INCL_DOWN - if enabled: "hill" field lets you set a repeting climb section in workout
     * START - if enabled the program will start the treadmill if progress is 0
     * STOP - if enabled: show stop button to stop the treadmill
     * MODE - if enabled: it will be pressed twice and a SPEED- before starting (this sets "infinite" time on Kondition treadmills)
+    * SPD3 - if enabled: press quick button 3 instead of "manually" advancing to 3kph      
 
 Settings are saved between sessions
 
@@ -133,9 +137,9 @@ Add two settings manually (otherwise some incorrect defaults will be used):
          </userSettings>
      </configuration>
 
-* If connected program will press the MODE button and Speed- twice before starting to set 99km (=infinite) workout duration before staring (set ButtonMode to True)
-* It will also press the Start button if it is also connected (set ButtonStart to True)
-* The Stop on screen button will be enabled if it is connected (set ButtonStop to True)
+* If connected program will press the MODE button and Speed- twice before starting to set 99km (=infinite) workout duration before staring (set ButtonMode to non-zero)
+* It will also press the Start button if it is also connected (set ButtonStart to non-zero)
+* The Stop on screen button will be enabled if it is connected (set ButtonStop to non-zero)
 * Set buttonPressSec according to your device. Some devices need longer button presses (e.g. 0.5 sec) to be registered, others start repeating the button if it is pressed for too long, set a lower value here (e.g. 0.2 sec)
 
 **How to find vid/pid**
@@ -155,16 +159,21 @@ Get the app Hidapitester: https://github.com/todbot/hidapitester/releases/tag/0.
 
     Then you can open, write, close in one command.
 
-    hidapitester --vidpid 0519 --open --send-output 0,241 --close >nul
-
-    output 0,241: shorts channel 1
-    output 0,1: opens channel 1
-    output 0,242: shorts channel 2
-    etc
-
-    finally:
-    output 0,249:shorts all channels
-    output 0,9: opens all channels
+      hidapitester --vidpid 0519 --open --send-output 0,241 --close
+      output 0,241: shorts channel 1
+      output 0,1: opens channel 1
+      output 0,242: shorts channel 2
+      etc
+      finally:
+      output 0,249:shorts all channels
+      output 0,9: opens all channels
+    or
+      hidapitester --vidpid 16C0/05DF --open --send-feature 0,253,1 --close
+      feature 0,255,1: shorts channel 1
+      feature 0,253,1: opens channel 1
+      feature 0,255,2: shorts channel 2
+      feature 0,253,2: opens channel 2
+      etc
 
 **Plans**
 * Add more workout programs with selector
