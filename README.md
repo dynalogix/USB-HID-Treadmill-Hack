@@ -5,6 +5,8 @@ Control speed + incline using Windows PC + 4 channel USB HID Relay board
 
 Github project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 
+Video demo of a 6-channel switch hooked up to the control panel of Kondition 4B-550 treadmill: https://youtu.be/e4qM4HLBIr8
+
 Requirements
 
 Hardware:
@@ -18,7 +20,7 @@ Hardware:
 Software:
 * Place hidapi.dll next to the walk.exe: https://github.com/libusb/hidapi/releases
 
-![Screenshot](setup.jpg?raw=true "setup")
+![Screenshot](setup2.jpg?raw=true "setup") 
 
 Fields:
 * Duration [minutes] (i.e. length of the movie you will watch during workout)
@@ -30,6 +32,14 @@ Fields:
 * Reps - how many times the (hill+sprint) section repeated (with decreasing hills)
 * Start button - press again to Stop (prompt)
 * Progress - you can edit this and restart a stopped session
+* Stop button - stops the treadmill (if enabled)
+* Gear icon (upper left) - toggles settings:
+  * Vidpid - entered as two hex values separted by a forward slash (/) - more info below
+  * ButtonPressSec - how long the buttons need to be held down (in seconds, e.g. 0.2)
+  * Checkboxes for buttons:
+    * START - if enabled the program will start the treadmill if progress is 0
+    * STOP - if enabled: show stop button to stop the treadmill
+    * MODE - if enabled: it will be pressed twice and a SPEED- before starting (this sets "infinite" time on Kondition treadmills)
 
 Settings are saved between sessions
 
