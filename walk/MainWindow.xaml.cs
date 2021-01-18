@@ -222,9 +222,19 @@ namespace walk
         private static void press(int v)
         {
             if (v == 0) return;
-            toggle(v, ON);
+
+            if (!caught_up)    // not caught up or button not connected
+            {
+                Debug.WriteLine( "Press " + v);
+                return;
+            }
+
+            USBDevice dev = new USBDevice(vid, pid, null, false, 31);
+            Relay(v, ON, dev);
             wait(buttonPressSec);
-            toggle(v, OFF);
+            Relay(v, OFF, dev);
+            dev.Dispose();
+
             if (buttonPressSec < 0.5f) wait(0.5f - buttonPressSec);
 
         }
@@ -267,27 +277,32 @@ namespace walk
 
         private static void toggle(int sw, int val)
         {
-            if (!caught_up || sw==0)    // not caught up or button not connected
+            if (!caught_up || sw == 0)    // not caught up or button not connected
             {
-                Debug.WriteLineIf(val == 1,"Press " + sw) ;
+                Debug.WriteLineIf(val == 1, "Press " + sw);
                 return;
             }
 
             USBDevice dev = new USBDevice(vid, pid, null, false, 31);
+            Relay(sw, val, dev);
+            dev.Dispose();
+        }
+
+        private static void Relay(int sw, int val, USBDevice dev)
+        {
             byte[] data = new byte[32];
             data[0] = 0x00;
             if (HW341)
             {
-                data[1] = ((byte)(val*2+253));
+                data[1] = ((byte)(val * 2 + 253));
                 data[2] = ((byte)(sw));
                 dev.SendFeatureReport(data);
             }
-            else if(CH551G)
+            else if (CH551G)
             {
                 data[1] = ((byte)(240 * val + sw));
                 dev.Write(data);
             }
-            dev.Dispose();
         }
 
         private void workout1(object obj)
