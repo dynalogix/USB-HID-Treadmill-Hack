@@ -16,8 +16,8 @@ namespace walk
     /// </summary>
     public partial class MainWindow : Window
     {
-        static int SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL=9, ON=1, OFF=0, START=5, MODE=6, STOP=6;
-        static bool StartButton = true, StopButton = false, ModeButton=true;
+        static int ON = 1, OFF = 0, SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL=9, START=5, MODE=6, STOP=7,SPD3=8;
+        static bool HW341=false, CH551G=true;
 
         static float buttonPressSec = 0.5f;       
 
@@ -30,19 +30,14 @@ namespace walk
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (win.Height < 100) win.Height = 125; else win.Height = 85;
+            if (win.Height < 100) win.Height = 150; else win.Height = 85;
             Settings.Default.Save();
-        }
-
-        private void stop_toggle(object sender, RoutedEventArgs e)
-        {
-            Settings.Default.Save();
-            StopButton = Settings.Default.ButtonStop;
-            breakbutton.Visibility = StopButton ? Visibility.Visible : Visibility.Hidden;
+            visibility();
         }
 
         DispatcherTimer timer =null;
-        Thread thread=null;
+
+        Thread thread =null;
         static bool running = false, caught_up=false;
         private SolidColorBrush brush;              
 
@@ -78,15 +73,21 @@ namespace walk
         public MainWindow()
         {
             InitializeComponent();
-            StopButton = Settings.Default.ButtonStop;
-            breakbutton.Visibility = StopButton ? Visibility.Visible : Visibility.Hidden;
+            visibility();
+            win.Height = 85;
+        }
+
+        private void visibility()
+        {
+            breakbutton.Visibility = Settings.Default.STOP != 0 ? Visibility.Visible : Visibility.Hidden;
+            hill.Visibility = Settings.Default.INCL_UP != 0 && Settings.Default.INCL_DOWN != 0 ? Visibility.Visible : Visibility.Hidden;
+            lHill.Visibility = Settings.Default.INCL_UP != 0 && Settings.Default.INCL_DOWN != 0 ? Visibility.Visible : Visibility.Hidden;
         }
 
         private void Stop_click(object sender, RoutedEventArgs e)
         {
-            GetVidPid();
-            ModeButton = Settings.Default.ButtonMode;
-            if (ModeButton) press(STOP);
+            GetVidPid();           
+            if (STOP != 0) press(STOP);
         }
 
         private void Start_click(object sender, RoutedEventArgs e)
@@ -117,7 +118,7 @@ namespace walk
                 sdur = float.Parse(sprdur.Text) * 60;               
                 speed = float.Parse(max.Text);
                 sp = float.Parse(sprint.Text);
-                hl = float.Parse(hill.Text);
+                hl = INCL_UP != 0 && INCL_DOWN != 0 ? float.Parse(hill.Text) : 0;
 
                 warm = 60f * float.Parse(warmup.Text);
                 reps = (int)float.Parse(rep.Text);               
@@ -131,9 +132,6 @@ namespace walk
                                
                 GetVidPid();
 
-                StartButton = Settings.Default.ButtonStart;
-                ModeButton = Settings.Default.ButtonMode;
-                StopButton = Settings.Default.ButtonStop;
                 buttonPressSec=Settings.Default.ButtonPressSec;               
 
                 Debug.WriteLine("Button press="+buttonPressSec.ToString());
@@ -166,7 +164,18 @@ namespace walk
             vid = ushort.Parse(vidpid[0], System.Globalization.NumberStyles.HexNumber);
             if (vidpid.Length > 1)
                 pid = ushort.Parse(vidpid[1], System.Globalization.NumberStyles.HexNumber);
-
+            HW341 = Settings.Default.HW341;
+            CH551G = Settings.Default.CH551G;
+            // buttons:
+            START = Settings.Default.START;
+            STOP = Settings.Default.STOP;
+            MODE = Settings.Default.MODE;
+            SPD3 = Settings.Default.SPD3;
+            ALL = Settings.Default.ALL;
+            SPEED_UP = Settings.Default.SPEED_UP;
+            SPEED_DOWN = Settings.Default.SPEED_DOWN;
+            INCL_DOWN = Settings.Default.INCL_DOWN;
+            INCL_UP = Settings.Default.INCL_UP;
         }
 
         private void End()
@@ -210,6 +219,7 @@ namespace walk
 
         private static void press(int v)
         {
+            if (v == 0) return;
             toggle(v, ON);
             wait(buttonPressSec);
             toggle(v, OFF);
@@ -255,7 +265,7 @@ namespace walk
 
         private static void toggle(int sw, int val)
         {
-            if (!caught_up)
+            if (!caught_up || sw==0)    // not caught up or button not connected
             {
                 Debug.WriteLineIf(val == 1,"Press " + sw) ;
                 return;
@@ -264,8 +274,17 @@ namespace walk
             USBDevice dev = new USBDevice(vid, pid, null, false, 31);
             byte[] data = new byte[32];
             data[0] = 0x00;
-            data[1] = ((byte)(240 * val + sw));
-            dev.Write(data);
+            if (HW341)
+            {
+                data[1] = ((byte)(val*2+253));
+                data[2] = ((byte)(sw));
+                dev.SendFeatureReport(data);
+            }
+            else if(CH551G)
+            {
+                data[1] = ((byte)(240 * val + sw));
+                dev.Write(data);
+            }
             dev.Dispose();
         }
 
@@ -273,17 +292,30 @@ namespace walk
         {
             caught_up = true;
 
-            toggle(ALL, OFF);          
+            if(ALL!=0)
+            {
+                toggle(ALL, OFF);
+            } else
+            {
+                toggle(SPEED_UP, OFF);
+                toggle(SPEED_DOWN, OFF);
+                toggle(INCL_UP, OFF);
+                toggle(INCL_DOWN, OFF);
+                toggle(MODE, OFF);
+                toggle(STOP, OFF);
+                toggle(START, OFF);
+                toggle(SPD3, OFF);               
+            }
 
             p = 0;
             caught_up = tick == 0;
 
-            if (StartButton)
+            if (START != 0)
             {          // the 4B-550 has START and STOP buttons and speed starts at 1.0
                
                 press(SPEED_DOWN);  // wake up treadmill
                 wait(0.5f);
-                if (ModeButton)
+                if (MODE != 0)
                 {
                     press(MODE);        // MODE MODE → target distance
                     wait(0.5f);
@@ -328,7 +360,7 @@ namespace walk
                 for (int a = 1; a <= reps; a++)
                 {                   
 
-                    if (dur > 100)
+                    if (INCL_UP!=0 && INCL_DOWN!=0 && dur > 100)
                     {
 
                         float c = 2;
@@ -415,7 +447,11 @@ namespace walk
 
             // Start up
 
-            for (float a = 1.1f; a <= dest; a += 0.1f)
+            if(SPD3 != 0)      // if quick button for speed 3 connected
+            {
+                s = 3;
+                press(SPD3);
+            } else for (float a = 1.1f; a <= dest; a += 0.1f)   // otherwise increase "manually"
             {
                 //if (wait(0.2f)) return;
                 s += 0.1f;

@@ -9,7 +9,7 @@
         WindowStyle="None"
         Closing="Window_Closing"
         mc:Ignorable="d"
-        Title="MainWindow" Height="85" Width="1748" 
+        Title="MainWindow" Height="150" Width="1748" 
         Top="0" Left="0"       
         AllowsTransparency="True"        
         x:Name="win"              
@@ -105,7 +105,7 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <Label Content="Hill" HorizontalAlignment="Left" Margin="670,55,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Top" Padding="0,0,0,0">
+        <Label x:Name="lHill" Content="Hill" HorizontalAlignment="Left" Margin="670,55,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Top" Padding="0,0,0,0">
             <Label.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -166,21 +166,39 @@
             </Label.RenderTransform>
         </Label>
         <Label Content="min" HorizontalAlignment="Left" Margin="638,61,0,8" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" />
-        <TextBox Name="fVidpid" HorizontalAlignment="Left" Margin="118,98,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Vidpid, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Top" Width="72"/>
-        <TextBox x:Name="fButtonPressSec" HorizontalAlignment="Left" Margin="335,98,0,0" Text="{Binding ButtonPressSec, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="54"/>
-        <Label Content="VID/PID (hex):" HorizontalAlignment="Left" Margin="27,94,0,0" VerticalAlignment="Top"/>
-        <Label Content="Button press (sec):" HorizontalAlignment="Left" Margin="219,94,0,0" VerticalAlignment="Top"/>
-        <Label Content="Buttons wired:" HorizontalAlignment="Left" Margin="426,94,0,0" VerticalAlignment="Top"/>
+        <TextBox Name="fVidpid" HorizontalAlignment="Left" Margin="382,98,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Vidpid, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Top" Width="72"/>
+        <TextBox x:Name="fButtonPressSec" HorizontalAlignment="Left" Margin="599,98,0,0" Text="{Binding ButtonPressSec, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="54"/>
+        <Label Content="VID/PID (hex):" HorizontalAlignment="Left" Margin="291,94,0,0" VerticalAlignment="Top"/>
+        <Label Content="Button press (sec):" HorizontalAlignment="Left" Margin="483,94,0,0" VerticalAlignment="Top"/>
+        <Label Content="Buttons (0=not connected):" HorizontalAlignment="Left" Margin="690,94,0,0" VerticalAlignment="Top"/>
 
-        <CheckBox Content="START" HorizontalAlignment="Left" Margin="531,99,0,0" VerticalAlignment="Top"
-                  IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ButtonStart, Mode=TwoWay}" />
-        <CheckBox Content="STOP" HorizontalAlignment="Left" Margin="602,99,0,0" VerticalAlignment="Top"
-                  IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ButtonStop, Mode=TwoWay}" 
-                  Unchecked="stop_toggle" Checked="stop_toggle" 
-                  />
-        <CheckBox Content="MODE" HorizontalAlignment="Left" Margin="665,99,0,0" VerticalAlignment="Top"
-                  IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ButtonMode, Mode=TwoWay}" />
         <Button Content="⚙" HorizontalAlignment="Left" Margin="4,5,0,0" VerticalAlignment="Top" Background="#00DDDDDD" BorderBrush="#00707070" Click="Button_Click"/>
+        <RadioButton Content="HW341 (dcttech.com)" HorizontalAlignment="Left" Margin="91,100,0,0" VerticalAlignment="Top" Tag="HW341"
+                     IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=HW341, Mode=TwoWay}" />
+        <RadioButton Content="CH551G (ucreatefun.com)" HorizontalAlignment="Left" Margin="91,120,0,0" VerticalAlignment="Top" Tag="CH551G" 
+                     IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=CH551G, Mode=TwoWay}" />
+        <Label Content="Relay type:" HorizontalAlignment="Left" Margin="14,94,0,0" VerticalAlignment="Top"/>
+
+        <TextBox x:Name="bSu" HorizontalAlignment="Left" Margin="850,98,0,0" Text="{Binding SPEED_UP, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
+        <Label Content="SPD+" HorizontalAlignment="Left" Margin="850,116,0,0" VerticalAlignment="Top" Height="26"/>
+        <TextBox x:Name="bSd" HorizontalAlignment="Left" Margin="900,98,0,0" Text="{Binding SPEED_DOWN, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
+        <Label Content="SPD-" HorizontalAlignment="Left" Margin="900,116,0,0" VerticalAlignment="Top" Height="26" />
+        <TextBox x:Name="bIu" HorizontalAlignment="Left" Margin="950,98,0,0" Text="{Binding INCL_UP, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
+        <Label Content="INC+" HorizontalAlignment="Left" Margin="950,116,0,0" VerticalAlignment="Top" Height="26" Width="43" />
+        <TextBox x:Name="bId" HorizontalAlignment="Left" Margin="1000,98,0,0" Text="{Binding INCL_DOWN, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
+        <Label Content="INC-" HorizontalAlignment="Left" Margin="1000,116,0,0" VerticalAlignment="Top" Height="26" />
+
+
+        <TextBox x:Name="bStart" HorizontalAlignment="Left" Margin="1050,98,0,0" Text="{Binding START, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
+        <Label Content="START" HorizontalAlignment="Left" Margin="1050,116,0,0" VerticalAlignment="Top" Height="26"/>
+        <TextBox x:Name="bMode" HorizontalAlignment="Left" Margin="1100,98,0,0" Text="{Binding MODE, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
+        <Label Content="MODE" HorizontalAlignment="Left" Margin="1100,116,0,0" VerticalAlignment="Top" Height="26" />
+        <TextBox x:Name="bStop" HorizontalAlignment="Left" Margin="1150,98,0,0" Text="{Binding STOP, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
+        <Label Content="STOP" HorizontalAlignment="Left" Margin="1150,116,0,0" VerticalAlignment="Top" Height="26" Width="43" />
+        <TextBox x:Name="b3" HorizontalAlignment="Left" Margin="1200,98,0,0" Text="{Binding SPD3, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
+        <Label Content="SPD-3" HorizontalAlignment="Left" Margin="1200,116,0,0" VerticalAlignment="Top" Height="26" />
+        <TextBox x:Name="bAll" HorizontalAlignment="Left" Margin="1250,98,0,0" Text="{Binding ALL, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
+        <Label Content="ALL" HorizontalAlignment="Left" Margin="1250,116,0,0" VerticalAlignment="Top" Height="26" Width="43" />
 
 
 

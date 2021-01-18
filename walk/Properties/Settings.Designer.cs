@@ -133,7 +133,7 @@ namespace walk.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0.18")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.3")]
         public float ButtonPressSec {
             get {
                 return ((float)(this["ButtonPressSec"]));
@@ -145,37 +145,133 @@ namespace walk.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool ButtonStart {
-            get {
-                return ((bool)(this["ButtonStart"]));
-            }
-            set {
-                this["ButtonStart"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool ButtonStop {
+        public bool HW341 {
             get {
-                return ((bool)(this["ButtonStop"]));
+                return ((bool)(this["HW341"]));
             }
             set {
-                this["ButtonStop"] = value;
+                this["HW341"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool ButtonMode {
+        public bool CH551G {
             get {
-                return ((bool)(this["ButtonMode"]));
+                return ((bool)(this["CH551G"]));
             }
             set {
-                this["ButtonMode"] = value;
+                this["CH551G"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int SPEED_UP {
+            get {
+                return ((int)(this["SPEED_UP"]));
+            }
+            set {
+                this["SPEED_UP"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public int SPEED_DOWN {
+            get {
+                return ((int)(this["SPEED_DOWN"]));
+            }
+            set {
+                this["SPEED_DOWN"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("3")]
+        public int INCL_UP {
+            get {
+                return ((int)(this["INCL_UP"]));
+            }
+            set {
+                this["INCL_UP"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("4")]
+        public int INCL_DOWN {
+            get {
+                return ((int)(this["INCL_DOWN"]));
+            }
+            set {
+                this["INCL_DOWN"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int START {
+            get {
+                return ((int)(this["START"]));
+            }
+            set {
+                this["START"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("6")]
+        public int MODE {
+            get {
+                return ((int)(this["MODE"]));
+            }
+            set {
+                this["MODE"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("7")]
+        public int STOP {
+            get {
+                return ((int)(this["STOP"]));
+            }
+            set {
+                this["STOP"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("8")]
+        public int SPD3 {
+            get {
+                return ((int)(this["SPD3"]));
+            }
+            set {
+                this["SPD3"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("9")]
+        public int ALL {
+            get {
+                return ((int)(this["ALL"]));
+            }
+            set {
+                this["ALL"] = value;
             }
         }
     }
