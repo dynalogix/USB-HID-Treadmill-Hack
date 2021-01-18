@@ -5,6 +5,8 @@ Control speed + incline using Windows PC + 4 channel USB HID Relay board
 
 Github project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 
+Video demo of a 6-channel switch hooked up to the control panel of Kondition 4B-550 treadmill: https://youtu.be/e4qM4HLBIr8
+
 Requirements
 
 Hardware:
