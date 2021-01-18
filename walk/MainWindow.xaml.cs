@@ -19,7 +19,7 @@ namespace walk
         static int ON = 1, OFF = 0, SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL=9, START=5, MODE=6, STOP=7,SPD3=8;
         static bool HW341=false, CH551G=true;
 
-        static float buttonPressSec = 0.5f;       
+        static float buttonDownSec = 0.5f,PRESSLEN=0.6f;       
 
         static ushort vid, pid=0x3f;
 
@@ -130,13 +130,13 @@ namespace walk
                     rep.Text = (--reps).ToString();
                 }
 
-                warm = (warm - 5f * (speed - 3.0f)) / (10f * (speed - 3.0f));
+                warm = (warm - 10*PRESSLEN * (speed - 3.0f)) / (10f * (speed - 3.0f));
                                
                 GetVidPid();
 
-                buttonPressSec=Settings.Default.ButtonPressSec;               
+                buttonDownSec=Settings.Default.ButtonPressSec;               
 
-                Debug.WriteLine("Button press="+buttonPressSec.ToString());
+                Debug.WriteLine("Button press="+buttonDownSec.ToString());
 
                 tick = float.Parse(progress.Text) * 60;
 
@@ -231,11 +231,11 @@ namespace walk
 
             USBDevice dev = new USBDevice(vid, pid, null, false, 31);
             Relay(v, ON, dev);
-            wait(buttonPressSec);
+            wait(buttonDownSec);
             Relay(v, OFF, dev);
             dev.Dispose();
 
-            if (buttonPressSec < 0.5f) wait(0.5f - buttonPressSec);
+            if (buttonDownSec < PRESSLEN) wait(PRESSLEN - buttonDownSec);
 
         }
 
@@ -318,20 +318,17 @@ namespace walk
             {          // the 4B-550 has START and STOP buttons and speed starts at 1.0
 
                 press(SPEED_DOWN);  // wake up treadmill
-                wait(0.5f);
+                wait(0.99f);
                 if (MODE != 0)
                 {
-                    press(MODE);        // MODE MODE → target distance
-                    wait(0.5f);
+                    press(MODE);        // MODE MODE → target distance                   
                     press(MODE);
-                    wait(0.5f);
-                    press(SPEED_DOWN);  // set target distance 99km → maximum length workout
-                    wait(0.5f);
+                    press(SPEED_DOWN);  // set target distance 99km → maximum length workout                    
                 }
 
                 startup(3f);  // initial speed raise 1 to 3
 
-                dur -= 20 * (0.5f + 0.0f);
+                dur -= 20 * (PRESSLEN + 0f);
 
             }
 
@@ -340,20 +337,20 @@ namespace walk
             for (float a = 3.1f; a <= speed; a += 0.1f)
             {
                 if (wait(warm)) return;
-                dur -= 2 * warm + 1;             // up and down + 2x 500ms 
+                dur -= 2 * warm + 2*PRESSLEN;             // up and down + 2x 500ms 
                 s += 0.1f;
                 press(SPEED_UP);
             }
 
             dur -= reps * sdur;                    // 2x sprint 5 minutes
-            dur -= reps * 2 * (sp - speed) * 5;     // 2x up/down sprint steps * (500ms + 0ms)
+            dur -= reps * 2 * (sp - speed) * (10-PRESSLEN);     // 2x up/down sprint steps * (500ms + 0ms)
 
             if (reps > 0)
             {
                 float adj_time = 0;
                 for (int a = 1; a <= reps; a++)
                     for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
-                        adj_time++;
+                        adj_time+=2*PRESSLEN;
 
                 Debug.WriteLine("dur=" + ((dur - adj_time) / reps));
 
