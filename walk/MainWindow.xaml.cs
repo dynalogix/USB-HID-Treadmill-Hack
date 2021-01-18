@@ -80,8 +80,10 @@ namespace walk
         private void visibility()
         {
             breakbutton.Visibility = Settings.Default.STOP != 0 ? Visibility.Visible : Visibility.Hidden;
-            hill.Visibility = Settings.Default.INCL_UP != 0 && Settings.Default.INCL_DOWN != 0 ? Visibility.Visible : Visibility.Hidden;
-            lHill.Visibility = Settings.Default.INCL_UP != 0 && Settings.Default.INCL_DOWN != 0 ? Visibility.Visible : Visibility.Hidden;
+            hill.Visibility = Settings.Default.INCL_UP * Settings.Default.INCL_DOWN != 0 ? Visibility.Visible : Visibility.Hidden;
+            lHill.Visibility = Settings.Default.INCL_UP * Settings.Default.INCL_DOWN != 0 ? Visibility.Visible : Visibility.Hidden;
+            dispIncl.Visibility = Settings.Default.INCL_UP * Settings.Default.INCL_DOWN != 0 ? Visibility.Visible : Visibility.Hidden;
+            lDispIncl.Visibility = Settings.Default.INCL_UP * Settings.Default.INCL_DOWN != 0 ? Visibility.Visible : Visibility.Hidden;
         }
 
         private void Stop_click(object sender, RoutedEventArgs e)
@@ -118,7 +120,7 @@ namespace walk
                 sdur = float.Parse(sprdur.Text) * 60;               
                 speed = float.Parse(max.Text);
                 sp = float.Parse(sprint.Text);
-                hl = INCL_UP != 0 && INCL_DOWN != 0 ? float.Parse(hill.Text) : 0;
+                hl = INCL_UP * INCL_DOWN != 0 ? float.Parse(hill.Text) : 0;
 
                 warm = 60f * float.Parse(warmup.Text);
                 reps = (int)float.Parse(rep.Text);               
@@ -292,27 +294,14 @@ namespace walk
         {
             caught_up = true;
 
-            if(ALL!=0)
-            {
-                toggle(ALL, OFF);
-            } else
-            {
-                toggle(SPEED_UP, OFF);
-                toggle(SPEED_DOWN, OFF);
-                toggle(INCL_UP, OFF);
-                toggle(INCL_DOWN, OFF);
-                toggle(MODE, OFF);
-                toggle(STOP, OFF);
-                toggle(START, OFF);
-                toggle(SPD3, OFF);               
-            }
+            AllOff();
 
             p = 0;
             caught_up = tick == 0;
 
             if (START != 0)
             {          // the 4B-550 has START and STOP buttons and speed starts at 1.0
-               
+
                 press(SPEED_DOWN);  // wake up treadmill
                 wait(0.5f);
                 if (MODE != 0)
@@ -341,14 +330,14 @@ namespace walk
                 press(SPEED_UP);
             }
 
-            dur -= reps* sdur;                    // 2x sprint 5 minutes
+            dur -= reps * sdur;                    // 2x sprint 5 minutes
             dur -= reps * 2 * (sp - speed) * 5;     // 2x up/down sprint steps * (500ms + 0ms)
 
             if (reps > 0)
             {
                 float adj_time = 0;
                 for (int a = 1; a <= reps; a++)
-                    for (int b = 0; b < (reps+1-a)*hl/reps; b++)
+                    for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
                         adj_time++;
 
                 Debug.WriteLine("dur=" + ((dur - adj_time) / reps));
@@ -358,29 +347,29 @@ namespace walk
 
                 // middle section: climbs and sprints
                 for (int a = 1; a <= reps; a++)
-                {                   
+                {
 
-                    if (INCL_UP!=0 && INCL_DOWN!=0 && dur > 100)
+                    if (INCL_UP != 0 && INCL_DOWN != 0 && dur > 100)
                     {
 
                         float c = 2;
-                        for (int b = 0; b < (reps + 1 - a) * hl / reps; b++) c +=2;
+                        for (int b = 0; b < (reps + 1 - a) * hl / reps; b++) c += 2;
 
-                        Debug.WriteLine("section=" + c+" c="+dur/c);
+                        Debug.WriteLine("section=" + c + " c=" + dur / c);
 
                         c = dur / c;
 
-                        float first= c;        // wait double before raising (adjustted by correction at half time)
+                        float first = c;        // wait double before raising (adjustted by correction at half time)
 
                         // climb to 10/4 → 10,8,5,3; 9/3 → 9,6,3
 
-                       for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
-                       {
+                        for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
+                        {
                             if (wait(c + first)) return;
                             first = 0;
                             r++;
                             press(INCL_UP);
-                       }
+                        }
 
                         // descend from 6 later 4
 
@@ -394,13 +383,13 @@ namespace walk
                         if (wait(c)) return;
                     }
                     else
-                    {                        
+                    {
                         if (wait(dur)) return;
                     }
 
                     // 5 min sprint
 
-                    for (float b = speed +0.1f; b <= sp; b+=0.1f)
+                    for (float b = speed + 0.1f; b <= sp; b += 0.1f)
                     {
                         s += 0.1f;
                         press(SPEED_UP);
@@ -409,7 +398,7 @@ namespace walk
 
                     if (wait(sdur)) return;
 
-                    for (float b = speed + 0.1f; b <= sp; b+=0.1f)
+                    for (float b = speed + 0.1f; b <= sp; b += 0.1f)
                     {
                         s -= 0.1f;
                         press(SPEED_DOWN);
@@ -418,12 +407,13 @@ namespace walk
 
                 }
 
-            } else
+            }
+            else
             {
                 if (wait(dur)) return;
             }
 
-            Debug.WriteLine("warm=" +warm);
+            Debug.WriteLine("warm=" + warm);
 
             // finish
             for (float a = speed; a >= 3.1; a -= 0.1f)
@@ -434,6 +424,25 @@ namespace walk
             }
 
             running = false;
+        }
+
+        private static void AllOff()
+        {
+            if (ALL != 0)
+            {
+                toggle(ALL, OFF);
+            }
+            else
+            {
+                toggle(SPEED_UP, OFF);
+                toggle(SPEED_DOWN, OFF);
+                toggle(INCL_UP, OFF);
+                toggle(INCL_DOWN, OFF);
+                toggle(MODE, OFF);
+                toggle(STOP, OFF);
+                toggle(START, OFF);
+                toggle(SPD3, OFF);
+            }
         }
 
         private void startup(float dest)
