@@ -13,6 +13,7 @@ Hardware:
 * Treadmill with accessible buttons for speed +/- incline +/-
 * Minimum 4 Channel HID Drive-free USB Delay Relay Interface Board Module Optocoupler:
   * QYF-UR04 ("ucreatefun.com" with CH551G USB chip) e.g. https://www.ebay.co.uk/itm/283294148232
+or
   * HW341 ("dcttech.com" with ULN2803 chip) e.g. https://www.ebay.com/itm/1-2-4-8-Channel-USB-Relay-Control-Switch-Computer-Control-for-Intelligent-Home
 * Windows PC near treadmill, 1 USB port
 
@@ -21,7 +22,7 @@ Hardware:
 Software:
 * Place hidapi.dll next to the walk.exe: https://github.com/libusb/hidapi/releases
 
-![Screenshot](setup2.jpg?raw=true "setup") 
+![Screenshot](setup3.jpg?raw=true "setup") 
 
 Fields:
 * Duration [minutes] (i.e. length of the movie you will watch during workout)
@@ -47,7 +48,7 @@ Fields:
 
 Settings are saved between sessions
 
-![Screenshot](active.jpg?raw=true "active")
+![Screenshot](workout.jpg?raw=true "active")
 
 * Progress [minutes] - how far into the duration
 * Next [minutes] - until the next change (speed or incline)
