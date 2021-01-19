@@ -48,7 +48,7 @@ Fields:
 
 Settings are saved between sessions
 
-![Screenshot](active.jpg?raw=true "active")
+![Screenshot](workout.jpg?raw=true "active")
 
 * Progress [minutes] - how far into the duration
 * Next [minutes] - until the next change (speed or incline)
