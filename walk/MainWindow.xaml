@@ -20,7 +20,7 @@
     <Grid>
         <TextBox x:Name="len"                
                  GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="27,6,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Duration, Mode=TwoWay}" 
-                 TextWrapping="Wrap" VerticalAlignment="Top" Height="71" Width="100" FontSize="50" Background="{x:Null}" SelectionTextBrush="Gray" Foreground="Gray" BorderBrush="Black"/>
+                 TextWrapping="Wrap" VerticalAlignment="Top" Height="71" Width="100" FontSize="50" SelectionTextBrush="Gray" Foreground="Gray" BorderBrush="Black"/>
         <TextBox x:Name="max" GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="156,6,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Speed, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Top" Height="71" Width="100" FontSize="50" SelectionTextBrush="{x:Null}" Background="{x:Null}" Foreground="Gray" BorderBrush="Black"/>
         <TextBox x:Name="warmup" GotFocus="gotFocus" HorizontalAlignment="Left" Margin="289,6,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Warmup, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Top" Height="71" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
         <TextBox x:Name="sprint" GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="426,6,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Sprint, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Top" Height="71" Width="100" FontSize="50" SelectionTextBrush="{x:Null}" Background="{x:Null}" Foreground="Gray" BorderBrush="Black"/>
@@ -168,8 +168,10 @@
         <Label Content="min" HorizontalAlignment="Left" Margin="638,61,0,8" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" />
         <TextBox Name="fVidpid" HorizontalAlignment="Left" Margin="382,98,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Vidpid, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Top" Width="72"/>
         <TextBox x:Name="fButtonPressSec" HorizontalAlignment="Left" Margin="599,98,0,0" Text="{Binding ButtonPressSec, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="54"/>
+        <TextBox x:Name="fButtonReleaseSec" HorizontalAlignment="Left" Margin="599,123,0,0" Text="{Binding ButtonReleaseSec, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="54"/>
         <Label Content="VID/PID (hex):" HorizontalAlignment="Left" Margin="291,94,0,0" VerticalAlignment="Top"/>
         <Label Content="Button press (sec):" HorizontalAlignment="Left" Margin="483,94,0,0" VerticalAlignment="Top"/>
+        <Label Content="Minimum time between button presses (sec):" HorizontalAlignment="Left" Margin="342,118,0,0" VerticalAlignment="Top"/>
         <Label Content="Buttons (0=not connected):" HorizontalAlignment="Left" Margin="690,94,0,0" VerticalAlignment="Top"/>
 
         <Button Content="⚙" HorizontalAlignment="Left" Margin="4,5,0,0" VerticalAlignment="Top" Background="#00DDDDDD" BorderBrush="#00707070" Click="Button_Click"/>

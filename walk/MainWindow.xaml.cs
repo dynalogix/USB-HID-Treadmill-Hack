@@ -100,6 +100,39 @@ namespace walk
             {                             
                 Debug.WriteLine("start =======================");
 
+                GetVidPid();
+
+                len.Background = Brushes.Transparent;
+                sprdur.Background = Brushes.Transparent;
+                max.Background = Brushes.Transparent;
+                sprint.Background = Brushes.Transparent;
+                hill.Background = Brushes.Transparent;
+                warmup.Background = Brushes.Transparent;
+                rep.Background = Brushes.Transparent;
+                progress.Background = Brushes.Transparent;
+                Boolean fail= false;
+
+                dur = float.Parse(len.Text) * 60;
+                if (dur < 10 * 60 || dur > 250 * 60) { len.Background = Brushes.Yellow; fail=true; } 
+                sdur = float.Parse(sprdur.Text) * 60;
+                if (sdur > 20 * 60) { sprdur.Background = Brushes.Yellow; fail = true; } 
+                speed = float.Parse(max.Text);
+                if (speed < 3 || speed > 16) { max.Background = Brushes.Yellow; fail = true; } 
+                sp = float.Parse(sprint.Text);
+                if (sp < speed || sp > 16) { sprint.Background = Brushes.Yellow; fail = true; }
+                hl = INCL_UP * INCL_DOWN != 0 ? float.Parse(hill.Text) : 0;
+                if (hl < 0 || hl > 15) { hill.Background = Brushes.Yellow; fail = true; } 
+
+                warm = 60f * float.Parse(warmup.Text);
+                if (warm < 1*60 || warm > 15*60) { warmup.Background = Brushes.Yellow; fail = true; } 
+                reps = (int)float.Parse(rep.Text);
+                if (reps < 1 || reps > 30) { rep.Background = Brushes.Yellow; fail = true; } 
+
+                tick = float.Parse(progress.Text) * 60;
+                if (tick < 0 || tick > dur) { progress.Background = Brushes.Yellow; fail = true; }
+
+                if (fail) return;
+
                 Settings.Default.Save();
 
                 start.Content = "Pause";
@@ -116,14 +149,8 @@ namespace walk
 
                 r = 0; s = 3.0f;
 
-                dur = float.Parse(len.Text) * 60;               
-                sdur = float.Parse(sprdur.Text) * 60;               
-                speed = float.Parse(max.Text);
-                sp = float.Parse(sprint.Text);
-                hl = INCL_UP * INCL_DOWN != 0 ? float.Parse(hill.Text) : 0;
-
-                warm = 60f * float.Parse(warmup.Text);
-                reps = (int)float.Parse(rep.Text);               
+                buttonDownSec = Settings.Default.ButtonPressSec;
+                PRESSLEN = buttonDownSec + Settings.Default.ButtonReleaseSec;              
 
                 while(dur<2*warm+reps*(sdur+180)) 
                 {
@@ -132,13 +159,7 @@ namespace walk
 
                 warm = (warm - 10*PRESSLEN * (speed - 3.0f)) / (10f * (speed - 3.0f));
                                
-                GetVidPid();
-
-                buttonDownSec=Settings.Default.ButtonPressSec;               
-
                 Debug.WriteLine("Button press="+buttonDownSec.ToString());
-
-                tick = float.Parse(progress.Text) * 60;
 
                 thread = new Thread(workout1);               
                 thread.Start();

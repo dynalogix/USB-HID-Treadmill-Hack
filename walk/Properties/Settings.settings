@@ -65,5 +65,8 @@
     <Setting Name="ALL" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">9</Value>
     </Setting>
+    <Setting Name="ButtonReleaseSec" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0.3</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

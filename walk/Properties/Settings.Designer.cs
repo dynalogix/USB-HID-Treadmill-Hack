@@ -274,5 +274,17 @@ namespace walk.Properties {
                 this["ALL"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.3")]
+        public float ButtonReleaseSec {
+            get {
+                return ((float)(this["ButtonReleaseSec"]));
+            }
+            set {
+                this["ButtonReleaseSec"] = value;
+            }
+        }
     }
 }
