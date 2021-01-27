@@ -174,7 +174,8 @@
         <Label Content="Minimum time between button presses (sec):" HorizontalAlignment="Left" Margin="342,118,0,0" VerticalAlignment="Top"/>
         <Label Content="Buttons (0=not connected):" HorizontalAlignment="Left" Margin="690,94,0,0" VerticalAlignment="Top"/>
 
-        <Button Content="⚙" HorizontalAlignment="Left" Margin="4,5,0,0" VerticalAlignment="Top" Background="#00DDDDDD" BorderBrush="#00707070" Click="Button_Click"/>
+        <Button Content="⚙" HorizontalAlignment="Left" Margin="4,5,0,0" VerticalAlignment="Top" Background="#00DDDDDD" 
+                BorderBrush="#00707070" Click="Config_button"/>
         <RadioButton Content="HW341 (dcttech.com)" HorizontalAlignment="Left" Margin="91,100,0,0" VerticalAlignment="Top" Tag="HW341"
                      IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=HW341, Mode=TwoWay}" />
         <RadioButton Content="CH551G (ucreatefun.com)" HorizontalAlignment="Left" Margin="91,120,0,0" VerticalAlignment="Top" Tag="CH551G" 

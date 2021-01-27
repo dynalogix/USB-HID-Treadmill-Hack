@@ -28,10 +28,39 @@ namespace walk
         static String time = "";
         static float dur, warm, speed, sp, hl, tick, p, reps, sdur;
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Config_button(object sender, RoutedEventArgs e)
         {
-            if (win.Height < 100) win.Height = 150; else win.Height = 85;
             Settings.Default.Save();
+
+            Boolean fail = false;
+            bSu.Background = Brushes.Transparent;
+            if (Settings.Default.SPEED_UP < 0 || Settings.Default.SPEED_UP > 9) { bSu.Background = Brushes.Yellow; fail = true; }
+            bSd.Background = Brushes.Transparent;
+            if (Settings.Default.SPEED_DOWN < 0 || Settings.Default.SPEED_DOWN > 9) { bSd.Background = Brushes.Yellow; fail = true; }
+            bIu.Background = Brushes.Transparent;
+            if (Settings.Default.INCL_UP < 0 || Settings.Default.INCL_UP > 9) { bIu.Background = Brushes.Yellow; fail = true; }
+            bId.Background = Brushes.Transparent;
+            if (Settings.Default.INCL_DOWN < 0 || Settings.Default.INCL_DOWN > 9) { bId.Background = Brushes.Yellow; fail = true; }
+
+            bStart.Background = Brushes.Transparent;
+            if (Settings.Default.START < 0 || Settings.Default.START > 9) { bStart.Background = Brushes.Yellow; fail = true; }
+            bMode.Background = Brushes.Transparent;
+            if (Settings.Default.MODE < 0 || Settings.Default.MODE > 9) { bMode.Background = Brushes.Yellow; fail = true; }
+            bStop.Background = Brushes.Transparent;
+            if (Settings.Default.STOP < 0 || Settings.Default.STOP > 9) { bStop.Background = Brushes.Yellow; fail = true; }
+            bAll.Background = Brushes.Transparent;
+            if (Settings.Default.ALL < 0 || Settings.Default.ALL > 9) { bAll.Background = Brushes.Yellow; fail = true; }
+            b3.Background = Brushes.Transparent;
+            if (Settings.Default.SPD3 < 0 || Settings.Default.SPD3 > 9) { b3.Background = Brushes.Yellow; fail = true; }
+
+            fButtonPressSec.Background = Brushes.Transparent;
+            if (Settings.Default.ButtonPressSec < 0.05f || Settings.Default.ButtonPressSec>2f) { fButtonPressSec.Background = Brushes.Yellow; fail = true; }
+            fButtonReleaseSec.Background = Brushes.Transparent;
+            if (Settings.Default.ButtonReleaseSec < 0.05f || Settings.Default.ButtonReleaseSec > 2f) { fButtonReleaseSec.Background = Brushes.Yellow; fail = true; }
+
+            if (fail && win.Height>100) return;
+
+            if (win.Height < 100) win.Height = 150; else win.Height = 85;
             visibility();
         }
 
@@ -131,7 +160,9 @@ namespace walk
                 tick = float.Parse(progress.Text) * 60;
                 if (tick < 0 || tick > dur) { progress.Background = Brushes.Yellow; fail = true; }
 
-                if (fail) return;
+                if (win.Height > 100) Config_button(null, null);
+
+                if (win.Height>100 || fail) return;
 
                 Settings.Default.Save();
 
