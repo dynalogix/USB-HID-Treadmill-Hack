@@ -84,7 +84,7 @@ A 115 minute workout: you can see warm-up/wind-down and all the 8x3min "sprint" 
 
 Settings:
 
-![Settings](2021-01-29 20_27_38-MainWindow.jpg?raw=true "settings")
+![Settings](settings2.jpg?raw=true "settings")
 
 The workout logic is in the function workout1:
 
