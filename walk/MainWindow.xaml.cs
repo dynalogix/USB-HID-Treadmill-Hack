@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Windows.Threading;
 using walk.Properties;
 using USBInterface;
-
+using System.Threading.Tasks;
 
 namespace walk
 {
@@ -141,23 +141,23 @@ namespace walk
                 progress.Background = Brushes.Transparent;
                 Boolean fail= false;
 
-                dur = float.Parse(len.Text) * 60;
+                try { dur = float.Parse(len.Text) * 60; } catch{ dur = -1; }
                 if (dur < 10 * 60 || dur > 250 * 60) { len.Background = Brushes.Yellow; fail=true; } 
-                sdur = float.Parse(sprdur.Text) * 60;
+                try { sdur = float.Parse(sprdur.Text) * 60; } catch { sdur = -1; }
                 if (sdur > 20 * 60) { sprdur.Background = Brushes.Yellow; fail = true; } 
-                speed = float.Parse(max.Text);
+                try { speed = float.Parse(max.Text); } catch { speed = -1; }
                 if (speed < 3 || speed > 16) { max.Background = Brushes.Yellow; fail = true; } 
-                sp = float.Parse(sprint.Text);
+                try { sp = float.Parse(sprint.Text); } catch { sp = -1; }
                 if (sp < speed || sp > 16) { sprint.Background = Brushes.Yellow; fail = true; }
-                hl = INCL_UP * INCL_DOWN != 0 ? float.Parse(hill.Text) : 0;
-                if (hl < 0 || hl > 15) { hill.Background = Brushes.Yellow; fail = true; } 
+                try { hl = INCL_UP * INCL_DOWN != 0 ? float.Parse(hill.Text) : 0; } catch { hl = -1; }
+                if (hl < 0 || hl > 15) { hill.Background = Brushes.Yellow; fail = true; }
 
-                warm = 60f * float.Parse(warmup.Text);
-                if (warm < 1*60 || warm > 15*60) { warmup.Background = Brushes.Yellow; fail = true; } 
-                reps = (int)float.Parse(rep.Text);
-                if (reps < 1 || reps > 30) { rep.Background = Brushes.Yellow; fail = true; } 
+                try { warm = 60f * float.Parse(warmup.Text);  } catch { warm = -1; }
+                if (warm < 1*60 || warm > 15*60) { warmup.Background = Brushes.Yellow; fail = true; }
+                try { reps = (int)float.Parse(rep.Text); } catch{ reps = -1; }
+                if (reps < 1 || reps > 30) { rep.Background = Brushes.Yellow; fail = true; }
 
-                tick = float.Parse(progress.Text) * 60;
+                try { tick = float.Parse(progress.Text) * 60; } catch{ tick = 0; }
                 if (tick < 0 || tick > dur) { progress.Background = Brushes.Yellow; fail = true; }
 
                 if (win.Height > 100) Config_button(null, null);
@@ -309,9 +309,10 @@ namespace walk
            
             caught_up = true;
 
-            if(delay<1f)
+            if(delay<1.5f)
             {
                 Thread.Sleep((int)(delay * 1000));               
+                //Task.Delay((int)(delay * 1000));                               
                 return false;
             }           
 
@@ -370,17 +371,16 @@ namespace walk
             {          // the 4B-550 has START and STOP buttons and speed starts at 1.0
 
                 press(SPEED_DOWN);  // wake up treadmill
-                wait(0.99f);
+                wait(1f);
                 if (MODE != 0)
                 {
                     press(MODE);        // MODE MODE → target distance                   
                     press(MODE);
                     press(SPEED_DOWN);  // set target distance 99km → maximum length workout                    
+                    dur -= 3 * PRESSLEN;
                 }
 
-                startup(3f);  // initial speed raise 1 to 3
-
-                dur -= 20 * (PRESSLEN + 0f);
+                startup(3f);  // initial speed raise 1 to 3                
 
             }
 
@@ -388,21 +388,24 @@ namespace walk
 
             for (float a = 3.1f; a <= speed; a += 0.1f)
             {
-                if (wait(warm)) return;
-                dur -= 2 * warm + 2*PRESSLEN;             // up and down + 2x 500ms 
+                if (wait(warm-PRESSLEN)) return;
+                dur -= 2 * warm;             // up and down + 2x 500ms 
                 s += 0.1f;
                 press(SPEED_UP);
             }
 
-            dur -= reps * sdur;                    // 2x sprint 5 minutes
+            dur -= reps * sdur;                    // 2x sprint 
             dur -= reps * 2 * (sp - speed) * (10-PRESSLEN);     // 2x up/down sprint steps * (500ms + 0ms)
 
             if (reps > 0)
             {
                 float adj_time = 0;
                 for (int a = 1; a <= reps; a++)
+                {
                     for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
-                        adj_time+=2*PRESSLEN;
+                        adj_time += 2 * PRESSLEN;
+                    adj_time += PRESSLEN;           // double down for zero
+                }
 
                 Debug.WriteLine("dur=" + ((dur - adj_time) / reps));
 
@@ -443,6 +446,7 @@ namespace walk
                             r--;
                             press(INCL_DOWN);
                         }
+                        press(INCL_DOWN);       // double down for zero
 
                         if (wait(c)) return;
                     }
@@ -456,8 +460,7 @@ namespace walk
                     for (float b = speed + 0.1f; b <= sp; b += 0.1f)
                     {
                         s += 0.1f;
-                        press(SPEED_UP);
-                        //wait(0.99f);              // no delay
+                        press(SPEED_UP);                        
                     }
 
                     if (wait(sdur)) return;
@@ -465,8 +468,7 @@ namespace walk
                     for (float b = speed + 0.1f; b <= sp; b += 0.1f)
                     {
                         s -= 0.1f;
-                        press(SPEED_DOWN);
-                        //wait(0.99f);              // no delay
+                        press(SPEED_DOWN);                        
                     }
 
                 }
@@ -482,7 +484,7 @@ namespace walk
             // finish
             for (float a = speed; a >= 3.1; a -= 0.1f)
             {
-                if (wait(warm)) return;
+                if (wait(warm-PRESSLEN)) return;
                 s -= 0.1f;
                 press(SPEED_DOWN);
             }
@@ -518,19 +520,22 @@ namespace walk
 
             if(wait(6f)) return;
 
+            dur -= 6+PRESSLEN;
+
             // Start up
 
             if(SPD3 != 0)      // if quick button for speed 3 connected
             {
                 s = 3;
                 press(SPD3);
+                dur -= PRESSLEN;
             } else for (float a = 1.1f; a <= dest; a += 0.1f)   // otherwise increase "manually"
             {
                 //if (wait(0.2f)) return;
                 s += 0.1f;
                 press(SPEED_UP);
-            }
-        
+                dur -= PRESSLEN;
+            }        
         }
     }
 }
