@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using walk.Properties;
 using USBInterface;
 using System.Threading.Tasks;
+using System.Data;
 
 namespace walk
 {
@@ -121,6 +122,15 @@ namespace walk
             if (STOP != 0) press(STOP);
         }
 
+        static double Evaluate(string expression)
+        {
+            var loDataTable = new DataTable();
+            var loDataColumn = new DataColumn("Eval", typeof(double), expression);
+            loDataTable.Columns.Add(loDataColumn);
+            loDataTable.Rows.Add(0);           
+            return (double)(loDataTable.Rows[0]["Eval"]);
+        }
+
         private void Start_click(object sender, RoutedEventArgs e)
         {
             time = "";
@@ -140,8 +150,8 @@ namespace walk
                 rep.Background = Brushes.Transparent;
                 progress.Background = Brushes.Transparent;
                 Boolean fail= false;
-
-                try { dur = float.Parse(len.Text) * 60; } catch{ dur = -1; }
+               
+                try { dur = (float)(Evaluate(len.Text) * 60); len.Text = (dur/60f).ToString();  } catch{ dur = -1; }
                 if (dur < 10 * 60 || dur > 250 * 60) { len.Background = Brushes.Yellow; fail=true; } 
                 try { sdur = float.Parse(sprdur.Text) * 60; } catch { sdur = -1; }
                 if (sdur > 20 * 60) { sprdur.Background = Brushes.Yellow; fail = true; } 
@@ -164,6 +174,7 @@ namespace walk
 
                 if (win.Height>100 || fail) return;
 
+                Settings.Default.Duration = (dur / 60).ToString();
                 Settings.Default.Save();
 
                 start.Content = "Pause";
