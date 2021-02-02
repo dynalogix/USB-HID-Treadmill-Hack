@@ -78,9 +78,13 @@ I plan to add more, currently there is one implemented:
 * in *winddown* minutes decrease desired *speed* to 3.0
 * end of workout - end of movie
 
-Heart rate for a 126 minute workout (movie Shazam)
+A 115 minute workout: you can see warm-up/wind-down and all the 8x3min "sprint" section's effect on the heart rate (measured using a TicWatch Pro 3 Wear OS smart watch)
 
-![Heartrate](heart2.jpg?raw=true "heartrate")
+![Heartrate](SmartSelect_20210129-202149_Mobvoi.jpg?raw=true "heartrate")
+
+Settings:
+
+![Settings](settings2.jpg?raw=true "settings")
 
 The workout logic is in the function workout1:
 
