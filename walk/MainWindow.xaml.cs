@@ -17,15 +17,15 @@ namespace walk
     /// </summary>
     public partial class MainWindow : Window
     {
-        static int ON = 1, OFF = 0, SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL=9, START=5, MODE=6, STOP=7,SPD3=8;
-        static bool HW341=false, CH551G=true;
+        static int ON = 1, OFF = 0, SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL=9, START=5, MODE=6, STOP=7,SPD3=8,SPD6=7;
+        static bool HW341=false, CH551G=true, DUMMYSTART=false, DUMMYMODE=false;
 
         static float buttonDownSec = 0.5f,PRESSLEN=0.6f;       
 
         static ushort vid, pid=0x3f;
 
         static float s = 3.0f;
-        static int r=0;
+        static int r=0,dummy=0;
         static String time = "";
         static float dur, warm, speed, sp, hl, tick, p, reps, sdur;
 
@@ -53,6 +53,8 @@ namespace walk
             if (Settings.Default.ALL < 0 || Settings.Default.ALL > 9) { bAll.Background = Brushes.Yellow; fail = true; }
             b3.Background = Brushes.Transparent;
             if (Settings.Default.SPD3 < 0 || Settings.Default.SPD3 > 9) { b3.Background = Brushes.Yellow; fail = true; }
+            b6.Background = Brushes.Transparent;
+            if (Settings.Default.SPD6 < 0 || Settings.Default.SPD6 > 9) { b6.Background = Brushes.Yellow; fail = true; }
 
             fButtonPressSec.Background = Brushes.Transparent;
             if (Settings.Default.ButtonPressSec < 0.05f || Settings.Default.ButtonPressSec>2f) { fButtonPressSec.Background = Brushes.Yellow; fail = true; }
@@ -61,14 +63,14 @@ namespace walk
 
             if (fail && win.Height>100) return;
 
-            if (win.Height < 100) win.Height = 150; else win.Height = 85;
+            if (win.Height < 100) win.Height = 163; else win.Height = 85;
             visibility();
         }
 
         DispatcherTimer timer =null;
 
         Thread thread =null;
-        static bool running = false, caught_up=false;
+        static bool running = false, caught_up=false, dummy_press=false;
         private SolidColorBrush brush;              
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -199,8 +201,8 @@ namespace walk
                     rep.Text = (--reps).ToString();
                 }
 
-                warm = (warm - 10*PRESSLEN * (speed - 3.0f)) / (10f * (speed - 3.0f));
-                               
+                warm = warm  / (10f * (speed - 3.0f));        // - 10*PRESSLEN * (speed - 3.0f)
+
                 Debug.WriteLine("Button press="+buttonDownSec.ToString());
 
                 thread = new Thread(workout1);               
@@ -236,6 +238,9 @@ namespace walk
             STOP = Settings.Default.STOP;
             MODE = Settings.Default.MODE;
             SPD3 = Settings.Default.SPD3;
+            SPD6 = Settings.Default.SPD6;
+            DUMMYSTART = Settings.Default.DUMMYSTART;
+            DUMMYMODE = Settings.Default.DUMMYMODE;
             ALL = Settings.Default.ALL;
             SPEED_UP = Settings.Default.SPEED_UP;
             SPEED_DOWN = Settings.Default.SPEED_DOWN;
@@ -286,20 +291,34 @@ namespace walk
         {
             if (v == 0) return;
 
-            if (!caught_up)    // not caught up or button not connected
+            p += PRESSLEN;
+
+            if (!caught_up && p<tick)    // not caught up or button not connected
             {
                 Debug.WriteLine( "Press " + v);
                 return;
             }
 
+            caught_up = true;
+            p -= PRESSLEN;
+
             USBDevice dev = new USBDevice(vid, pid, null, false, 31);
             Relay(v, ON, dev);
             wait(buttonDownSec);
             Relay(v, OFF, dev);
+
+            if (buttonDownSec < PRESSLEN)
+            {
+                if (dummy_press && buttonDownSec*2<PRESSLEN) {
+                    int DUMMY = !DUMMYSTART || DUMMYMODE && dummy++ % 2 == 0 ? MODE : START;                    
+                    Relay(DUMMY, ON, dev);
+                    wait(buttonDownSec);
+                    Relay(DUMMY, OFF, dev);
+                    wait(PRESSLEN - buttonDownSec*2);
+                }
+                else wait(PRESSLEN - buttonDownSec);
+            }
             dev.Dispose();
-
-            if (buttonDownSec < PRESSLEN) wait(PRESSLEN - buttonDownSec);
-
         }
 
         private static bool wait(float delay)   // delay in seconds
@@ -372,6 +391,7 @@ namespace walk
         private void workout1(object obj)
         {
             caught_up = true;
+            dummy_press = false;
 
             AllOff();
 
@@ -395,18 +415,28 @@ namespace walk
 
             }
 
+            dummy_press = DUMMYMODE || DUMMYSTART;
+
             // Warm up
 
-            for (float a = 3.1f; a <= speed; a += 0.1f)
+            while (s < speed-0.02f)
             {
-                if (wait(warm-PRESSLEN)) return;
+                if (wait(warm - PRESSLEN)) return;
                 dur -= 2 * warm;             // up and down + 2x 500ms 
                 s += 0.1f;
                 press(SPEED_UP);
             }
 
             dur -= reps * sdur;                    // 2x sprint 
-            dur -= reps * 2 * (sp - speed) * (10-PRESSLEN);     // 2x up/down sprint steps * (500ms + 0ms)
+
+            // increase to sprint speed
+            float stmp = speed;
+            if (SPD6 != 0 && stmp < 6 && sp >= 6) { dur -= reps * PRESSLEN; stmp = 6; }
+            dur -= reps * (sp-stmp) *10 * PRESSLEN;
+            // decrease from sprint speed
+            stmp = sp;
+            if (SPD6 != 0 && stmp > 6 && speed <= 6) { dur -= reps * PRESSLEN; stmp = 6; }
+            dur -= reps * (stmp-speed) * 10 * PRESSLEN;
 
             if (reps > 0)
             {
@@ -457,9 +487,12 @@ namespace walk
                             r--;
                             press(INCL_DOWN);
                         }
+                        
+                        if (wait(c>2f?c-1f:c)) return;
+
                         press(INCL_DOWN);       // double down for zero
 
-                        if (wait(c)) return;
+                        if (c>2) if(wait(1f)) return;
                     }
                     else
                     {
@@ -467,16 +500,18 @@ namespace walk
                     }
 
                     // 5 min sprint
-
-                    for (float b = speed + 0.1f; b <= sp; b += 0.1f)
+                   
+                    if (SPD6 != 0 && s < 6 && sp >= 6) { press(SPD6); s = 6; }
+                    while (s<sp-0.02f)
                     {
                         s += 0.1f;
                         press(SPEED_UP);                        
                     }
 
                     if (wait(sdur)) return;
-
-                    for (float b = speed + 0.1f; b <= sp; b += 0.1f)
+                   
+                    if(SPD6!=0 && s>6 && speed<=6 ) { press(SPD6); s = 6; }
+                    while(s>speed+0.02f)
                     {
                         s -= 0.1f;
                         press(SPEED_DOWN);                        
@@ -493,7 +528,7 @@ namespace walk
             Debug.WriteLine("warm=" + warm);
 
             // finish
-            for (float a = speed; a >= 3.1; a -= 0.1f)
+            while (s>3.02f)
             {
                 if (wait(warm-PRESSLEN)) return;
                 s -= 0.1f;

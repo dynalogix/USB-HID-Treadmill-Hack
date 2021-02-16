@@ -9,7 +9,7 @@
         WindowStyle="None"
         Closing="Window_Closing"
         mc:Ignorable="d"
-        Title="MainWindow" Height="150" Width="1748" 
+        Title="MainWindow" Height="163" Width="1748" 
         Top="0" Left="0"       
         AllowsTransparency="True"        
         x:Name="win"              
@@ -200,10 +200,15 @@
         <Label Content="STOP" HorizontalAlignment="Left" Margin="1150,116,0,0" VerticalAlignment="Top" Height="26" Width="43" />
         <TextBox x:Name="b3" HorizontalAlignment="Left" Margin="1200,98,0,0" Text="{Binding SPD3, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
         <Label Content="SPD-3" HorizontalAlignment="Left" Margin="1200,116,0,0" VerticalAlignment="Top" Height="26" />
-        <TextBox x:Name="bAll" HorizontalAlignment="Left" Margin="1250,98,0,0" Text="{Binding ALL, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
-        <Label Content="ALL" HorizontalAlignment="Left" Margin="1250,116,0,0" VerticalAlignment="Top" Height="26" Width="43" />
+        <TextBox x:Name="b6" HorizontalAlignment="Left" Margin="1250,98,0,0" Text="{Binding SPD6, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
+        <Label Content="SPD-6" HorizontalAlignment="Left" Margin="1250,116,0,0" VerticalAlignment="Top" Height="26" />
 
+        <TextBox x:Name="bAll" HorizontalAlignment="Left" Margin="1350,98,0,0" Text="{Binding ALL, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
+        <Label Content="ALL" HorizontalAlignment="Left" Margin="1350,116,0,0" VerticalAlignment="Top" Height="26" Width="43" />
 
-
+        <CheckBox HorizontalAlignment="Left" Margin="1065,140,0,0" VerticalAlignment="Top" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=DUMMYSTART, Mode=TwoWay}"/>
+        <CheckBox HorizontalAlignment="Left" Margin="1115,140,0,0" VerticalAlignment="Top" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=DUMMYMODE, Mode=TwoWay}"/>
+        <Label Content="DUMMY:" HorizontalAlignment="Left" Margin="1000,133,0,0" VerticalAlignment="Top" Height="26" />
+        <Label Content="(press noaction button to avoid key repeat)" HorizontalAlignment="Left" Margin="1150,133,0,0" VerticalAlignment="Top" Height="26"  />
     </Grid>
 </Window>

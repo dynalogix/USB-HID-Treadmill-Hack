@@ -68,5 +68,14 @@
     <Setting Name="ButtonReleaseSec" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0.3</Value>
     </Setting>
+    <Setting Name="SPD6" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">7</Value>
+    </Setting>
+    <Setting Name="DUMMYSTART" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="DUMMYMODE" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

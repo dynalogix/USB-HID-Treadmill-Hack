@@ -286,5 +286,41 @@ namespace walk.Properties {
                 this["ButtonReleaseSec"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("7")]
+        public int SPD6 {
+            get {
+                return ((int)(this["SPD6"]));
+            }
+            set {
+                this["SPD6"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DUMMYSTART {
+            get {
+                return ((bool)(this["DUMMYSTART"]));
+            }
+            set {
+                this["DUMMYSTART"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DUMMYMODE {
+            get {
+                return ((bool)(this["DUMMYMODE"]));
+            }
+            set {
+                this["DUMMYMODE"] = value;
+            }
+        }
     }
 }
