@@ -64,6 +64,7 @@ namespace walk
             if (fail && win.Height>100) return;
 
             if (win.Height < 100) win.Height = 163; else win.Height = 85;
+            win.Width = 1748;
             visibility();
         }
 
@@ -153,7 +154,11 @@ namespace walk
                 progress.Background = Brushes.Transparent;
                 Boolean fail= false;
                
-                try { dur = (float)(Evaluate(len.Text) * 60); len.Text = (dur/60f).ToString();  } catch{ dur = -1; }
+                try {
+                    if (len.Text.Contains(":")) dur = (float)(float.Parse(len.Text.Split(":")[0]) * 60 + Evaluate(len.Text.Split(":")[1])) * 60;
+                    else dur = (float)(Evaluate(len.Text) * 60); 
+                    len.Text = (dur/60f).ToString();  
+                } catch{ dur = -1; }
                 if (dur < 10 * 60 || dur > 250 * 60) { len.Background = Brushes.Yellow; fail=true; } 
                 try { sdur = float.Parse(sprdur.Text) * 60; } catch { sdur = -1; }
                 if (sdur > 20 * 60) { sprdur.Background = Brushes.Yellow; fail = true; } 
