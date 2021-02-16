@@ -25,7 +25,7 @@ Software:
 ![Screenshot](setup3.jpg?raw=true "setup") 
 
 Fields:
-* Duration [minutes] (i.e. length of the movie you will watch during workout)
+* Duration [minutes] (i.e. length of the movie you will watch during workout) Note: you can enter expressions (e.g. 24+21*3 for multiple episodes)
 * Speed - desired speed
 * Warm-up / Wind-down time [minutes] - how quickly reach desired speed
 * Sprint - maximum speed during sprint phases
