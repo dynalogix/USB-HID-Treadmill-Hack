@@ -307,23 +307,30 @@ namespace walk
             caught_up = true;
             p -= PRESSLEN;
 
-            USBDevice dev = new USBDevice(vid, pid, null, false, 31);
-            Relay(v, ON, dev);
-            wait(buttonDownSec);
-            Relay(v, OFF, dev);
-
-            if (buttonDownSec < PRESSLEN)
+            try
             {
-                if (dummy_press && buttonDownSec*2<PRESSLEN) {
-                    int DUMMY = !DUMMYSTART || DUMMYMODE && dummy++ % 2 == 0 ? MODE : START;                    
-                    Relay(DUMMY, ON, dev);
-                    wait(buttonDownSec);
-                    Relay(DUMMY, OFF, dev);
-                    wait(PRESSLEN - buttonDownSec*2);
+                USBDevice dev = new USBDevice(vid, pid, null, false, 31);
+                Relay(v, ON, dev);
+                wait(buttonDownSec);
+                Relay(v, OFF, dev);
+
+                if (buttonDownSec < PRESSLEN)
+                {
+                    if (dummy_press && buttonDownSec * 2 < PRESSLEN)
+                    {
+                        int DUMMY = !DUMMYSTART || DUMMYMODE && dummy++ % 2 == 0 ? MODE : START;
+                        Relay(DUMMY, ON, dev);
+                        wait(buttonDownSec);
+                        Relay(DUMMY, OFF, dev);
+                        wait(PRESSLEN - buttonDownSec * 2);
+                    }
+                    else wait(PRESSLEN - buttonDownSec);
                 }
-                else wait(PRESSLEN - buttonDownSec);
+                dev.Dispose();
             }
-            dev.Dispose();
+            catch (Exception) {               
+                System.Media.SystemSounds.Hand.Play();
+            }
         }
 
         private static bool wait(float delay)   // delay in seconds
@@ -371,9 +378,15 @@ namespace walk
                 return;
             }
 
-            USBDevice dev = new USBDevice(vid, pid, null, false, 31);
-            Relay(sw, val, dev);
-            dev.Dispose();
+            try
+            {
+                USBDevice dev = new USBDevice(vid, pid, null, false, 31);
+                Relay(sw, val, dev);
+                dev.Dispose();
+            } 
+            catch(Exception) {
+                System.Media.SystemSounds.Hand.Play();
+            }
         }
 
         private static void Relay(int sw, int val, USBDevice dev)
