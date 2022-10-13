@@ -9,6 +9,7 @@ using walk.Properties;
 using USBInterface;
 using System.Threading.Tasks;
 using System.Data;
+using System.Net;
 
 namespace walk
 {
@@ -27,7 +28,8 @@ namespace walk
         static float s = 3.0f;
         static int r=0,dummy=0;
         static String time = "";
-        static float dur, warm, speed, sp, hl, tick, p, reps, sdur;
+        static float dur, warm, speed, sp, hl, tick, p, reps, sdur,startTick;
+        static String https = "";
 
         private void Config_button(object sender, RoutedEventArgs e)
         {
@@ -184,6 +186,8 @@ namespace walk
                 Settings.Default.Duration = (dur / 60).ToString();
                 Settings.Default.Save();
 
+                https = http.Text;
+
                 start.Content = "Pause";
                 start.Opacity = 0.3f;
                 len.Opacity = 0.3f;
@@ -196,7 +200,7 @@ namespace walk
 
                 running = true;               
 
-                r = 0; s = 3.0f;
+                r = 0; s = 3.0f; startTick = 0;
 
                 buttonDownSec = Settings.Default.ButtonPressSec;
                 PRESSLEN = buttonDownSec + Settings.Default.ButtonReleaseSec;              
@@ -281,7 +285,7 @@ namespace walk
         {
             dispSpeed.Content = String.Format("{0:0.0}",s);
             dispIncl.Content = r;
-            progress.Text = String.Format("{0:0.0}", tick++ / 60f);
+            progress.Text = String.Format("{0:0.0}", (tick++-startTick) / 60f);
 
             if (!running && timer != null)
             {
@@ -411,15 +415,24 @@ namespace walk
             caught_up = true;
             dummy_press = false;
 
-            AllOff();
-
             p = 0;
             caught_up = tick == 0;
+
+            if (tick==0 && https.StartsWith("http"))
+            {
+                WebClient webClient= new WebClient();
+                webClient.DownloadString(https);
+                startTick -=7;
+                wait(7);               
+            }
+
+            AllOff();
 
             if (START != 0)
             {          // the 4B-550 has START and STOP buttons and speed starts at 1.0
 
                 press(SPEED_DOWN);  // wake up treadmill
+                startTick--;
                 wait(1f);
                 if (MODE != 0)
                 {
@@ -583,6 +596,8 @@ namespace walk
             s = 1;
 
             if(wait(6f)) return;
+
+            startTick -= 6;
 
             dur -= 6+PRESSLEN;
 
