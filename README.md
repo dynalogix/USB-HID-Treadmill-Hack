@@ -248,3 +248,8 @@ Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 * Attempt to keep hr at this lower target value by adjusting the speed for 60 seconds (currently hardwired)
 * Repeat upper / lower target rates until cooldown is scheduled (same duration as it took to "warm up")
 * Summary screenshot and text file is saved when you exit the app
+
+**Source code notes for BT**
+* reference C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.19041.0\Windows.winmd
+* reference C:\Windows\Microsoft.NET\Framework64\v4.0.30319\System.Runtime.WindowsRuntime.dll
+* see https://hasan-hasanov.com/post/2021/04/19/how_to_use_ble_with_wpf_or_forms/
