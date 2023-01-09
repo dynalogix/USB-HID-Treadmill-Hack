@@ -1,6 +1,6 @@
 # USB-HID-Treadmill-Hack
 Control speed + incline using Windows PC + 4-8 channel USB HID Relay board 
-(new: Heart Rate controlled workouts via Bluetooth Heart Rate chest band - see update below)
+(new: Heart Rate controlled treadmill workouts via Bluetooth Heart Rate chest band - see 2023 update below)
 
 ![App icon](walk/usb-hid-treadmill.ico?raw=true "Icon")
 
