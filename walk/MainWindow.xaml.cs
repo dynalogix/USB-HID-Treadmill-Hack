@@ -10,6 +10,11 @@ using USBInterface;
 using System.Threading.Tasks;
 using System.Data;
 using System.Net;
+using Windows.Devices.Bluetooth.Advertisement;
+using Windows.Devices.Bluetooth;
+using System.Collections.Generic;
+using Windows.Devices.Bluetooth.GenericAttributeProfile;
+using Windows.Storage.Streams;
 
 namespace walk
 {
@@ -30,6 +35,7 @@ namespace walk
         static String time = "";
         static float dur, warm, speed, sp, hl, tick, p, reps, sdur,startTick;
         static String https = "";
+        static int lasthr = 0, hr = 0;
 
         private void Config_button(object sender, RoutedEventArgs e)
         {
@@ -66,7 +72,7 @@ namespace walk
             if (fail && win.Height>100) return;
 
             if (win.Height < 100) win.Height = 163; else win.Height = 85;
-            win.Width = 1748;
+            win.Width = 1848;
             visibility();
         }
 
@@ -74,6 +80,297 @@ namespace walk
 
         Thread thread =null;
         static bool running = false, caught_up=false, dummy_press=false;
+
+        BluetoothLEDevice hrdevice;
+
+        private void btlist_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (btlist.SelectedItem ==null)
+            {
+                return;
+            }
+
+            Debug.WriteLine("save:"+btlist.SelectedItem);
+            Settings.Default.BTHR = (string)btlist.SelectedItem;
+            Settings.Default.Save();           
+
+            foreach (BTItem item in BTDevices) if (item.name == Settings.Default.BTHR) {
+                _ = connectBT(item.address);
+                return;
+            }                    
+        }
+
+        GattCharacteristic notifyingCharacteristic, notifyingCharacteristic2;
+
+        private void dispHR_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            btlist.SelectedItem = null;
+            _ = HRinit();
+        }
+
+        async Task stopHR()
+        {
+            if (notifyingCharacteristic != null)
+            {
+
+                GattCommunicationStatus status = await notifyingCharacteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
+                                            GattClientCharacteristicConfigurationDescriptorValue.None);
+                if (status == GattCommunicationStatus.Success)
+                {
+                    Debug.WriteLine("unsubscribed");
+                    notifyingCharacteristic.ValueChanged -= HRChanged;
+                }
+
+                notifyingCharacteristic = null;
+            }
+
+            if (notifyingCharacteristic2 != null)
+            {
+
+                GattCommunicationStatus status = await notifyingCharacteristic2.WriteClientCharacteristicConfigurationDescriptorAsync(
+                                            GattClientCharacteristicConfigurationDescriptorValue.None);
+                if (status == GattCommunicationStatus.Success)
+                {
+                    Debug.WriteLine("unsubscribed");
+                    notifyingCharacteristic2.ValueChanged -= BattChanged;
+                }
+
+                notifyingCharacteristic2 = null;
+            }
+
+
+            if (hrdevice != null)
+            {
+                hrdevice.Dispose();
+                Debug.WriteLine("disconnected");
+                hrdevice = null;
+            }
+        }
+
+        private void heartOn(object sender, RoutedEventArgs e)
+        {
+            lsprdur.Visibility = Visibility.Hidden;            
+            lmax.Visibility = Visibility.Hidden;
+            lrep.Visibility = Visibility.Hidden;
+            lwarmup.Visibility = Visibility.Hidden;
+            lsprint.Visibility = Visibility.Hidden;
+            mwarmup.Visibility = Visibility.Hidden;
+            msprdur.Visibility = Visibility.Hidden;
+            sprdur.Visibility = Visibility.Hidden;
+            max.Visibility = Visibility.Hidden;
+            rep.Visibility = Visibility.Hidden;
+            warmup.Visibility = Visibility.Hidden;
+            sprint.Visibility = Visibility.Hidden;
+           
+            lowhr.Visibility = Visibility.Visible;
+            llow.Visibility = Visibility.Visible;
+            highhr.Visibility = Visibility.Visible;
+            lhigh.Visibility = Visibility.Visible;
+            tba.Visibility = Visibility.Visible;
+            ltba.Visibility = Visibility.Visible;
+        }
+
+        private void heartOff(object sender, RoutedEventArgs e)
+        {
+            lsprdur.Visibility = Visibility.Visible;
+            lmax.Visibility = Visibility.Visible;
+            lrep.Visibility = Visibility.Visible;
+            lwarmup.Visibility = Visibility.Visible;
+            lsprint.Visibility = Visibility.Visible;
+            mwarmup.Visibility = Visibility.Visible;
+            msprdur.Visibility = Visibility.Visible;
+            sprdur.Visibility = Visibility.Visible;
+            max.Visibility = Visibility.Visible;
+            rep.Visibility = Visibility.Visible;
+            warmup.Visibility = Visibility.Visible;
+            sprint.Visibility = Visibility.Visible;
+
+            lowhr.Visibility = Visibility.Hidden;
+            llow.Visibility = Visibility.Hidden;
+            highhr.Visibility = Visibility.Hidden;
+            lhigh.Visibility = Visibility.Hidden;
+            tba.Visibility = Visibility.Hidden;
+            ltba.Visibility = Visibility.Hidden;
+        }
+
+        async Task connectBT(ulong address)
+        {
+            if (notifyingCharacteristic != null)
+            {
+
+                GattCommunicationStatus status = await notifyingCharacteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
+                                            GattClientCharacteristicConfigurationDescriptorValue.None);
+                if (status == GattCommunicationStatus.Success)
+                {
+                    Debug.WriteLine("unsubscribed");
+                    notifyingCharacteristic.ValueChanged -= HRChanged;
+                }
+
+                notifyingCharacteristic = null;
+            }
+
+            if (notifyingCharacteristic2 != null)
+            {
+
+                GattCommunicationStatus status = await notifyingCharacteristic2.WriteClientCharacteristicConfigurationDescriptorAsync(
+                                            GattClientCharacteristicConfigurationDescriptorValue.None);
+                if (status == GattCommunicationStatus.Success)
+                {
+                    Debug.WriteLine("unsubscribed");
+                    notifyingCharacteristic2.ValueChanged -= BattChanged;
+                }
+
+                notifyingCharacteristic2 = null;
+            }
+
+
+            if (hrdevice != null)
+            {
+                hrdevice.Dispose();
+                Debug.WriteLine("disconnected");
+                hrdevice = null;
+            }
+
+            hrdevice = await BluetoothLEDevice.FromBluetoothAddressAsync(address);
+            Debug.WriteLine("BT connected");
+
+            GattDeviceServicesResult result = await hrdevice.GetGattServicesAsync();
+
+            if (result.Status == GattCommunicationStatus.Success)
+            {
+                foreach(GattDeviceService service in result.Services)
+                {
+                    if (service.Uuid.ToString().StartsWith("0000180d"))
+                    {
+                        GattCharacteristicsResult cresult = await service.GetCharacteristicsAsync();
+
+                        if (cresult.Status == GattCommunicationStatus.Success)
+                        {
+                            foreach (GattCharacteristic characteristic in cresult.Characteristics)
+                            {
+                                /*
+                                if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Read))
+                                {
+                                    Debug.WriteLine(service.AttributeHandle + " can be read");
+                                    GattReadResult rresult = await characteristic.ReadValueAsync();
+                                    if (rresult.Status == GattCommunicationStatus.Success)
+                                    {
+                                        var reader = DataReader.FromBuffer(rresult.Value);
+                                        var len = reader.UnconsumedBufferLength;
+                                        byte[] input = new byte[len];
+                                        reader.ReadBytes(input);
+                                        // Utilize the data as needed
+                                        // for(int i=0;i<len;i++) Debug.WriteLine(i+" value="+input[i]);
+                                        if (len > 1) Debug.WriteLine("HR read=" + input[1]);
+                                    }
+                                }
+                                if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Indicate))
+                                {
+                                    Debug.WriteLine(service.AttributeHandle + " can indicate");
+                                }
+                                */
+                                if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Notify))
+                                {
+
+                                    Debug.WriteLine(service.AttributeHandle + " can be subscribed to");
+                                    notifyingCharacteristic = characteristic;
+                                    GattCommunicationStatus status = await characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
+                                        GattClientCharacteristicConfigurationDescriptorValue.Notify);
+                                    if (status == GattCommunicationStatus.Success)
+                                    {
+                                        Debug.WriteLine("subscribed");
+                                        characteristic.ValueChanged += HRChanged;
+                                    }
+                                }
+                            }
+                        }
+                    } else if (service.Uuid.ToString().StartsWith("0000180f"))
+                    {
+                        GattCharacteristicsResult cresult = await service.GetCharacteristicsAsync();
+
+                        if (cresult.Status == GattCommunicationStatus.Success)
+                        {
+                            foreach (GattCharacteristic characteristic in cresult.Characteristics)
+                            {   /*
+                                if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Read))
+                                {
+                                    Debug.WriteLine(service.AttributeHandle + " can be read");
+                                    GattReadResult rresult = await characteristic.ReadValueAsync();
+                                    if (rresult.Status == GattCommunicationStatus.Success)
+                                    {
+                                        var reader = DataReader.FromBuffer(rresult.Value);
+                                        var len = reader.UnconsumedBufferLength;
+                                        byte[] input = new byte[len];
+                                        reader.ReadBytes(input);
+                                        // Utilize the data as needed
+                                        // for(int i=0;i<len;i++) Debug.WriteLine(i+" value="+input[i]);
+                                        if (len > 1) Debug.WriteLine("batt read=" + input[1]);
+                                    }
+                                }
+                                if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Indicate))
+                                {
+                                    Debug.WriteLine(service.AttributeHandle + " can indicate");
+                                }
+                                */
+                                if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Notify))
+                                {
+
+                                    Debug.WriteLine(service.AttributeHandle + " can be subscribed to");
+                                    notifyingCharacteristic2 = characteristic;
+                                    GattCommunicationStatus status = await characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
+                                        GattClientCharacteristicConfigurationDescriptorValue.Notify);
+                                    if (status == GattCommunicationStatus.Success)
+                                    {
+                                        Debug.WriteLine("battery subscribed");
+                                        characteristic.ValueChanged += BattChanged;
+                                    }
+                                }                               
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void BattChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
+        {
+            var reader = DataReader.FromBuffer(args.CharacteristicValue);
+            var len = reader.UnconsumedBufferLength;
+            byte[] input = new byte[len];
+            reader.ReadBytes(input);
+            // Utilize the data as needed
+            for (int i = 0; i < len; i++) Debug.Write(input[i] + " ");
+            if (len > 0)
+            {
+                Debug.WriteLine("batt=" + input[0]);
+                if(input[0]<21) Application.Current.Dispatcher.Invoke(() => {
+                    dispHR.Foreground = Brushes.Red;
+                });
+            }
+        }
+
+        private void HRChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
+        {
+            var reader = DataReader.FromBuffer(args.CharacteristicValue);
+            var len = reader.UnconsumedBufferLength;
+            byte[] input = new byte[len];
+            reader.ReadBytes(input);
+            // Utilize the data as needed
+            for (int i = 0; i < len; i++) Debug.Write(input[i]+" ");
+            if (len > 1)
+            {
+                Debug.WriteLine("HR=" + input[1]);
+                if(input[1]>10 && input[1]<200)
+                {
+                    lasthr = hr;
+                    hr = input[1];
+                    Application.Current.Dispatcher.Invoke(() => {
+                        dispHR.Content = input[1];
+                    });
+                }
+            }
+        }
+
         private SolidColorBrush brush;              
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -110,6 +407,79 @@ namespace walk
             InitializeComponent();
             visibility();
             win.Height = 85;
+
+            Debug.WriteLine("start");
+            _ = HRinit();
+        }
+
+        static BluetoothLEAdvertisementWatcher watcher;
+
+        class BTItem : IEquatable<BTItem>
+        {
+            public string name;
+            public ulong address;           
+
+            public BTItem(ulong bluetoothAddress)
+            {
+                address = bluetoothAddress;
+            }
+            public BTItem(ulong bluetoothAddress,string name)
+            {
+                address = bluetoothAddress;
+                this.name = name;
+            }
+
+            public bool Equals(BTItem other)
+            {
+                return this.address == other.address;
+            }
+        };
+
+        List<BTItem> BTDevices=new List<BTItem>();
+
+        async Task HRinit()
+        {
+
+            Debug.WriteLine("Find bt");
+
+            watcher = new BluetoothLEAdvertisementWatcher()
+            {
+                ScanningMode = BluetoothLEScanningMode.Passive               
+            };
+           
+            watcher.Received += Watcher_Received;
+            watcher.Start();
+
+            await Task.Delay(10000);
+        }
+
+        private async void Watcher_Received(
+        BluetoothLEAdvertisementWatcher sender,
+        BluetoothLEAdvertisementReceivedEventArgs args)
+        {
+            var device = await BluetoothLEDevice.FromBluetoothAddressAsync(args.BluetoothAddress);
+            if (device != null && device.DeviceInformation.Name.Length>0)
+            {
+                Debug.WriteLine("BT.Addr: "+device.BluetoothAddress+"("+device.DeviceInformation.Name);
+                if (!BTDevices.Contains(new BTItem(device.BluetoothAddress))) {
+                    BTDevices.Add(new BTItem(device.BluetoothAddress, device.DeviceInformation.Name));
+                } else
+                {
+                    watcher.Stop();
+
+                    Application.Current.Dispatcher.Invoke(() => {
+                        foreach (BTItem item in BTDevices) {
+                            btlist.Items.Add(item.name);
+                            if (item.name == Settings.Default.BTHR)
+                            {
+                                btlist.Text = item.name;
+                                Debug.WriteLine("retrieved " + item.name);
+                            }
+                        }
+                        
+                    });
+                }
+            }
         }
 
         private void visibility()
@@ -142,7 +512,7 @@ namespace walk
 
             if (!running)
             {                             
-                Debug.WriteLine("start =======================");
+                Debug.WriteLine("start =======================");              
 
                 GetVidPid();
 
@@ -154,7 +524,7 @@ namespace walk
                 warmup.Background = Brushes.Transparent;
                 rep.Background = Brushes.Transparent;
                 progress.Background = Brushes.Transparent;
-                Boolean fail= false;
+                Boolean fail= false; 
                
                 try {
                     if (len.Text.Contains(":")) dur = (float)(float.Parse(len.Text.Split(":")[0]) * 60 + Evaluate(len.Text.Split(":")[1])) * 60;
@@ -213,8 +583,8 @@ namespace walk
                 warm = warm  / (10f * (speed - 3.0f));        // - 10*PRESSLEN * (speed - 3.0f)
 
                 Debug.WriteLine("Button press="+buttonDownSec.ToString());
-
-                thread = new Thread(workout1);               
+               
+                thread = Settings.Default.HEARTMODE ? new Thread(workout2) : new Thread(workout1);               
                 thread.Start();
 
                 timer = new DispatcherTimer();
@@ -278,6 +648,12 @@ namespace walk
             brush.Color = Color.FromRgb(255, 255, 255);
             brush.Opacity = 1f;
             win.Background = brush;
+
+            if(hrdevice!=null)
+            {
+                _ = stopHR();
+                Debug.WriteLine("closed BT");
+            }
 
         }
 
@@ -408,6 +784,110 @@ namespace walk
                 data[1] = ((byte)(240 * val + sw));
                 dev.Write(data);
             }
+        }
+
+        private void workout2(object obj)
+        {
+
+            caught_up = true;
+            dummy_press = false;
+
+            p = 0;
+            caught_up = tick == 0;
+
+            if (tick == 0 && https.StartsWith("http"))
+            {
+                WebClient webClient = new WebClient();
+                webClient.DownloadString(https);
+                startTick -= 7;
+                wait(7);
+            }
+
+            AllOff();
+
+            if (START != 0)
+            {          // the 4B-550 has START and STOP buttons and speed starts at 1.0
+
+                press(SPEED_DOWN);  // wake up treadmill
+                startTick--;
+                wait(1f);
+                if (MODE != 0)
+                {
+                    press(MODE);        // MODE MODE → target distance                   
+                    press(MODE);
+                    press(SPEED_DOWN);  // set target distance 99km → maximum length workout                    
+                    dur -= 3 * PRESSLEN;
+                }
+
+                startup(3f);  // initial speed raise 1 to 3                
+
+            }
+
+            dummy_press = DUMMYMODE || DUMMYSTART;
+
+            // Warm up
+
+            int minhr = 110, maxhr = 125, tba = 40;
+
+            var baseHR = hr;
+
+            while (hr<minhr)
+            {
+                if (wait(tba/4)) return;
+                s += 0.1f;
+                if (Math.Abs(s-6.0f) <0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_UP);
+            }
+
+            var warmuptime = tick - startTick;
+
+            while(tick-startTick<dur-warmuptime)
+            {
+                while(hr<maxhr && tick-startTick<dur-warmuptime)
+                {
+                    if (wait(tba/Math.Max(1,maxhr-hr))) return;
+                    s += 0.1f;
+                    if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_UP);
+                    if (hr <maxhr && tick - startTick < dur - warmuptime && r<hl)
+                    {
+                        if (wait(tba / Math.Max(1, maxhr-hr))) return;
+                        r++;
+                        press(INCL_UP);
+                    }
+
+                }
+
+                if (tick - startTick > dur - warmuptime) minhr = baseHR;
+
+                while (hr > minhr)
+                {
+                    if (wait(tba/Math.Max(1,hr-minhr))) return;
+                    s -= 0.1f;
+                    if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_DOWN);
+                    if(hr>minhr && r>-3) {
+                        if (wait(tba / Math.Max(1, hr - minhr))) return;
+                        r--;
+                        press(INCL_DOWN);
+                    }
+                }
+                if (r < 0) r = 0;
+            }
+
+            while (s > 3.0)
+            {
+                if (wait(tba/4)) return;
+                s -= 0.1f;
+                if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_DOWN);
+                if(r>-3)
+                {
+                    if (wait(1)) return;
+                    press(INCL_DOWN);
+                    r--;
+                }
+            }
+
+            if (r < 0) r = 0;
+
+            running = false;
         }
 
         private void workout1(object obj)

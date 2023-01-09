@@ -78,7 +78,22 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="HTTP" Type="System.String" Scope="User">
-      <Value Profile="(Default)"></Value>
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="BTHR" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="HEARTMODE" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Lowhr" Type="System.String" Scope="User">
+      <Value Profile="(Default)">110</Value>
+    </Setting>
+    <Setting Name="Highhr" Type="System.String" Scope="User">
+      <Value Profile="(Default)">125</Value>
+    </Setting>
+    <Setting Name="Tba" Type="System.String" Scope="User">
+      <Value Profile="(Default)">40</Value>
     </Setting>
   </Settings>
 </SettingsFile>

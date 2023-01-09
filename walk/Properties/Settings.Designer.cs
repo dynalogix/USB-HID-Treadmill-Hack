@@ -34,22 +34,7 @@ namespace walk.Properties {
                 this["Duration"] = value;
             }
         }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string HTTP
-        {
-            get
-            {
-                return ((string)(this["HTTP"]));
-            }
-            set
-            {
-                this["HTTP"] = value;
-            }
-        }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("6")]
@@ -335,6 +320,78 @@ namespace walk.Properties {
             }
             set {
                 this["DUMMYMODE"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string HTTP {
+            get {
+                return ((string)(this["HTTP"]));
+            }
+            set {
+                this["HTTP"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string BTHR {
+            get {
+                return ((string)(this["BTHR"]));
+            }
+            set {
+                this["BTHR"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HEARTMODE {
+            get {
+                return ((bool)(this["HEARTMODE"]));
+            }
+            set {
+                this["HEARTMODE"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("110")]
+        public string Lowhr {
+            get {
+                return ((string)(this["Lowhr"]));
+            }
+            set {
+                this["Lowhr"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("125")]
+        public string Highhr {
+            get {
+                return ((string)(this["Highhr"]));
+            }
+            set {
+                this["Highhr"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("40")]
+        public string Tba {
+            get {
+                return ((string)(this["Tba"]));
+            }
+            set {
+                this["Tba"] = value;
             }
         }
     }

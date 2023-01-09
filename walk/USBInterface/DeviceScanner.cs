@@ -110,7 +110,7 @@ namespace USBInterface
                         }
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     // stop scan, user can manually restart again with StartAsyncScan()
                     asyncScanOn = false;
