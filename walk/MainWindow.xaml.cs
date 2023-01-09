@@ -738,47 +738,11 @@ namespace walk
             brush.Opacity = 1f;
             win.Background = brush;
 
-            if (lastX>0 && Settings.Default.logdir.Length>0) { 
+            save();
 
-            if (screenshot != null)
-            {
-                File.Delete(screenshot + ".txt");  // if already saved delete that
-                File.Delete(screenshot + ".png");  // if already saved delete that
-            }            
+            Application.Current.Dispatcher.Invoke(() => { save(); });
 
-            win.Height = WinH;
-            win.Width = WinW;
-            RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap(WinW, WinH, 96, 96,PixelFormats.Pbgra32);
-            renderTargetBitmap.Render(win);
-            PngBitmapEncoder pngImage = new PngBitmapEncoder();
-            pngImage.Frames.Add(BitmapFrame.Create(renderTargetBitmap));
-
-            float totalHR = 0;
-            for(int x=0;x <= lastX;x++) totalHR += hrplot[x]*((dur/60f)/lastX);
-
-            screenshot = Settings.Default.logdir + (Settings.Default.logdir.EndsWith("\\") ? "" : "\\") + String.Format("{0:yyyy-MM-dd HH.mm}", DateTime.Now);
-
-            var age = (DateTime.Today - Settings.Default.birthd).TotalDays/365.25f;
-
-
-            File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1}min\nHR Max: {0}bps Avg: {1:f2}bps Plot range: {8}…{9}bps\nSpeed Max: {2:F2}km/h Avg: {3:F2}km/h\nAscend: {4}\nDistance: {5:F0}m\nCalories: {6:F0}KCal\nSections:{7}",
-                maxHR, totalHR / (dur/60f),
-                maxSpeed, (distance/1000) / (dur / 60f / 60f),
-                ascend, distance,
-                (dur / 60) * (Settings.Default.FEMALE
-                ? (-20.4022 + (0.4472 * totalHR / (dur / 60f)) - (0.1263 * Settings.Default.weightkg) + (0.074 * age)) / 4.184
-                : (-55.0969 + (0.6309 * totalHR / (dur / 60f)) + (0.1988f * Settings.Default.weightkg) + (0.2017 * age)) / 4.184),
-                meta, plotHrMin, plotHrMax,dur/60f
-                ));
-
-            using (Stream fileStream = File.Create(screenshot+".png"))
-            {
-                pngImage.Save(fileStream);
-            }
-            }
-
-
-            if(hrdevice!=null)
+            if (hrdevice!=null)
             {
                 _ = stopHR();
                 Debug.WriteLine("closed BT");
@@ -786,10 +750,54 @@ namespace walk
 
         }
 
+        private void save()
+        {
+            if (lastX > 0 && Settings.Default.logdir.Length > 0)
+            {
+
+                if (screenshot != null)
+                {
+                    File.Delete(screenshot + ".txt");  // if already saved delete that
+                    File.Delete(screenshot + ".png");  // if already saved delete that
+                }
+
+                win.Height = WinH;
+                win.Width = WinW;
+                RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap(WinW, WinH, 96, 96, PixelFormats.Pbgra32);
+                renderTargetBitmap.Render(win);
+                PngBitmapEncoder pngImage = new PngBitmapEncoder();
+                pngImage.Frames.Add(BitmapFrame.Create(renderTargetBitmap));
+
+                float totalHR = 0;
+                for (int x = 0; x <= lastX; x++) totalHR += hrplot[x] * ((dur / 60f) / lastX);
+
+                screenshot = Settings.Default.logdir + (Settings.Default.logdir.EndsWith("\\") ? "" : "\\") + String.Format("{0:yyyy-MM-dd HH.mm}", DateTime.Now);
+
+                var age = (DateTime.Today - Settings.Default.birthd).TotalDays / 365.25f;
+
+
+                File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1}min\nHR Max: {0}bps Avg: {1:f2}bps Plot range: {8}…{9}bps\nSpeed Max: {2:F2}km/h Avg: {3:F2}km/h\nAscend: {4}\nDistance: {5:F0}m\nCalories: {6:F0}KCal\nSections:{7}",
+                    maxHR, totalHR / (dur / 60f),
+                    maxSpeed, (distance / 1000) / (dur / 60f / 60f),
+                    ascend, distance,
+                    (dur / 60) * (Settings.Default.FEMALE
+                    ? (-20.4022 + (0.4472 * totalHR / (dur / 60f)) - (0.1263 * Settings.Default.weightkg) + (0.074 * age)) / 4.184
+                    : (-55.0969 + (0.6309 * totalHR / (dur / 60f)) + (0.1988f * Settings.Default.weightkg) + (0.2017 * age)) / 4.184),
+                    meta, plotHrMin, plotHrMax, dur / 60f
+                    ));
+
+                using (Stream fileStream = File.Create(screenshot + ".png"))
+                {
+                    pngImage.Save(fileStream);
+                }
+            }
+
+        }
+
         private void updateUI(object sender, EventArgs e)
         {
             dispSpeed.Content = String.Format("{0:0.0}",s);
-            dispIncl.Content = r;
+            dispIncl.Content = r < 0 ? 0 : r;
             progress.Text = String.Format("{0:0.0}", (tick++-startTick) / 60f);
 
             if (s > maxSpeed) maxSpeed = s;
