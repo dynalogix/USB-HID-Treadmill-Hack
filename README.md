@@ -1,5 +1,6 @@
 # USB-HID-Treadmill-Hack
-Control speed + incline using Windows PC + 4 channel USB HID Relay board
+Control speed + incline using Windows PC + 4-8 channel USB HID Relay board 
+(new: Heart Rate controlled workouts via Bluetooth Heart Rate chest band - see update below)
 
 ![App icon](walk/usb-hid-treadmill.ico?raw=true "Icon")
 
@@ -188,3 +189,61 @@ Get the app Hidapitester: https://github.com/todbot/hidapitester/releases/tag/0.
 
 Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 
+# 2023 update: Bluetooth Heart Rate control and more!
+
+![Heart Rate](hr.png?raw=true "heart rate control")
+
+**What's new:**
+* connectivity to standard Bluetooth Heart Rate sensor (e.g. Polar H9)
+* HR value displayed during workout
+* new workout program (see heart checkbox) where we can specify a lower and upper target HR, and a (maximum) time between adjustments parameter (seconds)
+* new graph showing heart rate vs. speed vs. incline
+* workout screenshot and summary data is automatically saved into selected folder ("log dir path") a PNG and a TXT file is created with timestamp as filename
+
+**Summary data example:** (e.g. 2023-01-19 18.46.txt, see 2023-01-19 18.46.png above)
+
+     Duration: 25min
+     HR Max: 124bps Avg: 103.19683bps Plot range: 85…128bps
+     Speed Max: 7.00km/h Avg: 4.81km/h
+     Ascend: 9946
+     Distance: 1991m
+     Calories: 210KCal
+     Sections:
+      0:00:06 warmup↑100
+      0:04:06 ↑115
+      0:05:55 →115
+      0:06:55 ↓100
+      0:08:03 →100
+      0:09:05 ↑115
+      0:10:50 →115
+      0:11:50 ↓100
+      0:13:26 →100
+      0:13:58 ↑115
+      0:15:17 →115
+      0:16:01 ↓100
+      0:17:35 →100
+      0:18:06 ↑115
+      0:19:52 →115
+      0:20:24 ↓100
+      0:22:07 →100
+      0:22:07 cool↓3.0
+
+**New settings:**
+* **BT** - select bluetooth HR device (it has to be paired in Windows settings)
+* **♥ checkbox** - toggle between time controlled or heart rate controlled workouts
+* **TBA** - time between adjustments: maximum delay [seconds] between speed / incline adjustments
+* **Low ♥** - lower heart rate target
+* **High ♥** - upper heart rate target
+* **Log dir path** - if specified screenshots (png) and summary text files (txt) are saved in this directory (timestamp as file name)
+* **Birth date, gender, weight** - needed for calorie calculation
+* **HTTP on start** - provide a webhook to turn on the treadmill
+* **Heart rate** - shows the detected HR as soon as the sensor is connected. Turns red if battery<20%. Click into field (via mouse) to re-initialize BT discovery 
+
+**New, heart rate controlled workout:**
+* Warm up: speed is increased every (TBA / 4) seconds until lower heart rate target is reached (store time needed and use it to make cooldown the same duration!)
+* Increase speed and incline (alternating) until upper heart rate target is reached ("Hill" maximum incline setting is obeyed!)
+* Attempt to keep hr at this upper target value by adjusting the speed for 60 seconds (currently hardwired)
+* Reduce speed and incline (alterning) until lower heart rate target is reached 
+* Attempt to keep hr at this lower target value by adjusting the speed for 60 seconds (currently hardwired)
+* Repeat upper / lower target rates until cooldown is scheduled (same duration as it took to "warm up" to the lower HR target)
+* Summary screenshot and text file is saved when you exit the app
