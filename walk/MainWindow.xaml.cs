@@ -761,7 +761,7 @@ namespace walk
             var age = (DateTime.Today - Settings.Default.birthd).TotalDays/365.25f;
 
 
-            File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1}min\nHR Max: {0}bps Avg: {1}bps Plot range: {8}…{9}bps\nSpeed Max: {2:F2}km/h Avg: {3:F2}km/h\nAscend: {4}\nDistance: {5:F0}m\nCalories: {6:F0}KCal\nPeaks:{7}",
+            File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1}min\nHR Max: {0}bps Avg: {1:f2}bps Plot range: {8}…{9}bps\nSpeed Max: {2:F2}km/h Avg: {3:F2}km/h\nAscend: {4}\nDistance: {5:F0}m\nCalories: {6:F0}KCal\nSections:{7}",
                 maxHR, totalHR / (dur/60f),
                 maxSpeed, (distance/1000) / (dur / 60f / 60f),
                 ascend, distance,
