@@ -201,6 +201,7 @@ Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 * workout screenshot and summary data is automatically saved into selected folder ("log dir path") a PNG and a TXT file is created with timestamp as filename
 
 **Summary data example:** (e.g. 2023-01-19 18.46.txt, see 2023-01-19 18.46.png above)
+
      Duration: 25min
      HR Max: 124bps Avg: 103.19683bps Plot range: 85…128bps
      Speed Max: 7.00km/h Avg: 4.81km/h
