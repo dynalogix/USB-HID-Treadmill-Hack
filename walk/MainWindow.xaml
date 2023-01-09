@@ -214,8 +214,8 @@
         <TextBox HorizontalAlignment="Left" Margin="91,146,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="754" x:Name="http" Text="{Binding HTTP, Mode=TwoWay, Source={x:Static p:Settings.Default}}" />
         <Label Content="HTTP on start:" HorizontalAlignment="Left" Margin="6,141,0,0" VerticalAlignment="Top" Height="23"/>
 
-        <TextBox HorizontalAlignment="Left" Margin="1091,166,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="754" x:Name="logdir" Text="{Binding logdir, Mode=TwoWay, Source={x:Static p:Settings.Default}}" />
-        <Label Content="log dir path:" HorizontalAlignment="Left" Margin="1006,161,0,0" VerticalAlignment="Top" Height="31"/>
+        <TextBox HorizontalAlignment="Left" Margin="1091,166,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="740" x:Name="logdir" Text="{Binding logdir, Mode=TwoWay, Source={x:Static p:Settings.Default}}" />
+        <Label Content="Log dir path:" HorizontalAlignment="Left" Margin="1006,161,0,0" VerticalAlignment="Top" Height="31"/>
 
         <Label Content="BT" Margin="1409,94,314,0" VerticalAlignment="Top" Height="26" RenderTransformOrigin="-2.988,-0.385" />
         <ComboBox x:Name="btlist" HorizontalAlignment="Left" Margin="1434,96,0,0" VerticalAlignment="Top" Width="195" SelectionChanged="btlist_SelectionChanged" />
@@ -270,11 +270,17 @@
 
         <Polyline x:Name="sRules" HorizontalAlignment="Left" Height="88" Margin="9,267,0,0" VerticalAlignment="Top" Width="1831" Stroke="Blue" StrokeThickness="1" />
         <Polyline x:Name="vRules" HorizontalAlignment="Left" Height="88" Margin="9,267,0,0" VerticalAlignment="Top" Width="1831" Stroke="Gray" StrokeThickness="1" />
-        <Polyline x:Name="eRules" HorizontalAlignment="Left" Height="88" Margin="9,267,0,0" VerticalAlignment="Top" Width="1831" Stroke="Magenta" StrokeThickness="1" />
+        <Polyline x:Name="eRules" HorizontalAlignment="Left" Height="88" Margin="9,267,0,0" VerticalAlignment="Top" Width="1831" Stroke="Green" StrokeThickness="1" />
         <Border x:Name="hrRules" HorizontalAlignment="Left" Height="50" Margin="9,280,0,0" VerticalAlignment="Top" Width="1831" BorderThickness="2" BorderBrush="Red" />
         <Border HorizontalAlignment="Left" Height="88" Margin="9,267,0,0" VerticalAlignment="Top" Width="1831" BorderThickness="2" BorderBrush="Gray" />
         <Polyline x:Name="splot" HorizontalAlignment="Left" Height="88" Margin="9,267,0,0" VerticalAlignment="Top" Width="1831" Stroke="Blue" StrokeThickness="3" />
         <Polyline x:Name="iplot" HorizontalAlignment="Left" Height="88" Margin="9,267,0,0" VerticalAlignment="Top" Width="1831" Stroke="Green" StrokeThickness="3" />
         <Polyline x:Name="plot" HorizontalAlignment="Left" Height="88" Margin="9,267,0,0" VerticalAlignment="Top" Width="1831" Stroke="Red" StrokeThickness="4" />
+
+        <DatePicker HorizontalAlignment="Left" Margin="1091,194,0,0" VerticalAlignment="Top" SelectedDate="{Binding Source={x:Static p:Settings.Default}, Path=birthd, Mode=TwoWay}" />
+        <TextBox HorizontalAlignment="Left" Margin="1091,228,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Text="{Binding weightkg, Mode=TwoWay, Source={x:Static p:Settings.Default}}" />
+        <Label Content="Birth date:" HorizontalAlignment="Left" Margin="1016,192,0,0" VerticalAlignment="Top"/>
+        <Label Content="Weight (kg):" HorizontalAlignment="Left" Margin="1007,224,0,0" VerticalAlignment="Top"/>
+        <CheckBox Content="Female" HorizontalAlignment="Left" Margin="1231,199,0,0" VerticalAlignment="Top" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=FEMALE, Mode=TwoWay}" />
     </Grid>
 </Window>

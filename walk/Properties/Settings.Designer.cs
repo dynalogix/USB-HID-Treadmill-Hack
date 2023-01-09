@@ -406,5 +406,41 @@ namespace walk.Properties {
                 this["logdir"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("75")]
+        public int weightkg {
+            get {
+                return ((int)(this["weightkg"]));
+            }
+            set {
+                this["weightkg"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1971-06-11")]
+        public global::System.DateTime birthd {
+            get {
+                return ((global::System.DateTime)(this["birthd"]));
+            }
+            set {
+                this["birthd"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool FEMALE {
+            get {
+                return ((bool)(this["FEMALE"]));
+            }
+            set {
+                this["FEMALE"] = value;
+            }
+        }
     }
 }

@@ -173,6 +173,7 @@ namespace walk
             shiftXY(llow, 0, -s);
             shiftXY(lhigh, 0, -s);
             shiftXY(ltba, 0, -s);
+            shiftXY(mtba, 0, -s);
         }
 
         private void shiftXY(Control c, int x, int y)
@@ -202,6 +203,7 @@ namespace walk
             shiftXY(llow, 0, s);
             shiftXY(lhigh, 0, s);
             shiftXY(ltba, 0, s);
+            shiftXY(mtba, 0, s);
         }
 
         async Task connectBT(ulong address)
@@ -736,7 +738,7 @@ namespace walk
             brush.Opacity = 1f;
             win.Background = brush;
 
-            if (Settings.Default.logdir.Length>0) { 
+            if (lastX>0 && Settings.Default.logdir.Length>0) { 
 
             if (screenshot != null)
             {
@@ -752,14 +754,21 @@ namespace walk
             pngImage.Frames.Add(BitmapFrame.Create(renderTargetBitmap));
 
             float totalHR = 0;
-            for(int x=0;x <= lastX;x++) totalHR += hrplot[x];
+            for(int x=0;x <= lastX;x++) totalHR += hrplot[x]*((dur/60f)/lastX);
 
             screenshot = Settings.Default.logdir + (Settings.Default.logdir.EndsWith("\\") ? "" : "\\") + String.Format("{0:yyyy-MM-dd HH.mm}", DateTime.Now);
 
-            File.WriteAllText(screenshot + ".txt", String.Format("HR Max: {0}bps Avg: {1}bps\nSpeed Max: {2:F2}km/h Avg: {3:F2}km/h\nAscend {4}\nDistance {5:F2}km\nPeaks:{6}",
-                maxHR, totalHR / lastX,
-                maxSpeed, distance / (dur / 60f / 60f),
-                ascend, distance, meta
+            var age = (DateTime.Today - Settings.Default.birthd).TotalDays/365.25f;
+
+
+            File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1}min\nHR Max: {0}bps Avg: {1}bps Plot range: {8}…{9}bps\nSpeed Max: {2:F2}km/h Avg: {3:F2}km/h\nAscend: {4}\nDistance: {5:F0}m\nCalories: {6:F0}KCal\nPeaks:{7}",
+                maxHR, totalHR / (dur/60f),
+                maxSpeed, (distance/1000) / (dur / 60f / 60f),
+                ascend, distance,
+                (dur / 60) * (Settings.Default.FEMALE
+                ? (-20.4022 + (0.4472 * totalHR / (dur / 60f)) - (0.1263 * Settings.Default.weightkg) + (0.074 * age)) / 4.184
+                : (-55.0969 + (0.6309 * totalHR / (dur / 60f)) + (0.1988f * Settings.Default.weightkg) + (0.2017 * age)) / 4.184),
+                meta, plotHrMin, plotHrMax,dur/60f
                 ));
 
             using (Stream fileStream = File.Create(screenshot+".png"))
@@ -1112,10 +1121,10 @@ namespace walk
             meta += String.Format("\n{0}:{1:D2}:{2:D2} ", h, m, s) + section;
 
             Application.Current.Dispatcher.Invoke(() => {
-                int x = Math.Min((int)((tick-startTick) * plot.Width / dur), (int)plot.Width - 1);
-                eRules.Points.Add(new Point(x * eRules.Width / (dur / 60), 0));
-                eRules.Points.Add(new Point(x * eRules.Width / (dur / 60), eRules.Height));
-                eRules.Points.Add(new Point(x * eRules.Width / (dur / 60), 0));
+                int x = Math.Min((int)((tick-startTick) * eRules.Width / dur), (int)eRules.Width - 1);
+                eRules.Points.Add(new Point(x , 0));
+                eRules.Points.Add(new Point(x , eRules.Height));
+                eRules.Points.Add(new Point(x , 0));
             });
         }
 

@@ -98,5 +98,14 @@
     <Setting Name="logdir" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="weightkg" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">75</Value>
+    </Setting>
+    <Setting Name="birthd" Type="System.DateTime" Scope="User">
+      <Value Profile="(Default)">1971-06-11</Value>
+    </Setting>
+    <Setting Name="FEMALE" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
