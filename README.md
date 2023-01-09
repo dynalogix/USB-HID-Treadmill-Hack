@@ -1,6 +1,6 @@
 # USB-HID-Treadmill-Hack
 Control speed + incline using Windows PC + 4-8 channel USB HID Relay board 
-(new: Heart Rate controlled workouts via Bluetooth Heart Rate chest band - see update below)
+(new: Heart Rate controlled treadmill workouts via Bluetooth Heart Rate chest band - see 2023 update below)
 
 ![App icon](walk/usb-hid-treadmill.ico?raw=true "Icon")
 
@@ -199,6 +199,7 @@ Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 * new workout program (see heart checkbox) where we can specify a lower and upper target HR, and a (maximum) time between adjustments parameter (seconds)
 * new graph showing heart rate vs. speed vs. incline
 * workout screenshot and summary data is automatically saved into selected folder ("log dir path") a PNG and a TXT file is created with timestamp as filename
+* upon pressing "START" we can now turn on the treadmill via webhook using a smart switch
 
 **Summary data example:** (e.g. 2023-01-19 18.46.txt, see 2023-01-19 18.46.png above)
 
@@ -245,5 +246,10 @@ Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 * Attempt to keep hr at this upper target value by adjusting the speed for 60 seconds (currently hardwired)
 * Reduce speed and incline (alterning) until lower heart rate target is reached 
 * Attempt to keep hr at this lower target value by adjusting the speed for 60 seconds (currently hardwired)
-* Repeat upper / lower target rates until cooldown is scheduled (same duration as it took to "warm up" to the lower HR target)
+* Repeat upper / lower target rates until cooldown is scheduled (same duration as it took to "warm up")
 * Summary screenshot and text file is saved when you exit the app
+
+**Source code notes for BT**
+* reference C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.19041.0\Windows.winmd
+* reference C:\Windows\Microsoft.NET\Framework64\v4.0.30319\System.Runtime.WindowsRuntime.dll
+* see https://hasan-hasanov.com/post/2021/04/19/how_to_use_ble_with_wpf_or_forms/
