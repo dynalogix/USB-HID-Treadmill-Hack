@@ -208,7 +208,7 @@ Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
      Ascend: 9946
      Distance: 1991m
      Calories: 210KCal
-     Peaks:
+     Sections:
       0:00:06 warmup↑100
       0:04:06 ↑115
       0:05:55 →115
