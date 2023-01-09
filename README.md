@@ -199,6 +199,7 @@ Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 * new workout program (see heart checkbox) where we can specify a lower and upper target HR, and a (maximum) time between adjustments parameter (seconds)
 * new graph showing heart rate vs. speed vs. incline
 * workout screenshot and summary data is automatically saved into selected folder ("log dir path") a PNG and a TXT file is created with timestamp as filename
+* upon pressing "START" we can now turn on the treadmill via webhook using a smart switch
 
 **Summary data example:** (e.g. 2023-01-19 18.46.txt, see 2023-01-19 18.46.png above)
 
@@ -245,5 +246,5 @@ Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 * Attempt to keep hr at this upper target value by adjusting the speed for 60 seconds (currently hardwired)
 * Reduce speed and incline (alterning) until lower heart rate target is reached 
 * Attempt to keep hr at this lower target value by adjusting the speed for 60 seconds (currently hardwired)
-* Repeat upper / lower target rates until cooldown is scheduled (same duration as it took to "warm up" to the lower HR target)
+* Repeat upper / lower target rates until cooldown is scheduled (same duration as it took to "warm up")
 * Summary screenshot and text file is saved when you exit the app
