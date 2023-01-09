@@ -361,7 +361,7 @@ namespace walk.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("110")]
+        [global::System.Configuration.DefaultSettingValueAttribute("105")]
         public string Lowhr {
             get {
                 return ((string)(this["Lowhr"]));
@@ -373,7 +373,7 @@ namespace walk.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("125")]
+        [global::System.Configuration.DefaultSettingValueAttribute("120")]
         public string Highhr {
             get {
                 return ((string)(this["Highhr"]));
@@ -385,13 +385,25 @@ namespace walk.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("40")]
+        [global::System.Configuration.DefaultSettingValueAttribute("30")]
         public string Tba {
             get {
                 return ((string)(this["Tba"]));
             }
             set {
                 this["Tba"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string logdir {
+            get {
+                return ((string)(this["logdir"]));
+            }
+            set {
+                this["logdir"] = value;
             }
         }
     }

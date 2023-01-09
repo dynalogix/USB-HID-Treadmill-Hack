@@ -87,13 +87,16 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="Lowhr" Type="System.String" Scope="User">
-      <Value Profile="(Default)">110</Value>
+      <Value Profile="(Default)">105</Value>
     </Setting>
     <Setting Name="Highhr" Type="System.String" Scope="User">
-      <Value Profile="(Default)">125</Value>
+      <Value Profile="(Default)">120</Value>
     </Setting>
     <Setting Name="Tba" Type="System.String" Scope="User">
-      <Value Profile="(Default)">40</Value>
+      <Value Profile="(Default)">30</Value>
+    </Setting>
+    <Setting Name="logdir" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>
