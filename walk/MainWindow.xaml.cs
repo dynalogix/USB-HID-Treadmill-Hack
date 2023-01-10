@@ -39,7 +39,7 @@ namespace walk
         static String https = "";
         static int lasthr = 0, hr = 0,plotHrMin=85,plotHrMax=120;
         static int[] hrplot=null;
-        static int WinH = 363, WinW = 1848;
+        static int WinH = 293, WinH2=180, WinW = 1848;
 
         private void Config_button(object sender, RoutedEventArgs e)
         {
@@ -75,7 +75,15 @@ namespace walk
 
             if (fail && win.Height>100) return;
 
-            if (win.Height < 100) win.Height = WinH; else win.Height = 85;
+            if(((Button)sender).Content.ToString().Equals("📊"))
+            {
+                if (win.Height < 150) win.Height = WinH2; else win.Height = 85;
+            } else
+            {
+                if (win.Height < 200) win.Height = WinH; else win.Height = 85;
+            }
+
+                
             win.Width = WinW;
             visibility();
         }
@@ -751,9 +759,9 @@ namespace walk
                     File.Delete(screenshot + ".png");  // if already saved delete that
                 }
 
-                win.Height = WinH;
+                if(win.Height<100) win.Height = WinH2;
                 win.Width = WinW;
-                RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap(WinW, WinH, 96, 96, PixelFormats.Pbgra32);
+                RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap(WinW, (int)win.Height, 96, 96, PixelFormats.Pbgra32);
                 renderTargetBitmap.Render(win);
                 PngBitmapEncoder pngImage = new PngBitmapEncoder();
                 pngImage.Frames.Add(BitmapFrame.Create(renderTargetBitmap));
