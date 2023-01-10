@@ -265,15 +265,15 @@
         </Label>
         <Label x:Name="mtba" Content="sec" HorizontalAlignment="Left" Margin="421,236,0,-17" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top"  />
 
-        <Polyline x:Name="sRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Blue" StrokeThickness="1" />
-        <Polyline x:Name="vRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Gray" StrokeThickness="1" />
-        <Polyline x:Name="eRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Green" StrokeThickness="1" />
+        <Polyline x:Name="sRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Blue" Opacity="0.9" StrokeThickness="1" />
+        <Polyline x:Name="vRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Gray" Opacity="0.5" StrokeThickness="1" />
+        <Polyline x:Name="eRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Green" Opacity="0.9" StrokeThickness="1" />
         <Border x:Name="hrRules" HorizontalAlignment="Center" Height="88" Margin="0,84,0,0" VerticalAlignment="Top" Width="1831" BorderThickness="1" BorderBrush="Red" />
+        <Polyline x:Name="splot" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Blue" StrokeThickness="2" />
+        <Polyline x:Name="iplot" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Green" Opacity="0.9" StrokeThickness="2" />
+        <Polyline x:Name="plot" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Red" Opacity="0.9" StrokeThickness="3" />
         <Border HorizontalAlignment="Center" Height="88" Margin="0,84,0,0" VerticalAlignment="Top" Width="1831" BorderThickness="2" BorderBrush="Gray" />
-        <Polyline x:Name="splot" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Blue" StrokeThickness="3" />
-        <Polyline x:Name="iplot" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Green" StrokeThickness="3" />
-        <Polyline x:Name="plot" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Red" StrokeThickness="4" />
-
+        
         <DatePicker HorizontalAlignment="Left" Margin="1483,258,0,0" VerticalAlignment="Top" SelectedDate="{Binding Source={x:Static p:Settings.Default}, Path=birthd, Mode=TwoWay}" />
         <TextBox HorizontalAlignment="Left" Margin="1716,263,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="49" Text="{Binding weightkg, Mode=TwoWay, Source={x:Static p:Settings.Default}}" />
         <Label Content="Birth date:" HorizontalAlignment="Left" Margin="1407,256,0,0" VerticalAlignment="Top"/>

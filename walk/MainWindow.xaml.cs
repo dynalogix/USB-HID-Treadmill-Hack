@@ -25,7 +25,10 @@ namespace walk
     /// </summary>
     public partial class MainWindow : Window
     {
-        static int ON = 1, OFF = 0, SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL=9, START=5, MODE=6, STOP=7,SPD3=8,SPD6=7;
+        static int MAXSPEED = 16, MAXINCL = 15;
+        static int WinH = 293, WinH2 = 180, WinH0 = 84, WinW = 1848, plotWidth = 1000;
+
+        static int ON = 1, OFF = 0, SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL=9, START=5, MODE=6, STOP=7,SPD3=8,SPD6=7;        
         static bool HW341=false, CH551G=true, DUMMYSTART=false, DUMMYMODE=false;
 
         static float buttonDownSec = 0.5f,PRESSLEN=0.6f;       
@@ -38,8 +41,7 @@ namespace walk
         static float dur, warm, speed, sp, hl, tick, p, reps, sdur,startTick;
         static String https = "";
         static int lasthr = 0, hr = 0,plotHrMin=85,plotHrMax=120;
-        static int[] hrplot=null;
-        static int WinH = 293, WinH2=180, WinH0=84, WinW = 1848, plotWidth=1000;
+        static int[] hrplot=null;        
 
         private void Config_button(object sender, RoutedEventArgs e)
         {
@@ -598,11 +600,11 @@ namespace walk
                 try { sdur = float.Parse(sprdur.Text) * 60; } catch { sdur = -1; }
                 if (sdur > 20 * 60) { sprdur.Background = Brushes.Yellow; fail = true; } 
                 try { speed = float.Parse(max.Text); } catch { speed = -1; }
-                if (speed < 3 || speed > 16) { max.Background = Brushes.Yellow; fail = true; } 
+                if (speed < 3 || speed > MAXSPEED) { max.Background = Brushes.Yellow; fail = true; } 
                 try { sp = float.Parse(sprint.Text); } catch { sp = -1; }
-                if (sp < speed || sp > 16) { sprint.Background = Brushes.Yellow; fail = true; }
+                if (sp < speed || sp > MAXSPEED) { sprint.Background = Brushes.Yellow; fail = true; }
                 try { hl = INCL_UP * INCL_DOWN != 0 ? float.Parse(hill.Text) : 0; } catch { hl = -1; }
-                if (hl < 0 || hl > 15) { hill.Background = Brushes.Yellow; fail = true; }
+                if (hl < 0 || hl > MAXINCL) { hill.Background = Brushes.Yellow; fail = true; }
 
                 try { warm = 60f * float.Parse(warmup.Text);  } catch { warm = -1; }
                 if (warm < 1*60 || warm > 15*60) { warmup.Background = Brushes.Yellow; fail = true; }
@@ -1134,11 +1136,13 @@ namespace walk
 
         private void rUP()
         {
+            if (r < 0) r = 0;
             r++; press(INCL_UP);
         }
 
         private void rDOWN()
         {
+            if (r > MAXINCL) r = MAXINCL;             // TODO: turn it into parameter
             r--; press(INCL_DOWN);
         }
 
