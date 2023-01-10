@@ -100,7 +100,7 @@ namespace walk
 
         private void btlist_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (btlist.SelectedItem ==null)
+            if (btlist.SelectedItem ==null || btlist.Items.Count==0)
             {
                 return;
             }
@@ -119,7 +119,16 @@ namespace walk
 
         private void dispHR_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            dispHR.Background = Brushes.Yellow;
+            dispHR.Content = "🔎";
+        }
+
+        private void dispHR_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            dispHR.Background = Brushes.Transparent;
             btlist.SelectedItem = null;
+            btlist.Items.Clear();
+            dispHR.Content = "?";
             _ = HRinit();
         }
 

@@ -219,7 +219,7 @@
 
         <Label Content="BT:" Margin="959,184,763,0" VerticalAlignment="Top" Height="26" RenderTransformOrigin="-2.988,-0.385" />
         <ComboBox x:Name="btlist" HorizontalAlignment="Left" Margin="987,187,0,0" VerticalAlignment="Top" Width="142" SelectionChanged="btlist_SelectionChanged" />
-        <Label x:Name="dispHR" Content="0" HorizontalAlignment="Left" MouseDown="dispHR_MouseDown" Margin="1655,6,0,0" VerticalAlignment="Top" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
+        <Label x:Name="dispHR" Content="?" HorizontalAlignment="Left" MouseDown="dispHR_MouseDown" MouseUp="dispHR_MouseUp" Margin="1655,6,0,0" VerticalAlignment="Top" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
         <Label Content="HeartRate ♥" Margin="1608,31,0,0" RenderTransformOrigin="0.5,0.5" Foreground="#FF3C3C3C" Padding="0,0,0,0" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="77" >
             <Label.RenderTransform>
                 <TransformGroup>
