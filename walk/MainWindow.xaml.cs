@@ -39,11 +39,11 @@ namespace walk
         static String https = "";
         static int lasthr = 0, hr = 0,plotHrMin=85,plotHrMax=120;
         static int[] hrplot=null;
-        static int WinH = 293, WinH2=180, WinW = 1848;
+        static int WinH = 293, WinH2=180, WinW = 1848, plotWidth=1000;
 
         private void Config_button(object sender, RoutedEventArgs e)
         {
-            Settings.Default.Save();
+            Settings.Default.Save();          
 
             Boolean fail = false;
             bSu.Background = Brushes.Transparent;
@@ -73,18 +73,21 @@ namespace walk
             fButtonReleaseSec.Background = Brushes.Transparent;
             if (Settings.Default.ButtonReleaseSec < 0.05f || Settings.Default.ButtonReleaseSec > 2f) { fButtonReleaseSec.Background = Brushes.Yellow; fail = true; }
 
-            if (fail && win.Height>100) return;
+            win.Width = WinW;
 
-            if(((Button)sender).Content.ToString().Equals("📊"))
+            if (fail && win.Height>200) return;
+
+            if(sender!=null && ((Button)sender).Content.ToString().Equals("📊"))
             {
                 if (win.Height < 150) win.Height = WinH2; else win.Height = 85;
-            } else
+            } else if(sender!=null)
             {
                 if (win.Height < 200) win.Height = WinH; else win.Height = 85;
+            } else
+            {
+                if (win.Height > 200) win.Height = 85;                              // start button pressed: only fold full settings
             }
-
                 
-            win.Width = WinW;
             visibility();
         }
 
@@ -377,21 +380,24 @@ namespace walk
                     lasthr = hr;
                     hr = input[1];
                     if (hr > maxHR) maxHR = hr;
+                    
+                    int x = Math.Min((int)(tick * plotWidth / dur), (int)plotWidth - 1);
+                    int lhr = hr, lr = r;
+                    float ls = s;
                     Application.Current.Dispatcher.Invoke(() => {
-                        dispHR.Content = input[1];
+                        dispHR.Content = hr;
 
                         // plot
 
                         if (hrplot != null)
                         {
-                            int x = Math.Min((int)(tick * plot.Width / dur),(int)plot.Width-1);
-                            try { hrplot[x] = (int)hr; hrplot[x + 1] = (int)hr;  hrplot[x + 2] = (int)hr; } catch { }       // continous plot with short durations
+                            try { hrplot[x] = (int)lhr; hrplot[x + 1] = (int)lhr;  hrplot[x + 2] = (int)lhr; } catch { }       // continous plot with short durations
                             if (x > lastX)
                             {
-                                splot.Points.Add(new Point(x, splot.Height - Math.Min(5f, Math.Max(0f, s - 3f)) * splot.Height / 5f));
-                                iplot.Points.Add(new Point(x, iplot.Height - Math.Min(15f, Math.Max(0f, r)) * iplot.Height / 15f));
+                                splot.Points.Add(new Point(x, splot.Height - Math.Min(5f, Math.Max(0f, ls - 3f)) * splot.Height / 5f));
+                                iplot.Points.Add(new Point(x, iplot.Height - Math.Min(15f, Math.Max(0f, lr)) * iplot.Height / 15f));
                             }
-                            if (hr > plotHrMax) plotHrMax = hr + 5; else {                                
+                            if (lhr > plotHrMax) plotHrMax = lhr + 5; else {                                
                                 if (x > lastX) plot.Points.Add(new Point(x, plot.Height-Math.Max(0,hrplot[x] - plotHrMin) * plot.Height / (plotHrMax - plotHrMin)));
                                 lastX = x;
                                 return;
@@ -416,7 +422,7 @@ namespace walk
             int low = int.Parse(Settings.Default.Lowhr);
             int high = int.Parse(Settings.Default.Highhr);
             hrRules.Height = (high - low) * plot.Height / (plotHrMax - plotHrMin);
-            hrRules.Margin = new Thickness(plot.Margin.Left, plot.Margin.Top + (plotHrMax-high) * plot.Height / (plotHrMax - plotHrMin), 0, 0);
+            hrRules.Margin = new Thickness(hrRules.Margin.Left, plot.Margin.Top + (plotHrMax-high) * plot.Height / (plotHrMax - plotHrMin), 0, 0);
         }
 
         private SolidColorBrush brush;              
@@ -597,9 +603,9 @@ namespace walk
                 try { tick = float.Parse(progress.Text) * 60; } catch{ tick = 0; }
                 if (tick < 0 || tick > dur) { progress.Background = Brushes.Yellow; fail = true; }
 
-                if (win.Height > 100) Config_button(null, null);
+                if (win.Height > 200) Config_button(null, null);
 
-                if (win.Height>100 || fail) return;
+                if (win.Height > 200 || fail) return;
 
                 Settings.Default.Duration = (dur / 60).ToString();
                 Settings.Default.Save();
@@ -647,6 +653,8 @@ namespace walk
 
                 // hr plot
 
+                plotWidth = (int)eRules.Width;
+
                 if (hr>10)
                 {
                     hrplot = new int[(int)plot.Width];
@@ -672,8 +680,8 @@ namespace walk
                 for (int y = 4; y < 8; y += 2)
                 {
                     sRules.Points.Add(new Point(0, sRules.Height - (y-3) * sRules.Height / 5));
-                    sRules.Points.Add(new Point(sRules.Width, sRules.Height - (y-3) * sRules.Height / 5));
-                    sRules.Points.Add(new Point(sRules.Width, sRules.Height - (y -2) * sRules.Height / 5));
+                    sRules.Points.Add(new Point(sRules.Width-1, sRules.Height - (y-3) * sRules.Height / 5));
+                    sRules.Points.Add(new Point(sRules.Width-1, sRules.Height - (y -2) * sRules.Height / 5));
                     sRules.Points.Add(new Point(0, sRules.Height - (y -2) * sRules.Height / 5));
                 }
 
@@ -807,7 +815,30 @@ namespace walk
                 End();
             }
 
-            dispTime.Content = time;
+            if (time == "" || time=="0.0")
+            {
+                if (distance < 1000) {
+                    dispTime.Content = String.Format("{0:F0}",distance);
+                    mnext.Content = "m";
+                }
+                else if (distance < 10000)
+                {
+                    dispTime.Content = String.Format("{0:F2}", distance/1000f);
+                    mnext.Content = "km";
+                }
+                else
+                {
+                    dispTime.Content = String.Format("{0:F1}", distance/1000f);
+                    mnext.Content = "km";
+                }
+                lnext.Content = "Dist";
+            }
+            else
+            {
+                dispTime.Content = time;
+                mnext.Content = "min";
+                lnext.Content = "Next";
+            }
 
         }
 
@@ -978,7 +1009,7 @@ namespace walk
 
             while (hr<minhr)
             {
-                if (wait(tba/4)) return;
+                if (wait(hr<plotHrMin ? 4 : tba/4)) return;         // increase speed quiker before HR shows up on plot
                 sUP();
 
                 try { minhr = int.Parse(Settings.Default.Lowhr); } catch { }
@@ -1122,7 +1153,7 @@ namespace walk
 
             meta += String.Format("\n{0}:{1:D2}:{2:D2} {3} ({4:F1}/{5})", hr, min, sec,section,s,r);
 
-            int x = Math.Min((int)((tick - startTick) * eRules.Width / dur), (int)eRules.Width - 1);
+            int x = Math.Min((int)((tick - startTick) * plotWidth / dur), plotWidth - 1);
             Application.Current.Dispatcher.Invoke(() => {                
                 eRules.Points.Add(new Point(x , 0));
                 eRules.Points.Add(new Point(x , eRules.Height));

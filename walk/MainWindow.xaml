@@ -96,7 +96,7 @@
             </Label.RenderTransform>
         </Label>
         <Label x:Name="dispTime" Content="" HorizontalAlignment="Left" Margin="1256,6,0,0" VerticalAlignment="Top" FontSize="45" Width="115" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
-        <Label Content="Next" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="1230,55,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0">
+        <Label Content="Next" x:Name="lnext" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="1230,55,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0">
             <Label.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -145,7 +145,7 @@
         <Label Content="min" HorizontalAlignment="Left" Margin="121,61,0,8" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" />
         <Label x:Name="msprdur" Content="min" HorizontalAlignment="Left" Margin="801,59,0,10" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top"  />
         <Label Content="min" HorizontalAlignment="Left" Margin="1206,60,0,9" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" />
-        <Label Content="min" HorizontalAlignment="Left" Margin="1348,60,0,0" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" />
+        <Label x:Name="mnext" Content="min" HorizontalAlignment="Left" Margin="1348,60,0,0" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" />
         <Label x:Name="lrep" Content="Reps (H+S)" HorizontalAlignment="Left" Margin="804,39,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Top" Padding="0,0,0,0">
             <Label.RenderTransform>
                 <TransformGroup>
@@ -265,14 +265,14 @@
         </Label>
         <Label x:Name="mtba" Content="sec" HorizontalAlignment="Left" Margin="421,236,0,-17" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top"  />
 
-        <Polyline x:Name="sRules" HorizontalAlignment="Left" Height="88" Margin="9,267,0,0" VerticalAlignment="Top" Width="1831" Stroke="Blue" StrokeThickness="1" />
-        <Polyline x:Name="vRules" HorizontalAlignment="Left" Height="88" Margin="9,267,0,0" VerticalAlignment="Top" Width="1831" Stroke="Gray" StrokeThickness="1" />
-        <Polyline x:Name="eRules" HorizontalAlignment="Left" Height="88" Margin="9,267,0,0" VerticalAlignment="Top" Width="1831" Stroke="Green" StrokeThickness="1" />
-        <Border x:Name="hrRules" HorizontalAlignment="Center" Height="50" Margin="0,97,0,0" VerticalAlignment="Top" Width="1831" BorderThickness="2" BorderBrush="Red" />
+        <Polyline x:Name="sRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Blue" StrokeThickness="1" />
+        <Polyline x:Name="vRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Gray" StrokeThickness="1" />
+        <Polyline x:Name="eRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Green" StrokeThickness="1" />
+        <Border x:Name="hrRules" HorizontalAlignment="Center" Height="88" Margin="0,84,0,0" VerticalAlignment="Top" Width="1831" BorderThickness="1" BorderBrush="Red" />
         <Border HorizontalAlignment="Center" Height="88" Margin="0,84,0,0" VerticalAlignment="Top" Width="1831" BorderThickness="2" BorderBrush="Gray" />
-        <Polyline x:Name="splot" HorizontalAlignment="Left" Height="88" Margin="9,267,0,0" VerticalAlignment="Top" Width="1831" Stroke="Blue" StrokeThickness="3" />
-        <Polyline x:Name="iplot" HorizontalAlignment="Left" Height="88" Margin="9,267,0,0" VerticalAlignment="Top" Width="1831" Stroke="Green" StrokeThickness="3" />
-        <Polyline x:Name="plot" HorizontalAlignment="Left" Height="88" Margin="9,267,0,0" VerticalAlignment="Top" Width="1831" Stroke="Red" StrokeThickness="4" />
+        <Polyline x:Name="splot" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Blue" StrokeThickness="3" />
+        <Polyline x:Name="iplot" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Green" StrokeThickness="3" />
+        <Polyline x:Name="plot" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Red" StrokeThickness="4" />
 
         <DatePicker HorizontalAlignment="Left" Margin="1483,258,0,0" VerticalAlignment="Top" SelectedDate="{Binding Source={x:Static p:Settings.Default}, Path=birthd, Mode=TwoWay}" />
         <TextBox HorizontalAlignment="Left" Margin="1716,263,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="49" Text="{Binding weightkg, Mode=TwoWay, Source={x:Static p:Settings.Default}}" />
@@ -306,7 +306,7 @@
 
         <CheckBox TabIndex="7" Content="♥" HorizontalAlignment="Left" Margin="283,0,0,0" VerticalAlignment="Top" FontSize="40" VerticalContentAlignment="Center" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=HEARTMODE, Mode=TwoWay}"
                   Checked="heartOn" Unchecked="heartOff" Foreground="Gray" />
-        <Button Content="📊" HorizontalAlignment="Left" Margin="1066,5,0,0" VerticalAlignment="Top" Background="#00DDDDDD" 
-            BorderBrush="#00707070" Click="Config_button" Tag="diag" TabIndex="1" />
+        <Button Content="📊" HorizontalAlignment="Left" Margin="280,46,0,0" VerticalAlignment="Top" Background="#00DDDDDD" 
+            BorderBrush="#00707070" Click="Config_button" Tag="diag" TabIndex="1" FontSize="20" />
     </Grid>
 </Window>
