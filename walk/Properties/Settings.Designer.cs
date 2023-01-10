@@ -442,5 +442,29 @@ namespace walk.Properties {
                 this["FEMALE"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("60")]
+        public int holdhigh {
+            get {
+                return ((int)(this["holdhigh"]));
+            }
+            set {
+                this["holdhigh"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("60")]
+        public int holdlow {
+            get {
+                return ((int)(this["holdlow"]));
+            }
+            set {
+                this["holdlow"] = value;
+            }
+        }
     }
 }

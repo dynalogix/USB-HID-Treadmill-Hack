@@ -152,21 +152,36 @@ namespace walk
         }
 
         private void heartOn(object sender, RoutedEventArgs e)
-        {
-            var s = 175;
-            shiftXY(lsprdur, 0,s);
-            shiftXY(lmax, 0, s);
-            shiftXY(lrep,0, s);
-            shiftXY(lwarmup,0, s);
-            shiftXY(lsprint,0, s);
-            shiftXY(mwarmup,0, s);
-            shiftXY(msprdur,0, s);
-            shiftXY(sprdur,0, s);
-            shiftXY(max,0, s);
-            shiftXY(rep,0, s);
-            shiftXY(warmup,0, s);
-            shiftXY(sprint,0, s);
+        {           
+            shiftControls(175);
+        }
 
+        private void heartOff(object sender, RoutedEventArgs e)
+        {
+            shiftControls(-175);
+        }
+
+        private void shiftControls(int s)
+        {
+            shiftXY(lsprdur, 0, s);
+            shiftXY(lmax, 0, s);
+            shiftXY(lrep, 0, s);
+            shiftXY(lwarmup, 0, s);
+            shiftXY(lsprint, 0, s);
+            shiftXY(mwarmup, 0, s);
+            shiftXY(msprdur, 0, s);
+            shiftXY(sprdur, 0, s);
+            shiftXY(max, 0, s);
+            shiftXY(rep, 0, s);
+            shiftXY(warmup, 0, s);
+            shiftXY(sprint, 0, s);
+
+            shiftXY(holdlow, 0, -s);
+            shiftXY(lholdlow, 0, -s);
+            shiftXY(mholdlow, 0, -s);
+            shiftXY(holdhigh, 0, -s);
+            shiftXY(lholdhigh, 0, -s);
+            shiftXY(mholdhigh, 0, -s);
             shiftXY(lowhr, 0, -s);
             shiftXY(highhr, 0, -s);
             shiftXY(tba, 0, -s);
@@ -179,31 +194,6 @@ namespace walk
         private void shiftXY(Control c, int x, int y)
         {
             c.Margin = new Thickness(c.Margin.Left + x, c.Margin.Top + y, c.Margin.Right, c.Margin.Bottom);
-        }
-
-        private void heartOff(object sender, RoutedEventArgs e)
-        {
-            var s = 175;
-            shiftXY(lsprdur, 0, -s);
-            shiftXY(lmax, 0, -s);
-            shiftXY(lrep, 0, -s);
-            shiftXY(lwarmup, 0, -s);
-            shiftXY(lsprint, 0, -s);
-            shiftXY(mwarmup, 0, -s);
-            shiftXY(msprdur, 0, -s);
-            shiftXY(sprdur, 0, -s);
-            shiftXY(max, 0, -s);
-            shiftXY(rep, 0, -s);
-            shiftXY(warmup, 0, -s);
-            shiftXY(sprint, 0, -s);
-
-            shiftXY(lowhr, 0, s);
-            shiftXY(highhr, 0, s);
-            shiftXY(tba, 0, s);
-            shiftXY(llow, 0, s);
-            shiftXY(lhigh, 0, s);
-            shiftXY(ltba, 0, s);
-            shiftXY(mtba, 0, s);
         }
 
         async Task connectBT(ulong address)
@@ -976,13 +966,12 @@ namespace walk
 
             // WARM UP
 
-            eRule("warmup↑" + minhr);
+            eRule("warmup↑" + minhr,lowhr);
 
             while (hr<minhr)
             {
                 if (wait(tba/4)) return;
-                s += 0.1f;
-                if (Math.Abs(s-6.0f) <0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_UP);
+                sUP();
 
                 try { minhr = int.Parse(Settings.Default.Lowhr); } catch { }
             }
@@ -995,7 +984,7 @@ namespace walk
             while(tick-startTick<dur-warmuptime)
             {
 
-                eRule("↑"+maxhr);
+                eRule("↑"+maxhr,highhr);
 
                 // HIGH
 
@@ -1004,13 +993,11 @@ namespace walk
                 while(hr<maxhr && tick-startTick<dur-warmuptime)
                 {
                     if (wait(tba/Math.Max(1,maxhr-hr))) return;
-                    s += 0.1f;
-                    if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_UP);
+                    sUP();
                     if (hr <maxhr && tick - startTick < dur - warmuptime && r<hl)
                     {
-                        if (wait(tba / Math.Max(1, maxhr-hr))) return;
-                        r++;
-                        press(INCL_UP);
+                        if (wait(tba / Math.Max(1, (maxhr-hr)*2))) return;                  // wait half as much before ramp
+                        rUP();
                     }
 
                     try { maxhr = int.Parse(Settings.Default.Highhr); } catch { }
@@ -1019,23 +1006,14 @@ namespace walk
                     if (tZone<1 && hr > maxhr - 3) tZone = tick;
                 }
 
-                eRule("→"+maxhr);
+                eRule("→"+maxhr,holdhigh);
 
-                // KEEP HIGH
+                // HOLD HIGH
 
-                if (tZone>0) while (tick<tZone+ 60 && tick - startTick < dur - warmuptime)
+                if (tZone>0) while (tick<tZone+ Settings.Default.holdhigh && tick - startTick < dur - warmuptime)
                 {
                     if (wait(3)) return;
-                    if(hr<maxhr)
-                    {
-                        s += 0.1f;
-                        if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_UP);
-                    }
-                    else if (hr > maxhr)
-                    {
-                        s -= 0.1f;
-                        if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_DOWN);
-                    }
+                        if (hr < maxhr) sUP(); else if (hr==maxhr+1 && r>0) rDOWN(); else if (hr > maxhr) sDOWN();
 
                     try { maxhr = int.Parse(Settings.Default.Highhr); } catch { }                   
                 }
@@ -1046,7 +1024,7 @@ namespace walk
                 try { tba = int.Parse(Settings.Default.Tba); } catch { }
 
 
-                eRule("↓"+minhr);
+                eRule("↓"+minhr,lowhr);
 
                 // LOW
 
@@ -1055,12 +1033,10 @@ namespace walk
                 while (hr > minhr && (r>0 || s>4))
                 {
                     if (wait(tba/Math.Max(1,hr-minhr))) return;
-                    s -= 0.1f;
-                    if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_DOWN);
+                    sDOWN();
                     if(hr>minhr && r>-3) {
-                        if (wait(tba / Math.Max(1, hr - minhr))) return;
-                        r--;
-                        press(INCL_DOWN);
+                        if (wait(tba / Math.Max(1, (hr - minhr)*2))) return;            // wait half as much before ramp
+                        rDOWN();
                     }
 
                     //try { minhr = tick - startTick > dur - warmuptime ? (int.Parse(Settings.Default.Lowhr) * 2 + baseHR) / 3 : int.Parse(Settings.Default.Lowhr); } catch { }
@@ -1072,23 +1048,14 @@ namespace walk
                 }
                 if (r < 0) r = 0;
 
-                // KEEP LOW
+                // HOLD LOW
 
-                eRule("→"+minhr);
+                eRule("→"+minhr,holdlow);
 
-                if (tZone>0) while (tick < tZone + 60 && tick - startTick < dur - warmuptime)
+                if (tZone>0) while (tick < tZone + Settings.Default.holdlow && tick - startTick < dur - warmuptime)
                 {
                     if (wait(3)) return;
-                    if (hr < minhr)
-                    {
-                        s += 0.1f;
-                        if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_UP);
-                    }
-                    else if (hr > minhr)
-                    {
-                        s -= 0.1f;
-                        if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_DOWN);
-                    }
+                    if (hr < minhr) sUP(); else if (hr == minhr + 1 && r>-2) rDOWN(); else if (hr > minhr) sDOWN();
 
                     //try { minhr = tick - startTick > dur - warmuptime ? baseHR : int.Parse(Settings.Default.Lowhr); } catch { }
                     try { minhr = int.Parse(Settings.Default.Lowhr); } catch { }
@@ -1096,7 +1063,7 @@ namespace walk
 
             }
 
-            eRule("cool↓3.0");
+            eRule("cool↓3.0",null);
 
             // WIND DOWN
 
@@ -1105,13 +1072,10 @@ namespace walk
             while (s > 3.0f)
             {
                 if (wait((float)Math.Max(1,wdelay-(r>-3?1:0)))) return;
-                s -= 0.1f;
-                if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_DOWN);
-                if(r>-3)
-                {
+                sDOWN();
+                if(r>-3) {
                     if (wait(1)) return;
-                    press(INCL_DOWN);
-                    r--;
+                    rDOWN();
                 }                
             }
 
@@ -1120,19 +1084,47 @@ namespace walk
             running = false;
         }
 
-        private void eRule(string section)
+        private void rUP()
         {
-            int h = (int)((tick - startTick) / 60 / 60);
-            int m = (int)(((tick - startTick) - h * 60 * 60) / 60);
-            int s = (int)((tick - startTick) - h * 60 * 60 - m * 60);
+            r++; press(INCL_UP);
+        }
 
-            meta += String.Format("\n{0}:{1:D2}:{2:D2} ", h, m, s) + section;
+        private void rDOWN()
+        {
+            r--; press(INCL_DOWN);
+        }
 
-            Application.Current.Dispatcher.Invoke(() => {
-                int x = Math.Min((int)((tick-startTick) * eRules.Width / dur), (int)eRules.Width - 1);
+        private void sUP()
+        {
+            s += 0.1f;
+            if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_UP);
+        }
+
+        private void sDOWN()
+        {
+            s -= 0.1f;
+            if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_DOWN);
+        }
+
+        private void eRule(string section, TextBox red)
+        {
+            int hr = (int)((tick - startTick) / 60 / 60);
+            int min = (int)(((tick - startTick) - hr * 60 * 60) / 60);
+            int sec = (int)((tick - startTick) - hr * 60 * 60 - min * 60);
+
+            meta += String.Format("\n{0}:{1:D2}:{2:D2} {3} ({4:F1}/{5})", hr, min, sec,section,s,r);
+
+            int x = Math.Min((int)((tick - startTick) * eRules.Width / dur), (int)eRules.Width - 1);
+            Application.Current.Dispatcher.Invoke(() => {                
                 eRules.Points.Add(new Point(x , 0));
                 eRules.Points.Add(new Point(x , eRules.Height));
                 eRules.Points.Add(new Point(x , 0));
+
+                holdlow.Foreground = Brushes.Gray;
+                holdhigh.Foreground = Brushes.Gray;
+                lowhr.Foreground = Brushes.Gray;
+                highhr.Foreground = Brushes.Gray;
+                if (red != null) red.Foreground = Brushes.Red;
             });
         }
 

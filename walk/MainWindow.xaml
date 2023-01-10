@@ -282,5 +282,29 @@
         <Label Content="Birth date:" HorizontalAlignment="Left" Margin="1024,192,0,0" VerticalAlignment="Top"/>
         <Label Content="Weight (kg):" HorizontalAlignment="Left" Margin="1015,224,0,0" VerticalAlignment="Top"/>
         <CheckBox Content="Female" HorizontalAlignment="Left" Margin="1165,229,0,0" VerticalAlignment="Top" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=FEMALE, Mode=TwoWay}" />
+        <TextBox x:Name="holdlow"  GotFocus="gotFocus" HorizontalAlignment="Left" Margin="725,182,0,0" Text="{Binding holdlow, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Height="71" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
+        <Label x:Name="lholdlow" Content="Hold Low" HorizontalAlignment="Left" Margin="690,220,0,0" VerticalAlignment="Top" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0">
+            <Label.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-90"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Label.RenderTransform>
+        </Label>
+        <Label x:Name="mholdlow" Content="sec" HorizontalAlignment="Left" Margin="801,236,0,-17" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" />
+        <TextBox x:Name="holdhigh"  GotFocus="gotFocus" HorizontalAlignment="Left" Margin="844,182,0,0" Text="{Binding holdhigh, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Height="70" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
+        <Label x:Name="lholdhigh" Content="Hold High" HorizontalAlignment="Left" Margin="807,219,0,0" VerticalAlignment="Top" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0">
+            <Label.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-90"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Label.RenderTransform>
+        </Label>
+        <Label x:Name="mholdhigh" Content="sec" HorizontalAlignment="Left" Margin="919,236,0,-17" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" />
     </Grid>
 </Window>
