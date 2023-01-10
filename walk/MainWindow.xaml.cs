@@ -39,7 +39,7 @@ namespace walk
         static String https = "";
         static int lasthr = 0, hr = 0,plotHrMin=85,plotHrMax=120;
         static int[] hrplot=null;
-        static int WinH = 293, WinH2=180, WinW = 1848, plotWidth=1000;
+        static int WinH = 293, WinH2=180, WinH0=84, WinW = 1848, plotWidth=1000;
 
         private void Config_button(object sender, RoutedEventArgs e)
         {
@@ -79,13 +79,13 @@ namespace walk
 
             if(sender!=null && ((Button)sender).Content.ToString().Equals("📊"))
             {
-                if (win.Height < 150) win.Height = WinH2; else win.Height = 85;
+                if (win.Height < 150) win.Height = WinH2; else win.Height = WinH0;
             } else if(sender!=null)
             {
-                if (win.Height < 200) win.Height = WinH; else win.Height = 85;
+                if (win.Height < 200) win.Height = WinH; else win.Height = WinH0;
             } else
             {
-                if (win.Height > 200) win.Height = 85;                              // start button pressed: only fold full settings
+                if (win.Height > 200) win.Height = WinH0;                              // start button pressed: only fold full settings
             }
                 
             visibility();
@@ -460,7 +460,7 @@ namespace walk
         {
             InitializeComponent();
             visibility();
-            win.Height = 85;
+            win.Height = WinH0;
 
             Debug.WriteLine("start");
             _ = HRinit();
