@@ -41,7 +41,8 @@ namespace walk
         static float dur, warm, speed, sp, hl, tick, p, reps, sdur,startTick;
         static String https = "";
         static int lasthr = 0, hr = 0,plotHrMin=85,plotHrMax=120;
-        static int[] hrplot=null;        
+        static int[] hrplot=null;
+        static int warmuptime = 0, peak = 0;
 
         private void Config_button(object sender, RoutedEventArgs e)
         {
@@ -793,14 +794,14 @@ namespace walk
                 var age = (DateTime.Today - Settings.Default.birthd).TotalDays / 365.25f;
 
 
-                File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1}min\nHR Max: {0}bps Avg: {1:f2}bps Plot range: {8}…{9}bps\nSpeed Max: {2:F2}km/h Avg: {3:F2}km/h\nAscend: {4}\nDistance: {5:F0}m\nCalories: {6:F0}KCal\nSections:{7}",
+                File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1}min (warm-up: {11:f1}min)\nHR Max: {0}bps Avg: {1:f2}bps Plot range: {8}…{9}bps\nSpeed Max: {2:F2}km/h Avg: {3:F2}km/h\nAscend: {4}\nDistance: {5:F0}m\nCalories: {6:F0}KCal\nSections: {12}peaks{7}",
                     maxHR, totalHR / (dur / 60f),
                     maxSpeed, (distance / 1000) / (dur / 60f / 60f),
                     ascend, distance,
                     (dur / 60) * (Settings.Default.FEMALE
                     ? (-20.4022 + (0.4472 * totalHR / (dur / 60f)) - (0.1263 * Settings.Default.weightkg) + (0.074 * age)) / 4.184
                     : (-55.0969 + (0.6309 * totalHR / (dur / 60f)) + (0.1988f * Settings.Default.weightkg) + (0.2017 * age)) / 4.184),
-                    meta, plotHrMin, plotHrMax, dur / 60f
+                    meta, plotHrMin, plotHrMax, dur / 60f, warmuptime/60f, peak
                     ));
 
                 using (Stream fileStream = File.Create(screenshot + ".png"))
@@ -1027,9 +1028,10 @@ namespace walk
             }
 
             try { maxhr = int.Parse(Settings.Default.Highhr); } catch { }
-            try { tba = int.Parse(Settings.Default.Tba); } catch { }           
+            try { tba = int.Parse(Settings.Default.Tba); } catch { }
 
-            var warmuptime = tick - startTick;
+            peak = 0;
+            warmuptime = (int)(tick - startTick);
 
             while(tick-startTick<dur-warmuptime)
             {
@@ -1055,6 +1057,8 @@ namespace walk
 
                     if (tZone<1 && hr > maxhr - 3) tZone = tick;
                 }
+
+                peak++;
 
                 eRule("→"+maxhr,holdhigh);
 
@@ -1169,7 +1173,7 @@ namespace walk
             int x = Math.Min((int)((tick - startTick) * plotWidth / dur), plotWidth - 1);
             Application.Current.Dispatcher.Invoke(() => {                
                 eRules.Points.Add(new Point(x , 0));
-                eRules.Points.Add(new Point(x , eRules.Height));
+                eRules.Points.Add(new Point(x , 5));
                 eRules.Points.Add(new Point(x , 0));
 
                 holdlow.Foreground = Brushes.Gray;
