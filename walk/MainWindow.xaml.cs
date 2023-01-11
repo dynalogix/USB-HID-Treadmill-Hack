@@ -90,7 +90,23 @@ namespace walk
             {
                 if (win.Height > 200) win.Height = WinH0;                              // start button pressed: only fold full settings
             }
-                
+
+            if(win.Height>100)
+            {
+                lDispIncl.Foreground = Brushes.Green;
+                blue.Foreground = Brushes.Blue;
+                red.Foreground = Brushes.Red;
+            } else
+            {   // #FF3C3C3C
+                brush = new SolidColorBrush();
+                brush.Color = Color.FromRgb(0x3c,0x3c,0x3c);
+                brush.Opacity = 1f;
+               
+                lDispIncl.Foreground = brush;
+                blue.Foreground = brush;
+                red.Foreground = brush;
+            }
+
             visibility();
         }
 
@@ -113,6 +129,7 @@ namespace walk
             Settings.Default.Save();           
 
             foreach (BTItem item in BTDevices) if (item.name == Settings.Default.BTHR) {
+                dispHR.Content = "⏳";
                 _ = connectBT(item.address);
                 return;
             }                    
@@ -145,7 +162,7 @@ namespace walk
             dispHR.Background = Brushes.Transparent;
             btlist.SelectedItem = null;
             btlist.Items.Clear();
-            dispHR.Content = "♥";
+            dispHR.Content = "♥";           
             _ = HRinit();
         }
 
@@ -282,6 +299,10 @@ namespace walk
                 {
                     if (service.Uuid.ToString().StartsWith("0000180d"))             // HR service
                     {
+                        Application.Current.Dispatcher.Invoke(() => {
+                            dispHR.Content = "⌛";
+                        });
+
                         GattCharacteristicsResult cresult = await service.GetCharacteristicsAsync();
 
                         if (cresult.Status == GattCommunicationStatus.Success)
@@ -320,9 +341,6 @@ namespace walk
                                     {
                                         Debug.WriteLine("subscribed");
                                         characteristic.ValueChanged += HRChanged;
-                                        Application.Current.Dispatcher.Invoke(() => {
-                                            dispHR.Content = "⏳";
-                                        });
                                     }
                                 }
                             }
@@ -545,6 +563,11 @@ namespace walk
 
         async Task HRinit()
         {
+            if(hrdevice!=null)
+            {
+                await stopHR();
+                await Task.Delay(500);
+            }
 
             Debug.WriteLine("Find bt");
 
@@ -809,11 +832,14 @@ namespace walk
             brush = new SolidColorBrush();
             brush.Color = Color.FromRgb(255, 255, 255);
             brush.Opacity = 1f;
+
             win.Background = brush;
 
             save();
 
-            Application.Current.Dispatcher.Invoke(() => { save(); });
+            Application.Current.Dispatcher.Invoke(() => { 
+                save();
+            });
 
             if (hrdevice!=null)
             {
@@ -825,7 +851,7 @@ namespace walk
 
         private void save()
         {
-            if (lastX > 0 && Settings.Default.logdir.Length > 0)
+            if ((lastX > 0 || win.Height>200) && Settings.Default.logdir.Length > 0)
             {
 
                 if (screenshot != null)
@@ -837,7 +863,7 @@ namespace walk
                 if(win.Height<100) win.Height = WinH2;
                 win.Width = WinW;
                 RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap(WinW, (int)win.Height, 96, 96, PixelFormats.Pbgra32);
-                renderTargetBitmap.Render(win);
+                if(win.Height < 200) renderTargetBitmap.Render(grid); else renderTargetBitmap.Render(win);
                 PngBitmapEncoder pngImage = new PngBitmapEncoder();
                 pngImage.Frames.Add(BitmapFrame.Create(renderTargetBitmap));
 
@@ -847,9 +873,8 @@ namespace walk
                 screenshot = Settings.Default.logdir + (Settings.Default.logdir.EndsWith("\\") ? "" : "\\") + String.Format("{0:yyyy-MM-dd HH.mm}", DateTime.Now);
 
                 var age = (DateTime.Today - Settings.Default.birthd).TotalDays / 365.25f;
-
-
-                File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1}min (warm-up: {11:f1}min)\nHR Max: {0}bps Avg: {1:f2}bps Plot range: {8}…{9}bps\nSpeed Max: {2:F2}km/h Avg: {3:F2}km/h\nAscend: {4}\nDistance: {5:F0}m\nCalories: {6:F0}KCal\nSections: {12}peaks{7}",
+                
+                File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1} min (warm-up: {11:f1} min)\nHR Max: {0} bps Avg: {1:f2} bps Plot range: {8}…{9} bps\nSpeed Max: {2:F2} km/h Avg: {3:F2} km/h\nAscend: {4}\nDistance: {5:F0} m\nCalories: {6:F0} KCal\nSections: {12} peaks{7}",
                     maxHR, totalHR / (dur / 60f),
                     maxSpeed, (distance / 1000) / (dur / 60f / 60f),
                     ascend, distance,
@@ -858,13 +883,13 @@ namespace walk
                     : (-55.0969 + (0.6309 * totalHR / (dur / 60f)) + (0.1988f * Settings.Default.weightkg) + (0.2017 * age)) / 4.184),
                     meta, plotHrMin, plotHrMax, dur / 60f, warmuptime/60f, peak
                     ));
-
+                
                 using (Stream fileStream = File.Create(screenshot + ".png"))
                 {
                     pngImage.Save(fileStream);
                 }
-            }
 
+            }
         }
 
         private void updateUI(object sender, EventArgs e)
@@ -1076,7 +1101,7 @@ namespace walk
 
             while (hr<minhr)
             {
-                if (wait(hr<plotHrMin ? 4 : tba/4)) return;         // increase speed quiker before HR shows up on plot
+                if (wait(hr<(plotHrMin+minhr)/2 ? 4 : tba/4)) return;         // increase speed quiker before HR shows up on plot
                 sUP();
 
                 try { minhr = int.Parse(Settings.Default.Lowhr); } catch { }

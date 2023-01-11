@@ -17,7 +17,7 @@
     <Window.Background>
         <SolidColorBrush Opacity="1" Color="White"/>
     </Window.Background>
-    <Grid>
+    <Grid x:Name="grid">
         <TextBox  TabIndex="5" x:Name="len" LostKeyboardFocus="duration_edited"               
                  GotFocus="gotFocus"  HorizontalAlignment="Left" Margin="27,6,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Duration, Mode=TwoWay}" 
                  TextWrapping="NoWrap"  VerticalAlignment="Top" Height="71" Width="118" FontSize="50" SelectionTextBrush="Gray" Foreground="Gray" BorderBrush="Black"
@@ -76,7 +76,7 @@
 
         <Label x:Name="dispSpeed" Content="3.0" HorizontalAlignment="Left" Margin="1402,6,0,0" VerticalAlignment="Top" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
         <Label x:Name="dispIncl" Content="0" HorizontalAlignment="Left" Margin="1529,6,0,0" VerticalAlignment="Top" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
-        <Label Content="Speed" Margin="1374,53,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" HorizontalAlignment="Left"  VerticalAlignment="Top" >
+        <Label x:Name="blue" Content="Speed📈" Margin="1367,45,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" HorizontalAlignment="Left"  VerticalAlignment="Top" >
             <Label.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -86,7 +86,7 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <Label x:Name="lDispIncl" Content="Incline" Margin="1500,52,0,0" RenderTransformOrigin="0.5,0.5" Foreground="#FF3C3C3C" Padding="0,0,0,0" HorizontalAlignment="Left"  VerticalAlignment="Top" >
+        <Label x:Name="lDispIncl" Content="Incline📉" Margin="1494,44,0,0" RenderTransformOrigin="0.5,0.5" Foreground="#FF3C3C3C" Padding="0,0,0,0" HorizontalAlignment="Left"  VerticalAlignment="Top" >
             <Label.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -143,10 +143,10 @@
         </Label>
 
 
-        <Label Content="min" HorizontalAlignment="Left" Margin="121,61,0,8" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" />
-        <Label x:Name="msprdur" Content="min" HorizontalAlignment="Left" Margin="801,59,0,10" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top"  />
-        <Label Content="min" HorizontalAlignment="Left" Margin="1206,60,0,9" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" />
-        <Label x:Name="mnext" Content="min" HorizontalAlignment="Left" Margin="1348,60,0,0" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" />
+        <Label Content="min" HorizontalAlignment="Left" Margin="121,61,0,8" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" />
+        <Label x:Name="msprdur" Content="min" HorizontalAlignment="Left" Margin="801,59,0,10" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top"  />
+        <Label Content="min" HorizontalAlignment="Left" Margin="1206,60,0,9" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" />
+        <Label x:Name="mnext" Content="min" HorizontalAlignment="Left" Margin="1348,60,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" />
         <Label x:Name="lrep" Content="Reps (H+S)" HorizontalAlignment="Left" Margin="804,39,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Top" Padding="0,0,0,0">
             <Label.RenderTransform>
                 <TransformGroup>
@@ -167,7 +167,7 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <Label x:Name="mwarmup" Content="min" HorizontalAlignment="Left" Margin="421,62,0,7" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top"  />
+        <Label x:Name="mwarmup" Content="min" HorizontalAlignment="Left" Margin="421,62,0,7" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top"  />
         <TextBox Name="fVidpid" HorizontalAlignment="Left" Margin="93,235,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=Vidpid, Mode=TwoWay}" TextWrapping="Wrap" VerticalAlignment="Top" Width="72"/>
         <TextBox x:Name="fButtonPressSec" HorizontalAlignment="Left" Margin="272,234,0,0" Text="{Binding ButtonPressSec, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43"/>
         <TextBox x:Name="fButtonReleaseSec" HorizontalAlignment="Left" Margin="272,261,0,0" Text="{Binding ButtonReleaseSec, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43"/>
@@ -177,7 +177,7 @@
         <Label Content="Buttons (0=not connected):" HorizontalAlignment="Left" Margin="1134,185,0,0" VerticalAlignment="Top"/>
 
         <Button TabIndex="4" Content="⚙" HorizontalAlignment="Left" Margin="3,4,0,0" VerticalAlignment="Top" Background="#00DDDDDD" 
-                BorderBrush="#00707070" Click="Config_button" x:Name="configButton" FontSize="16"/>
+                BorderBrush="#00707070" Click="Config_button" x:Name="configButton" FontSize="16" Foreground="Gray"/>
         <RadioButton Content="HW341 (dcttech.com)" HorizontalAlignment="Left" Margin="91,188,0,0" VerticalAlignment="Top" Tag="HW341"
                      IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=HW341, Mode=TwoWay}" />
         <RadioButton Content="CH551G (ucreatefun.com)" HorizontalAlignment="Left" Margin="91,208,0,0" VerticalAlignment="Top" Tag="CH551G" 
@@ -222,7 +222,7 @@
         <ComboBox x:Name="btlist" HorizontalAlignment="Left" Margin="987,187,0,0" VerticalAlignment="Top" Width="142" SelectionChanged="btlist_SelectionChanged" />
         <Label x:Name="dispHR" Content="♥" HorizontalAlignment="Left" MouseEnter="dispHR_MouseEnter" MouseLeave="dispHR_MouseLeave"
                MouseDown="dispHR_MouseDown" MouseUp="dispHR_MouseUp" Margin="1655,6,0,0" VerticalAlignment="Top" FontSize="45" Width="100" BorderBrush="Black" BorderThickness="1,1,1,1" Foreground="Gray" Height="71" FontWeight="Bold" Padding="0,0,0,0" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" UseLayoutRounding="False"/>
-        <Label Content="HeartRate ♥" Margin="1608,31,0,0" RenderTransformOrigin="0.5,0.5" Foreground="#FF3C3C3C" Padding="0,0,0,0" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="77" >
+        <Label x:Name="red" Content="HeartRate ♥" Margin="1607,31,0,0" RenderTransformOrigin="0.5,0.5" Foreground="#FF3C3C3C" Padding="0,0,0,0" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="77" >
             <Label.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -265,15 +265,17 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <Label x:Name="mtba" Content="sec" HorizontalAlignment="Left" Margin="421,236,0,-17" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top"  />
+        <Label x:Name="mtba" Content="sec" HorizontalAlignment="Left" Margin="421,236,0,-17" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top"  />
 
         <Polyline x:Name="sRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Blue" Opacity="0.9" StrokeThickness="1" />
         <Polyline x:Name="vRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Gray" Opacity="0.5" StrokeThickness="1" />
         <Polyline x:Name="eRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Green" Opacity="0.9" StrokeThickness="1" />
         <Border x:Name="hrRules" HorizontalAlignment="Center" Height="88" Margin="0,84,0,0" VerticalAlignment="Top" Width="1831" BorderThickness="1" BorderBrush="Red" />
-        <Polyline x:Name="splot" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Blue" StrokeThickness="2" />
+
         <Polyline x:Name="iplot" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Green" Opacity="0.9" StrokeThickness="2" />
+        <Polyline x:Name="splot" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Blue" StrokeThickness="2" />
         <Polyline x:Name="plot" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Red" Opacity="0.9" StrokeThickness="3" />
+
         <Border HorizontalAlignment="Center" Height="88" Margin="0,84,0,0" VerticalAlignment="Top" Width="1831" BorderThickness="2" BorderBrush="Gray" />
 
         <DatePicker HorizontalAlignment="Left" Margin="1483,258,0,0" VerticalAlignment="Top" SelectedDate="{Binding Source={x:Static p:Settings.Default}, Path=birthd, Mode=TwoWay}" />
@@ -292,7 +294,7 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <Label x:Name="mholdlow" Content="sec" HorizontalAlignment="Left" Margin="801,236,0,-17" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top"  />
+        <Label x:Name="mholdlow" Content="sec" HorizontalAlignment="Left" Margin="801,236,0,-17" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top"  />
         <TextBox TabIndex="12" x:Name="holdhigh"  GotFocus="gotFocus" HorizontalAlignment="Left" Margin="844,182,0,0" Text="{Binding holdhigh, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Height="70" Width="100" FontSize="50" Foreground="Gray" Background="{x:Null}" BorderBrush="Black"/>
         <Label x:Name="lholdhigh" Content="Hold High" HorizontalAlignment="Left" Margin="807,219,0,0" VerticalAlignment="Top" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0">
             <Label.RenderTransform>
@@ -304,12 +306,12 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
-        <Label x:Name="mholdhigh" Content="sec" HorizontalAlignment="Left" Margin="919,236,0,-17" Foreground="Black" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" />
+        <Label x:Name="mholdhigh" Content="sec" HorizontalAlignment="Left" Margin="919,236,0,-17" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" />
 
         <CheckBox TabIndex="7" Content="♥" HorizontalAlignment="Left" Margin="283,0,0,0" VerticalAlignment="Top" FontSize="40" VerticalContentAlignment="Center" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=HEARTMODE, Mode=TwoWay}"
                   Checked="heartOn" Unchecked="heartOff" Foreground="Gray" />
         <Button Content="📊" HorizontalAlignment="Left" Margin="280,46,0,0" VerticalAlignment="Top" Background="#00DDDDDD" 
-            BorderBrush="#00707070" Click="Config_button" Tag="diag" TabIndex="1" FontSize="20" />
+            BorderBrush="#00707070" Click="Config_button" Tag="diag" TabIndex="1" FontSize="20" Foreground="Gray" />
         <Button Content="Browse…" HorizontalAlignment="Left" Margin="954,232,0,0" VerticalAlignment="Top" Click="browse_button_click"/>
     </Grid>
 </Window>
