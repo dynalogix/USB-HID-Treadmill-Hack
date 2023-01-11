@@ -1237,13 +1237,13 @@ namespace walk
         private void sUP()
         {
             s += 0.1f;
-            if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_UP);
+            if (Math.Abs(s - 6.0f) < 0.05f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.05f && SPD3 != 0) press(SPD3); else press(SPEED_UP);
         }
 
         private void sDOWN()
         {
             s -= 0.1f;
-            if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_DOWN);
+            if (Math.Abs(s - 6.0f) < 0.05f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.05f && SPD3 != 0) press(SPD3); else press(SPEED_DOWN);
         }
 
         private void eRule(string section, TextBox red, int v)
@@ -1258,9 +1258,9 @@ namespace walk
             Application.Current.Dispatcher.Invoke(() => {
                 try
                 {
-                    eRules.Points.Add(new Point(x - (v < 0 ? 5 : 0), 0));
+                    eRules.Points.Add(new Point(x - (v < 0 ? 4 : 0), 1));
                     eRules.Points.Add(new Point(x, 5));
-                    eRules.Points.Add(new Point(x + (v > 0 ? 5 : 0), 0));
+                    eRules.Points.Add(new Point(x + (v > 0 ? 4 : 0), 1));
                 } catch { }
 
                 holdlow.Foreground = Brushes.Gray;
