@@ -128,6 +128,7 @@ namespace walk
         private void dispHR_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if(hr<10) dispHR.Content = "♥";
+            lbtlist.Background = Brushes.Transparent;
         }
 
 
@@ -136,6 +137,7 @@ namespace walk
             dispHR.Background = Brushes.Yellow;
             dispHR.Content = "🔄";
             if(win.Height<200) Config_button(configButton, null);
+            lbtlist.Background = Brushes.Yellow;
         }
 
         private void dispHR_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
