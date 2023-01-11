@@ -120,18 +120,30 @@ namespace walk
 
         GattCharacteristic notifyingCharacteristic, notifyingCharacteristic2;
 
-        private void dispHR_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void dispHR_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
+            if(hr<10) dispHR.Content = "🔄";
+        }
+
+        private void dispHR_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if(hr<10) dispHR.Content = "♥";
+        }
+
+
+        private void dispHR_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {            
             dispHR.Background = Brushes.Yellow;
-            dispHR.Content = "🔎";
+            dispHR.Content = "🔄";
+            if(win.Height<200) Config_button(configButton, null);
         }
 
         private void dispHR_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
+        {           
             dispHR.Background = Brushes.Transparent;
             btlist.SelectedItem = null;
             btlist.Items.Clear();
-            dispHR.Content = "?";
+            dispHR.Content = "♥";
             _ = HRinit();
         }
 
@@ -305,7 +317,10 @@ namespace walk
                                     if (status == GattCommunicationStatus.Success)
                                     {
                                         Debug.WriteLine("subscribed");
-                                        characteristic.ValueChanged += HRChanged;                                        
+                                        characteristic.ValueChanged += HRChanged;
+                                        Application.Current.Dispatcher.Invoke(() => {
+                                            dispHR.Content = "⏳";
+                                        });
                                     }
                                 }
                             }
@@ -437,6 +452,27 @@ namespace walk
             hrRules.Margin = new Thickness(hrRules.Margin.Left, plot.Margin.Top + (plotHrMax-high) * plot.Height / (plotHrMax - plotHrMin), 0, 0);
         }
 
+        private void duration_edited(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+        {
+            if (!calcDur(false)) plotGrid();
+        }
+
+        private void browse_button_click(object sender, RoutedEventArgs e)
+        {
+            using var dialog = new System.Windows.Forms.FolderBrowserDialog
+            {
+                Description = "Folder to save log/summary files into after workouts (PNG+TXT)",
+                UseDescriptionForTitle = true,
+                SelectedPath = logdir.Text.ToString()+"\\",
+                ShowNewFolderButton = true
+            };
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                logdir.Text = dialog.SelectedPath.ToString();
+            }
+        }
+
         private SolidColorBrush brush;              
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -473,6 +509,8 @@ namespace walk
             InitializeComponent();
             visibility();
             win.Height = WinH0;
+
+            duration_edited(null,null);
 
             Debug.WriteLine("start");
             _ = HRinit();
@@ -581,8 +619,7 @@ namespace walk
                 Debug.WriteLine("start =======================");              
 
                 GetVidPid();
-
-                len.Background = Brushes.Transparent;
+                
                 sprdur.Background = Brushes.Transparent;
                 max.Background = Brushes.Transparent;
                 sprint.Background = Brushes.Transparent;
@@ -590,14 +627,9 @@ namespace walk
                 warmup.Background = Brushes.Transparent;
                 rep.Background = Brushes.Transparent;
                 progress.Background = Brushes.Transparent;
-                Boolean fail= false; 
+                
+                Boolean fail=calcDur(false);
                
-                try {
-                    if (len.Text.Contains(":")) dur = (float)(float.Parse(len.Text.Split(":")[0]) * 60 + Evaluate(len.Text.Split(":")[1])) * 60;
-                    else dur = (float)(Evaluate(len.Text) * 60); 
-                    len.Text = (dur/60f).ToString();  
-                } catch{ dur = -1; }
-                if (dur < 10 * 60 || dur > 250 * 60) { len.Background = Brushes.Yellow; fail=true; } 
                 try { sdur = float.Parse(sprdur.Text) * 60; } catch { sdur = -1; }
                 if (sdur > 20 * 60) { sprdur.Background = Brushes.Yellow; fail = true; } 
                 try { speed = float.Parse(max.Text); } catch { speed = -1; }
@@ -679,23 +711,7 @@ namespace walk
                     redrawPlot();
                 }
 
-                vRules.Points = new PointCollection();
-                for (int x = 1; x < (int)dur / 60; x += 2)
-                {
-                    vRules.Points.Add(new Point(x * vRules.Width / (dur / 60), 0));
-                    vRules.Points.Add(new Point(x * vRules.Width / (dur / 60), vRules.Height));
-                    vRules.Points.Add(new Point((x + 1) * vRules.Width / (dur / 60), vRules.Height));
-                    vRules.Points.Add(new Point((x + 1) * vRules.Width / (dur / 60), 0));
-                }
-
-                sRules.Points = new PointCollection();
-                for (int y = 4; y < 8; y += 2)
-                {
-                    sRules.Points.Add(new Point(0, sRules.Height - (y-3) * sRules.Height / 5));
-                    sRules.Points.Add(new Point(sRules.Width-1, sRules.Height - (y-3) * sRules.Height / 5));
-                    sRules.Points.Add(new Point(sRules.Width-1, sRules.Height - (y -2) * sRules.Height / 5));
-                    sRules.Points.Add(new Point(0, sRules.Height - (y -2) * sRules.Height / 5));
-                }
+                plotGrid();
 
                 eRules.Points = new PointCollection();
 
@@ -703,6 +719,43 @@ namespace walk
             else
             {
                 End();
+            }
+
+        }
+
+        private bool calcDur(bool fail)
+        {
+            len.Background = Brushes.Transparent;
+            try
+            {
+                if (len.Text.Contains(":")) dur = (float)(float.Parse(len.Text.Split(":")[0]) * 60 + Evaluate(len.Text.Split(":")[1])) * 60;
+                else dur = (float)(Evaluate(len.Text) * 60);
+                len.Text = (dur / 60f).ToString();
+            }
+            catch { dur = -1; }
+            if (dur < 10 * 60 || dur > 250 * 60) { len.Background = Brushes.Yellow; fail = true; }
+
+            return fail;
+        }
+
+        private void plotGrid()
+        {
+            vRules.Points = new PointCollection();
+            for (int x = 1; x < (int)dur / 60; x += 2)
+            {
+                vRules.Points.Add(new Point(x * vRules.Width / (dur / 60), 0));
+                vRules.Points.Add(new Point(x * vRules.Width / (dur / 60), vRules.Height));
+                vRules.Points.Add(new Point((x + 1) * vRules.Width / (dur / 60), vRules.Height));
+                vRules.Points.Add(new Point((x + 1) * vRules.Width / (dur / 60), 0));
+            }
+
+            sRules.Points = new PointCollection();
+            for (int y = 4; y < 8; y += 2)
+            {
+                sRules.Points.Add(new Point(0, sRules.Height - (y - 3) * sRules.Height / 5));
+                sRules.Points.Add(new Point(sRules.Width - 1, sRules.Height - (y - 3) * sRules.Height / 5));
+                sRules.Points.Add(new Point(sRules.Width - 1, sRules.Height - (y - 2) * sRules.Height / 5));
+                sRules.Points.Add(new Point(0, sRules.Height - (y - 2) * sRules.Height / 5));
             }
 
         }
