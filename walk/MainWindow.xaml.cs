@@ -404,8 +404,9 @@ namespace walk
             if (len > 0)
             {
                 Debug.WriteLine("batt=" + input[0]);
-                if(input[0]<21) Application.Current.Dispatcher.Invoke(() => {
-                    dispHR.Foreground = Brushes.Red;
+                Application.Current.Dispatcher.Invoke(() => {
+                    bps.Content = String.Format("🔋{0}%", input[0]);
+                    if (input[0] < 21) dispHR.Foreground = Brushes.Red;
                 });
             }
         }

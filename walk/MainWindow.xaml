@@ -313,5 +313,6 @@
         <Button Content="📊" HorizontalAlignment="Left" Margin="280,46,0,0" VerticalAlignment="Top" Background="#00DDDDDD" 
             BorderBrush="#00707070" Click="Config_button" Tag="diag" TabIndex="1" FontSize="20" Foreground="Gray" />
         <Button Content="Browse…" HorizontalAlignment="Left" Margin="954,232,0,0" VerticalAlignment="Top" Click="browse_button_click"/>
+        <Label x:Name="bps" Content="bps" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="1688,60,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" Width="64" />
     </Grid>
 </Window>
