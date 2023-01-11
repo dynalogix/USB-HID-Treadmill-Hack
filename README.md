@@ -199,7 +199,7 @@ Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 * new workout program (see heart checkbox) where we can specify a lower and upper target HR, and a (maximum) time between adjustments parameter (seconds)
 * new graph showing heart rate vs. speed vs. incline (use 📊 button to show plot during workout)
 * workout screenshot and summary data is automatically saved into selected folder ("log dir path") a PNG and a TXT file is created with timestamp as filename
-* upon pressing "START" we can now turn on the treadmill via webhook using a smart switch
+* upon pressing "START" we can now turn on the treadmill via webhook using a smart switch (e.g. IFTTT or [sOnOff](https://ewelink.cc/how-to-create-use-ewelink-webhooks/))
 
 **Summary data example:** (e.g. 2023-01-19 18.46.txt, see 2023-01-19 18.46.png above)
 
