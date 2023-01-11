@@ -1098,7 +1098,7 @@ namespace walk
 
             // WARM UP
 
-            eRule("warmup↑" + minhr,lowhr);
+            eRule("warmup↑" + minhr,lowhr,0);
 
             while (hr<minhr)
             {
@@ -1117,7 +1117,7 @@ namespace walk
             while(tick-startTick<dur-warmuptime)
             {
 
-                eRule("↑"+maxhr,highhr);
+                eRule("↑"+maxhr,highhr,-1);
 
                 // HIGH
 
@@ -1144,7 +1144,7 @@ namespace walk
 
                 peak++;
 
-                eRule("→"+maxhr,holdhigh);
+                eRule("→"+maxhr,holdhigh,1);
 
                 // HOLD HIGH
 
@@ -1162,7 +1162,7 @@ namespace walk
                 try { tba = int.Parse(Settings.Default.Tba); } catch { }
 
 
-                eRule("↓"+minhr,lowhr);
+                eRule("↓"+minhr,lowhr,-1);
 
                 // LOW
 
@@ -1188,7 +1188,7 @@ namespace walk
 
                 // HOLD LOW
 
-                eRule("→"+minhr,holdlow);
+                eRule("→"+minhr,holdlow,1);
 
                 if (tZone>0) while (tick < tZone + Settings.Default.holdlow && tick - startTick < dur - warmuptime)
                 {
@@ -1201,7 +1201,7 @@ namespace walk
 
             }
 
-            eRule("cool↓3.0",null);
+            eRule("cool↓3.0",null,0);
 
             // WIND DOWN
 
@@ -1246,7 +1246,7 @@ namespace walk
             if (Math.Abs(s - 6.0f) < 0.1f && SPD6 != 0) press(SPD6); else if (Math.Abs(s - 3.0f) < 0.1f && SPD3 != 0) press(SPD3); else press(SPEED_DOWN);
         }
 
-        private void eRule(string section, TextBox red)
+        private void eRule(string section, TextBox red, int v)
         {
             int hr = (int)((tick - startTick) / 60 / 60);
             int min = (int)(((tick - startTick) - hr * 60 * 60) / 60);
@@ -1255,10 +1255,13 @@ namespace walk
             meta += String.Format("\n{0}:{1:D2}:{2:D2} {3} ({4:F1}/{5})", hr, min, sec,section,s,r);
 
             int x = Math.Min((int)((tick - startTick) * plotWidth / dur), plotWidth - 1);
-            Application.Current.Dispatcher.Invoke(() => {                
-                eRules.Points.Add(new Point(x , 0));
-                eRules.Points.Add(new Point(x , 5));
-                eRules.Points.Add(new Point(x , 0));
+            Application.Current.Dispatcher.Invoke(() => {
+                try
+                {
+                    eRules.Points.Add(new Point(x - (v < 0 ? 5 : 0), 0));
+                    eRules.Points.Add(new Point(x, 5));
+                    eRules.Points.Add(new Point(x + (v > 0 ? 5 : 0), 0));
+                } catch { }
 
                 holdlow.Foreground = Brushes.Gray;
                 holdhigh.Foreground = Brushes.Gray;
