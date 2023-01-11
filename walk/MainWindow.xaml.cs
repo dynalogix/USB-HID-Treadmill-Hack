@@ -1123,11 +1123,14 @@ namespace walk
 
                 float tZone = 0;
 
+                bool incline = true;
                 while(hr<maxhr && tick-startTick<dur-warmuptime)
                 {
                     if (wait(tba/Math.Max(1,maxhr-hr))) return;
                     sUP();
-                    if (hr <maxhr && tick - startTick < dur - warmuptime && r<hl)
+
+                    incline = !incline;
+                    if ((incline || s>=5.5f) && INCL_UP!=0 && hr <maxhr && tick - startTick < dur - warmuptime && r<hl)
                     {
                         if (wait(tba / Math.Max(1, (maxhr-hr)*2))) return;                  // wait half as much before ramp
                         rUP();
