@@ -197,7 +197,7 @@ Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 * connectivity to standard Bluetooth Heart Rate sensor (e.g. Polar H9)
 * HR value displayed during workout
 * new workout program (see heart checkbox) where we can specify a lower and upper target HR, and a (maximum) time between adjustments parameter (seconds)
-* new graph showing heart rate vs. speed vs. incline
+* new graph showing heart rate vs. speed vs. incline (use 📊 button to show plot during workout)
 * workout screenshot and summary data is automatically saved into selected folder ("log dir path") a PNG and a TXT file is created with timestamp as filename
 * upon pressing "START" we can now turn on the treadmill via webhook using a smart switch
 
@@ -248,6 +248,18 @@ Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 * Attempt to keep hr at this lower target value by adjusting the speed for 60 seconds (currently hardwired)
 * Repeat upper / lower target rates until cooldown is scheduled (same duration as it took to "warm up")
 * Summary screenshot and text file is saved when you exit the app
+
+**Plot**
+* gray vertical rules at minute marks (refreshed when duration is updated)
+* green: incline (0-15) (green tick marks at section starts)
+* blue: speed (3…8 km/h) (horizontal lines at 4,5,6,7 km/h and incline 3,6,9,12)
+* red: heart rate (automatic range adjustment) (horizontal lines at lower and upper heart rate targets)
+
+**Screenshot + Summary**
+* saved automatically when Pause is pressed or end of workout or when exiting app 
+* only the last screenshot is kept for the session (if saved multiple times)
+* in plot view (when settings are not visible) the screenshot has transparent background (for use in notes or website)
+* screenshot is only saved on exit if plot shows information or settings are visible
 
 **Source code notes for BT**
 * reference C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.19041.0\Windows.winmd
