@@ -203,13 +203,13 @@ Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 
 **Summary data example:** (e.g. 2023-01-19 18.46.txt, see 2023-01-19 18.46.png above)
 
-     Duration: 25min
+     Duration: 25min (warmup time: 4.1 min)
      HR Max: 124bps Avg: 103.19683bps Plot range: 85…128bps
      Speed Max: 7.00km/h Avg: 4.81km/h
      Ascend: 9946
      Distance: 1991m
      Calories: 210KCal
-     Sections:
+     Sections: (4 peaks)
       0:00:06 warmup↑100
       0:04:06 ↑115
       0:05:55 →115
@@ -235,19 +235,23 @@ Git Hub project: https://github.com/dynalogix/USB-HID-Treadmill-Hack
 * **TBA** - time between adjustments: maximum delay [seconds] between speed / incline adjustments
 * **Low ♥** - lower heart rate target
 * **High ♥** - upper heart rate target
+* **Lower hold** - number of seconds to hold the lower heart rate level
+* **Upper hold** - number of seconds to hold the upper heart rate level
 * **Log dir path** - if specified screenshots (png) and summary text files (txt) are saved in this directory (timestamp as file name)
 * **Birth date, gender, weight** - needed for calorie calculation
 * **HTTP on start** - provide a webhook to turn on the treadmill
-* **Heart rate** - shows the detected HR as soon as the sensor is connected. Turns red if battery<20%. Click into field (via mouse) to re-initialize BT discovery 
+* **Heart rate** - shows the detected HR as soon as the sensor is connected. Turns red if battery<20%. Click into field (via mouse) to re-initialize BT discovery (it will show an hourglass icon when already trying to connect to selected BTHR sensor, it will automatically retry every 15 seconds)
 
 **New, heart rate controlled workout:**
 * Warm up: speed is increased every (TBA / 4) seconds until lower heart rate target is reached (store time needed and use it to make cooldown the same duration!)
+* Attempt to keep hr at this lower target value by adjusting the speed for "lower hold" number of seconds
 * Increase speed and incline (alternating) until upper heart rate target is reached ("Hill" maximum incline setting is obeyed!)
-* Attempt to keep hr at this upper target value by adjusting the speed for 60 seconds (currently hardwired)
+* Attempt to keep hr at this upper target value by adjusting the speed for "upper hold" number of seconds
 * Reduce speed and incline (alterning) until lower heart rate target is reached 
-* Attempt to keep hr at this lower target value by adjusting the speed for 60 seconds (currently hardwired)
 * Repeat upper / lower target rates until cooldown is scheduled (same duration as it took to "warm up")
 * Summary screenshot and text file is saved when you exit the app
+
+![workout plot](hr2.png?raw=true "plot")
 
 **Plot**
 * gray vertical rules at minute marks (refreshed when duration is updated)
