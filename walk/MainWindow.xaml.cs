@@ -1130,7 +1130,7 @@ namespace walk
 
                     readParams();
 
-                    if (tZone < 1 && hr > minhr - 3) tZone = tick;                // first hold should hold at minhr
+                    //if (tZone < 1 && hr > minhr - 2) tZone = tick;                // first hold should hold at minhr
                 }
 
                 readParams();
@@ -1139,6 +1139,8 @@ namespace walk
                 peak = 0;           // count number of peaks
                 warmuptime = (int)(tick - startTick);
             }
+
+            tZone = tick;          
 
             while (tick-startTick<dur-warmuptime)
             {
@@ -1178,7 +1180,7 @@ namespace walk
 
                     readParams();
 
-                    if (tZone<1 && hr > maxhr - 3) tZone = tick;
+                    if (tZone<1 && hr > maxhr - 2) tZone = tick;
                 }
 
                 peak++;
@@ -1214,7 +1216,7 @@ namespace walk
 
                     readParams();
 
-                    if (tZone < 1 && hr < minhr + 3) tZone = tick;
+                    if (tZone < 1 && hr < minhr + 2) tZone = tick;
                 }
                 if (r < 0) r = 0;
 
