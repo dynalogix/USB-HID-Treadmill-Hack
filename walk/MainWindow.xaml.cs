@@ -301,6 +301,14 @@ namespace walk
                     {
                         Application.Current.Dispatcher.Invoke(() => {
                             dispHR.Content = "⌛";
+                            hrChanged = false;
+                            Task.Delay(15000).ContinueWith(_ =>                     // retry
+                            {
+                                Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    if(!hrChanged) dispHR_MouseUp(null, null);                                                                          
+                                });
+                            });
                         });
 
                         GattCharacteristicsResult cresult = await service.GetCharacteristicsAsync();
@@ -412,8 +420,10 @@ namespace walk
         }
 
         int lastX = -1;
+        bool hrChanged = false;
         private void HRChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
         {
+            hrChanged = true;
             var reader = DataReader.FromBuffer(args.CharacteristicValue);
             var len = reader.UnconsumedBufferLength;
             byte[] input = new byte[len];
@@ -1049,11 +1059,13 @@ namespace walk
             }
         }
 
+        static int minhr, maxhr, TBA;
+
         private void workout2(object obj)
         {
 
             caught_up = true;
-            dummy_press = false;
+            dummy_press = false;            
 
             p = 0;
             caught_up = tick == 0;
@@ -1086,118 +1098,112 @@ namespace walk
 
             }
 
-            dummy_press = DUMMYMODE || DUMMYSTART;
+            dummy_press = DUMMYMODE || DUMMYSTART;            
 
-            int minhr, maxhr, tba;
-
-            try { minhr = int.Parse(Settings.Default.Lowhr); } catch { minhr = 105; }
-            try { maxhr = int.Parse(Settings.Default.Highhr); } catch { maxhr = 120; }
-            try { tba = int.Parse(Settings.Default.Tba); } catch { tba = 30; }
-
-            var baseHR = hr;
+            readParams(30,105,120);            
 
             // WARM UP
 
             eRule("warmup↑" + minhr,lowhr,0);
 
-            while (hr<minhr)
-            {
-                if (wait(hr<(plotHrMin+minhr)/2 ? 4 : tba/4)) return;         // increase speed quiker before HR shows up on plot
-                sUP();
+            float tZone = 0;
 
-                try { minhr = int.Parse(Settings.Default.Lowhr); } catch { }
+            if(warmuptime==0) {     // warmup only on first start
+
+                while (hr<minhr)
+                {
+                    if (wait(hr<(plotHrMin+minhr)/2 ? 4 : TBA/4)) return;         // increase speed quiker before HR shows up on plot
+                    sUP();
+
+                    readParams();
+
+                    if (tZone < 1 && hr > minhr - 3) tZone = tick;                // first hold should hold at minhr
+                }
+
+                readParams();
+
+                r = -3;             // so first hold won't go down
+                peak = 0;           // count number of peaks
+                warmuptime = (int)(tick - startTick);
             }
 
-            try { maxhr = int.Parse(Settings.Default.Highhr); } catch { }
-            try { tba = int.Parse(Settings.Default.Tba); } catch { }
-
-            peak = 0;
-            warmuptime = (int)(tick - startTick);
-
-            while(tick-startTick<dur-warmuptime)
+            while (tick-startTick<dur-warmuptime)
             {
+
+                // HOLD LOW
+
+                eRule("→" + minhr, holdlow, 1);
+
+                if (tZone > 0) while (tick < tZone + Settings.Default.holdlow)      // no longer needed here: && tick - startTick < dur - warmuptime
+                    {
+                        if (wait(3)) return;
+                        if (hr < minhr) sUP(); else if (hr == minhr + 1 && r > -2) rDOWN(); else if (hr > minhr) sDOWN();
+
+                        readParams();
+                    }
+
+
+                // HIGH                
 
                 eRule("↑"+maxhr,highhr,-1);
 
-                // HIGH
+                tZone = 0;
 
-                float tZone = 0;
+                bool incline = true;    // alternate half as many incline at lower speeds
 
-                bool incline = true;
                 while(hr<maxhr && tick-startTick<dur-warmuptime)
                 {
-                    if (wait(tba/Math.Max(1,maxhr-hr))) return;
+                    if (wait(TBA/Math.Max(1,maxhr-hr))) return;
                     sUP();
 
                     incline = !incline;
                     if ((incline || s>=5.5f) && INCL_UP!=0 && hr <maxhr && tick - startTick < dur - warmuptime && r<hl)
                     {
-                        if (wait(tba / Math.Max(1, (maxhr-hr)*2))) return;                  // wait half as much before ramp
+                        if (wait(TBA / Math.Max(1, (maxhr-hr)*2))) return;                  // wait half as much before ramp
                         rUP();
                     }
 
-                    try { maxhr = int.Parse(Settings.Default.Highhr); } catch { }
-                    try { tba = int.Parse(Settings.Default.Tba); } catch { }
+                    readParams();
 
                     if (tZone<1 && hr > maxhr - 3) tZone = tick;
                 }
 
                 peak++;
 
-                eRule("→"+maxhr,holdhigh,1);
-
                 // HOLD HIGH
+
+                eRule("→" + maxhr, holdhigh, 1);
 
                 if (tZone>0) while (tick<tZone+ Settings.Default.holdhigh && tick - startTick < dur - warmuptime)
                 {
                     if (wait(3)) return;
-                        if (hr < maxhr) sUP(); else if (hr==maxhr+1 && r>0) rDOWN(); else if (hr > maxhr) sDOWN();
+                    if (hr < maxhr) sUP(); else if (hr==maxhr+1 && r>0) rDOWN(); else if (hr > maxhr) sDOWN();
 
-                    try { maxhr = int.Parse(Settings.Default.Highhr); } catch { }                   
+                    readParams();
                 }
 
-                //try { minhr = tick - startTick > dur - warmuptime ? (int.Parse(Settings.Default.Lowhr)*2+baseHR)/3 : int.Parse(Settings.Default.Lowhr); } catch { }
-                try { minhr = int.Parse(Settings.Default.Lowhr); } catch { }
-                try { maxhr = int.Parse(Settings.Default.Highhr); } catch { }
-                try { tba = int.Parse(Settings.Default.Tba); } catch { }
-
-
-                eRule("↓"+minhr,lowhr,-1);
+                readParams();
 
                 // LOW
+
+                eRule("↓" + minhr, lowhr, -1);
 
                 tZone = 0;
 
                 while (hr > minhr && (r>0 || s>4))
                 {
-                    if (wait(tba/Math.Max(1,hr-minhr))) return;
+                    if (wait(TBA/Math.Max(1,hr-minhr))) return;
                     sDOWN();
                     if(hr>minhr && r>-3) {
-                        if (wait(tba / Math.Max(1, (hr - minhr)*2))) return;            // wait half as much before ramp
+                        if (wait(TBA / Math.Max(1, (hr - minhr)*2))) return;            // wait half as much before ramp
                         rDOWN();
                     }
 
-                    //try { minhr = tick - startTick > dur - warmuptime ? (int.Parse(Settings.Default.Lowhr) * 2 + baseHR) / 3 : int.Parse(Settings.Default.Lowhr); } catch { }
-                    try { minhr = int.Parse(Settings.Default.Lowhr); } catch { }
-                    try { maxhr = int.Parse(Settings.Default.Highhr); } catch { }
-                    try { tba = int.Parse(Settings.Default.Tba); } catch { }
+                    readParams();
 
                     if (tZone < 1 && hr < minhr + 3) tZone = tick;
                 }
                 if (r < 0) r = 0;
-
-                // HOLD LOW
-
-                eRule("→"+minhr,holdlow,1);
-
-                if (tZone>0) while (tick < tZone + Settings.Default.holdlow && tick - startTick < dur - warmuptime)
-                {
-                    if (wait(3)) return;
-                    if (hr < minhr) sUP(); else if (hr == minhr + 1 && r>-2) rDOWN(); else if (hr > minhr) sDOWN();
-
-                    //try { minhr = tick - startTick > dur - warmuptime ? baseHR : int.Parse(Settings.Default.Lowhr); } catch { }
-                    try { minhr = int.Parse(Settings.Default.Lowhr); } catch { }
-                }
 
             }
 
@@ -1220,6 +1226,19 @@ namespace walk
             if (r < 0) r = 0;
 
             running = false;
+        }
+
+        private void readParams(int t, int l, int h)
+        {
+            try { TBA = int.Parse(Settings.Default.Tba); } catch { TBA = t; }
+            try { minhr = int.Parse(Settings.Default.Lowhr); } catch { minhr = l; }
+            try { maxhr = int.Parse(Settings.Default.Highhr); } catch { maxhr = h; }
+        }
+        private void readParams()
+        {
+            try { TBA = int.Parse(Settings.Default.Tba); } catch {  }
+            try { minhr = int.Parse(Settings.Default.Lowhr); } catch {  }
+            try { maxhr = int.Parse(Settings.Default.Highhr); } catch { }
         }
 
         private void rUP()
@@ -1249,10 +1268,10 @@ namespace walk
         private void eRule(string section, TextBox red, int v)
         {
             int hr = (int)((tick - startTick) / 60 / 60);
-            int min = (int)(((tick - startTick) - hr * 60 * 60) / 60);
-            int sec = (int)((tick - startTick) - hr * 60 * 60 - min * 60);
+            int min = (int)((tick - startTick - hr * 60 * 60) / 60);
+            int sec = (int)(tick - startTick - hr * 60 * 60 - min * 60);
 
-            meta += String.Format("\n{0}:{1:D2}:{2:D2} {3} ({4:F1}/{5})", hr, min, sec,section,s,r);
+            meta += string.Format("\n{0}:{1:D2}:{2:D2} {3} ({4:F1}/{5})", hr, min, sec,section,s,r);
 
             int x = Math.Min((int)((tick - startTick) * plotWidth / dur), plotWidth - 1);
             Application.Current.Dispatcher.Invoke(() => {
