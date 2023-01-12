@@ -884,7 +884,10 @@ namespace walk
                 screenshot = Settings.Default.logdir + (Settings.Default.logdir.EndsWith("\\") ? "" : "\\") + String.Format("{0:yyyy-MM-dd HH.mm}", DateTime.Now);
 
                 var age = (DateTime.Today - Settings.Default.birthd).TotalDays / 365.25f;
-                
+
+                dispHR.Content = string.Format("{0:F0}", totalHR / (dur / 60f));
+                dispSpeed.Content = string.Format("{0:F1}", (distance / 1000f) / (dur / 60f / 60f));               
+
                 File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1} min (warm-up: {11:f1} min)\nHR Max: {0} bps Avg: {1:f2} bps Plot range: {8}…{9} bps\nSpeed Max: {2:F2} km/h Avg: {3:F2} km/h\nAscend: {4}\nDistance: {5:F0} m\nCalories: {6:F0} KCal\nSections: {12} peaks{7}",
                     maxHR, totalHR / (dur / 60f),
                     maxSpeed, (distance / 1000) / (dur / 60f / 60f),
