@@ -43,6 +43,7 @@ namespace walk
         static int lasthr = 0, hr = 0,plotHrMin=85,plotHrMax=120;
         static int[] hrplot=null;
         static int warmuptime = 0, peak = 0;
+        static bool noUpdate = false;
 
         private void Config_button(object sender, RoutedEventArgs e)
         {
@@ -442,6 +443,7 @@ namespace walk
                     int x = Math.Min((int)(tick * plotWidth / dur), (int)plotWidth - 1);
                     int lhr = hr, lr = r;
                     float ls = s;
+                    if (noUpdate) return;       // save shows avg values
                     Application.Current.Dispatcher.Invoke(() => {
                         dispHR.Content = hr;
 
@@ -846,10 +848,13 @@ namespace walk
 
             win.Background = brush;
 
+            noUpdate = true;
             save();
 
-            Application.Current.Dispatcher.Invoke(() => { 
+            Task.Delay(1000).ContinueWith(_ =>                     // retry
+            {
                 save();
+                noUpdate = false;
             });
 
             if (hrdevice!=null)
@@ -908,6 +913,7 @@ namespace walk
 
         private void updateUI(object sender, EventArgs e)
         {
+            if (noUpdate) return;   // save shows avg values
             dispSpeed.Content = String.Format("{0:0.0}",s);
             dispIncl.Content = r < 0 ? 0 : r;
             progress.Text = String.Format("{0:0.0}", (tick++-startTick) / 60f);
@@ -991,6 +997,11 @@ namespace walk
 
         private static bool wait(float delay)   // delay in seconds
         {
+            return wait(0,delay);
+        }
+
+        private static bool wait(int hrTarget,float delay)   // delay in seconds
+        {
             if (delay < 0)
             {
                 Debug.WriteLine("wait " + delay);
@@ -1009,8 +1020,7 @@ namespace walk
 
             if(delay<1.5f)
             {
-                Thread.Sleep((int)(delay * 1000));               
-                //Task.Delay((int)(delay * 1000));                               
+                Thread.Sleep((int)(delay * 1000));                              
                 return false;
             }           
 
@@ -1019,11 +1029,11 @@ namespace walk
                 time = String.Format("{0:0.0}", (p-tick) / 60f);
                 Thread.Sleep(200);                    
                 if (!running) return true;
+                if (hrTarget == minhr && hr <= minhr || hrTarget == maxhr && hr >= maxhr) break;                
             }
             time = "";
 
             return false;
-
         }
 
         private static void toggle(int sw, int val)
@@ -1062,7 +1072,7 @@ namespace walk
             }
         }
 
-        static int minhr, maxhr, TBA;
+        static int minhr=105, maxhr=120, TBA;
 
         private void workout2(object obj)
         {
@@ -1156,13 +1166,13 @@ namespace walk
 
                 while(hr<maxhr && tick-startTick<dur-warmuptime)
                 {
-                    if (wait(TBA/Math.Max(1,maxhr-hr))) return;
+                    if (wait(maxhr,TBA/Math.Max(1,maxhr-hr))) return;
                     sUP();
 
                     incline = !incline;
                     if ((incline || s>=5.5f) && INCL_UP!=0 && hr <maxhr && tick - startTick < dur - warmuptime && r<hl)
                     {
-                        if (wait(TBA / Math.Max(1, (maxhr-hr)*2))) return;                  // wait half as much before ramp
+                        if (wait(maxhr,TBA / Math.Max(1, (maxhr-hr)*2))) return;                  // wait half as much before ramp
                         rUP();
                     }
 
@@ -1195,10 +1205,10 @@ namespace walk
 
                 while (hr > minhr && (r>0 || s>4))
                 {
-                    if (wait(TBA/Math.Max(1,hr-minhr))) return;
+                    if (wait(minhr,TBA/Math.Max(1,hr-minhr))) return;
                     sDOWN();
                     if(hr>minhr && r>-3) {
-                        if (wait(TBA / Math.Max(1, (hr - minhr)*2))) return;            // wait half as much before ramp
+                        if (wait(minhr,TBA / Math.Max(1, (hr - minhr)*2))) return;            // wait half as much before ramp
                         rDOWN();
                     }
 
