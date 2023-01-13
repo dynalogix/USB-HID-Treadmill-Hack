@@ -309,7 +309,7 @@
         <Label x:Name="mholdhigh" Content="sec" HorizontalAlignment="Left" Margin="919,236,0,-17" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" />
 
         <CheckBox TabIndex="7" Content="♥" HorizontalAlignment="Left" Margin="283,0,0,0" VerticalAlignment="Top" FontSize="40" VerticalContentAlignment="Center" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=HEARTMODE, Mode=TwoWay}"
-                  Checked="heartOn" Unchecked="heartOff" Foreground="Gray" />
+                  x:Name="heartMode" Checked="heartOn" Unchecked="heartOff" Foreground="Gray" />
         <Button Content="📊" HorizontalAlignment="Left" Margin="280,46,0,0" VerticalAlignment="Top" Background="#00DDDDDD" 
             BorderBrush="#00707070" Click="Config_button" Tag="diag" TabIndex="1" FontSize="20" Foreground="Gray" />
         <Button Content="Browse…" HorizontalAlignment="Left" Margin="954,232,0,0" VerticalAlignment="Top" Click="browse_button_click"/>

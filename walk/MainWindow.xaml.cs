@@ -463,7 +463,7 @@ namespace walk
                                 iplot.Points.Add(new Point(x, iplot.Height - Math.Min(15f, Math.Max(0f, lr)) * iplot.Height / 15f));
                             }
                             if (lhr > plotHrMax) plotHrMax = lhr + 5;
-                            else
+                            else if(low == int.Parse(Settings.Default.Lowhr) && high == int.Parse(Settings.Default.Highhr)) // if min/max unchanged
                             {
                                 if (x > lastX) plot.Points.Add(new Point(x, plot.Height - Math.Max(0, hrplot[x] - plotHrMin) * plot.Height / (plotHrMax - plotHrMin)));
                                 lastX = x;
@@ -477,6 +477,7 @@ namespace walk
             }
         }
 
+        int low, high;
 
         private void redrawPlot()
         {
@@ -486,8 +487,8 @@ namespace walk
             plot.Points = points;
 
             // rules
-            int low = int.Parse(Settings.Default.Lowhr);
-            int high = int.Parse(Settings.Default.Highhr);
+            low = int.Parse(Settings.Default.Lowhr);
+            high = int.Parse(Settings.Default.Highhr);
             hrRules.Height = (high - low) * plot.Height / (plotHrMax - plotHrMin);
             hrRules.Margin = new Thickness(hrRules.Margin.Left, plot.Margin.Top + (plotHrMax - high) * plot.Height / (plotHrMax - plotHrMin), 0, 0);
         }
@@ -1060,12 +1061,16 @@ namespace walk
                 return false;
             }
 
+            var keephr = hr > 0 && hr == Math.Abs(hrTarget);
+
             while (p > tick)
             {
                 time = String.Format("{0:0.0}", (p - tick) / 60f);
                 Thread.Sleep(200);
                 if (!running) return true;
-                if (hr>0 && (hrTarget < 0 && hr <= hrTarget || hrTarget > 0 && hr >= hrTarget)) break;
+                if (keephr) { 
+                    if (hr != Math.Abs(hrTarget)) p = tick; 
+                } else if(hr > 0 && (hrTarget < 0 && hr <= Math.Abs(hrTarget) || hrTarget > 0 && hr >= hrTarget)) p = tick;
             }
             time = "";
 
@@ -1259,6 +1264,11 @@ namespace walk
                 }
                 if (r < 0) r = 0;
 
+                if(hr==lowerTargetHR && hr==upperTargetHR)
+                {
+                    if (wait(upperTargetHR, TBA)) return;
+                }
+
             }
 
             eRule("cool↓3.0", null, 0);
@@ -1322,11 +1332,15 @@ namespace walk
 
         private void eRule(string section, TextBox red, int v)
         {
-            int hr = (int)((tick - startTick) / 60 / 60);
-            int min = (int)((tick - startTick - hr * 60 * 60) / 60);
-            int sec = (int)(tick - startTick - hr * 60 * 60 - min * 60);
 
-            meta += string.Format("\n{0}:{1:D2}:{2:D2} {3} ({4:F1}/{5})", hr, min, sec, section, s, r);
+            if (lowerTargetHR != upperTargetHR)
+            {
+                int hr = (int)((tick - startTick) / 60 / 60);
+                int min = (int)((tick - startTick - hr * 60 * 60) / 60);
+                int sec = (int)(tick - startTick - hr * 60 * 60 - min * 60);
+
+                meta += string.Format("\n{0}:{1:D2}:{2:D2} {3} ({4:F1}/{5})", hr, min, sec, section, s, r);
+            }
 
             int x = Math.Min((int)((tick - startTick) * plotWidth / dur), plotWidth - 1);
             Application.Current.Dispatcher.Invoke(() => {
