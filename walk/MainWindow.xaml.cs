@@ -28,26 +28,26 @@ namespace walk
         static int MAXSPEED = 16, MAXINCL = 15;
         static int WinH = 293, WinH2 = 180, WinH0 = 84, WinW = 1848, plotWidth = 1000;
 
-        static int ON = 1, OFF = 0, SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL=9, START=5, MODE=6, STOP=7,SPD3=8,SPD6=7;        
-        static bool HW341=false, CH551G=true, DUMMYSTART=false, DUMMYMODE=false;
+        static int ON = 1, OFF = 0, SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL = 9, START = 5, MODE = 6, STOP = 7, SPD3 = 8, SPD6 = 7;
+        static bool HW341 = false, CH551G = true, DUMMYSTART = false, DUMMYMODE = false;
 
-        static float buttonDownSec = 0.5f,PRESSLEN=0.6f;       
+        static float buttonDownSec = 0.5f, PRESSLEN = 0.6f;
 
-        static ushort vid, pid=0x3f;
+        static ushort vid, pid = 0x3f;
 
         static float s = 3.0f;
-        static int r=0,dummy=0;
+        static int r = 0, dummy = 0;
         static String time = "";
-        static float dur, warm, speed, sp, hl, tick, p, reps, sdur,startTick;
+        static float dur, warm, speed, sp, hl, tick, p, reps, sdur, startTick;
         static String https = "";
-        static int lasthr = 0, hr = 0,plotHrMin=85,plotHrMax=120;
-        static int[] hrplot=null;
+        static int lasthr = 0, hr = 0, plotHrMin = 85, plotHrMax = 120;
+        static int[] hrplot = null;
         static int warmuptime = 0, peak = 0;
-        bool noUpdate = false;
+        static bool noUpdate = false;
 
         private void Config_button(object sender, RoutedEventArgs e)
         {
-            Settings.Default.Save();          
+            Settings.Default.Save();
 
             Boolean fail = false;
             bSu.Background = Brushes.Transparent;
@@ -73,36 +73,39 @@ namespace walk
             if (Settings.Default.SPD6 < 0 || Settings.Default.SPD6 > 9) { b6.Background = Brushes.Yellow; fail = true; }
 
             fButtonPressSec.Background = Brushes.Transparent;
-            if (Settings.Default.ButtonPressSec < 0.05f || Settings.Default.ButtonPressSec>2f) { fButtonPressSec.Background = Brushes.Yellow; fail = true; }
+            if (Settings.Default.ButtonPressSec < 0.05f || Settings.Default.ButtonPressSec > 2f) { fButtonPressSec.Background = Brushes.Yellow; fail = true; }
             fButtonReleaseSec.Background = Brushes.Transparent;
             if (Settings.Default.ButtonReleaseSec < 0.05f || Settings.Default.ButtonReleaseSec > 2f) { fButtonReleaseSec.Background = Brushes.Yellow; fail = true; }
 
             win.Width = WinW;
 
-            if (fail && win.Height>200) return;
+            if (fail && win.Height > 200) return;
 
-            if(sender!=null && ((Button)sender).Content.ToString().Equals("📊"))
+            if (sender != null && ((Button)sender).Content.ToString().Equals("📊"))
             {
                 if (win.Height < 150) win.Height = WinH2; else win.Height = WinH0;
-            } else if(sender!=null)
+            }
+            else if (sender != null)
             {
                 if (win.Height < 200) win.Height = WinH; else win.Height = WinH0;
-            } else
+            }
+            else
             {
                 if (win.Height > 200) win.Height = WinH0;                              // start button pressed: only fold full settings
             }
 
-            if(win.Height>100)
+            if (win.Height > 100)
             {
                 lDispIncl.Foreground = Brushes.Green;
                 blue.Foreground = Brushes.Blue;
                 red.Foreground = Brushes.Red;
-            } else
+            }
+            else
             {   // #FF3C3C3C
                 brush = new SolidColorBrush();
-                brush.Color = Color.FromRgb(0x3c,0x3c,0x3c);
+                brush.Color = Color.FromRgb(0x3c, 0x3c, 0x3c);
                 brush.Opacity = 1f;
-               
+
                 lDispIncl.Foreground = brush;
                 blue.Foreground = brush;
                 red.Foreground = brush;
@@ -111,59 +114,60 @@ namespace walk
             visibility();
         }
 
-        DispatcherTimer timer =null;
+        DispatcherTimer timer = null;
 
-        Thread thread =null;
-        static bool running = false, caught_up=false, dummy_press=false;
+        Thread thread = null;
+        static bool running = false, caught_up = false, dummy_press = false;
 
         BluetoothLEDevice hrdevice;
 
         private void btlist_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (btlist.SelectedItem ==null || btlist.Items.Count==0)
+            if (btlist.SelectedItem == null || btlist.Items.Count == 0)
             {
                 return;
             }
 
-            Debug.WriteLine("save:"+btlist.SelectedItem);
+            Debug.WriteLine("save:" + btlist.SelectedItem);
             Settings.Default.BTHR = (string)btlist.SelectedItem;
-            Settings.Default.Save();           
+            Settings.Default.Save();
 
-            foreach (BTItem item in BTDevices) if (item.name == Settings.Default.BTHR) {
-                dispHR.Content = "⏳";
-                _ = connectBT(item.address);
-                return;
-            }                    
+            foreach (BTItem item in BTDevices) if (item.name == Settings.Default.BTHR)
+                {
+                    dispHR.Content = "⏳";
+                    _ = connectBT(item.address);
+                    return;
+                }
         }
 
         GattCharacteristic notifyingCharacteristic, notifyingCharacteristic2;
 
         private void dispHR_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            if(hr<10) dispHR.Content = "🔄";
+            if (hr < 10) dispHR.Content = "🔄";
         }
 
         private void dispHR_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            if(hr<10) dispHR.Content = "♥";
+            if (hr < 10) dispHR.Content = "♥";
             lbtlist.Background = Brushes.Transparent;
         }
 
 
         private void dispHR_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {            
+        {
             dispHR.Background = Brushes.Yellow;
             dispHR.Content = "🔄";
-            if(win.Height<200) Config_button(configButton, null);
+            if (win.Height < 200) Config_button(configButton, null);
             lbtlist.Background = Brushes.Yellow;
         }
 
         private void dispHR_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {           
+        {
             dispHR.Background = Brushes.Transparent;
             btlist.SelectedItem = null;
             btlist.Items.Clear();
-            dispHR.Content = "♥";           
+            dispHR.Content = "♥";
             _ = HRinit();
         }
 
@@ -207,7 +211,7 @@ namespace walk
         }
 
         private void heartOn(object sender, RoutedEventArgs e)
-        {           
+        {
             shiftControls(175);
         }
 
@@ -296,7 +300,7 @@ namespace walk
 
             if (result.Status == GattCommunicationStatus.Success)
             {
-                foreach(GattDeviceService service in result.Services)
+                foreach (GattDeviceService service in result.Services)
                 {
                     if (service.Uuid.ToString().StartsWith("0000180d"))             // HR service
                     {
@@ -307,7 +311,7 @@ namespace walk
                             {
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    if(!hrChanged) dispHR_MouseUp(null, null);                                                                          
+                                    if (!hrChanged) dispHR_MouseUp(null, null);
                                 });
                             });
                         });
@@ -354,7 +358,8 @@ namespace walk
                                 }
                             }
                         }
-                    } else if (service.Uuid.ToString().StartsWith("0000180f"))          // battery service
+                    }
+                    else if (service.Uuid.ToString().StartsWith("0000180f"))          // battery service
                     {
                         GattCharacteristicsResult cresult = await service.GetCharacteristicsAsync();
 
@@ -394,7 +399,7 @@ namespace walk
                                         Debug.WriteLine("battery subscribed");
                                         characteristic.ValueChanged += BattChanged;
                                     }
-                                }                               
+                                }
                             }
                         }
                     }
@@ -430,16 +435,16 @@ namespace walk
             byte[] input = new byte[len];
             reader.ReadBytes(input);
             // Utilize the data as needed
-            for (int i = 0; i < len; i++) Debug.Write(input[i]+" ");
+            for (int i = 0; i < len; i++) Debug.Write(input[i] + " ");
             if (len > 1)
             {
                 Debug.WriteLine("HR=" + input[1]);
-                if(input[1]>10 && input[1]<200)
+                if (input[1] > 10 && input[1] < 200)
                 {
                     lasthr = hr;
                     hr = input[1];
                     if (hr > maxHR) maxHR = hr;
-                    
+
                     int x = Math.Min((int)(tick * plotWidth / dur), (int)plotWidth - 1);
                     int lhr = hr, lr = r;
                     float ls = s;
@@ -451,14 +456,16 @@ namespace walk
 
                         if (hrplot != null)
                         {
-                            try { hrplot[x] = (int)lhr; hrplot[x + 1] = (int)lhr;  hrplot[x + 2] = (int)lhr; } catch { }       // continous plot with short durations
+                            try { hrplot[x] = (int)lhr; hrplot[x + 1] = (int)lhr; hrplot[x + 2] = (int)lhr; } catch { }       // continous plot with short durations
                             if (x > lastX)
                             {
                                 splot.Points.Add(new Point(x, splot.Height - Math.Min(5f, Math.Max(0f, ls - 3f)) * splot.Height / 5f));
                                 iplot.Points.Add(new Point(x, iplot.Height - Math.Min(15f, Math.Max(0f, lr)) * iplot.Height / 15f));
                             }
-                            if (lhr > plotHrMax) plotHrMax = lhr + 5; else {                                
-                                if (x > lastX) plot.Points.Add(new Point(x, plot.Height-Math.Max(0,hrplot[x] - plotHrMin) * plot.Height / (plotHrMax - plotHrMin)));
+                            if (lhr > plotHrMax) plotHrMax = lhr + 5;
+                            else
+                            {
+                                if (x > lastX) plot.Points.Add(new Point(x, plot.Height - Math.Max(0, hrplot[x] - plotHrMin) * plot.Height / (plotHrMax - plotHrMin)));
                                 lastX = x;
                                 return;
                             }
@@ -475,14 +482,14 @@ namespace walk
         {
             PointCollection points = new PointCollection();
             for (int x = 0; x <= lastX; x++)
-                points.Add(new Point(x, plot.Height-Math.Max(0,hrplot[x]-plotHrMin)*plot.Height/(plotHrMax-plotHrMin) ));
+                points.Add(new Point(x, plot.Height - Math.Max(0, hrplot[x] - plotHrMin) * plot.Height / (plotHrMax - plotHrMin)));
             plot.Points = points;
 
             // rules
             int low = int.Parse(Settings.Default.Lowhr);
             int high = int.Parse(Settings.Default.Highhr);
             hrRules.Height = (high - low) * plot.Height / (plotHrMax - plotHrMin);
-            hrRules.Margin = new Thickness(hrRules.Margin.Left, plot.Margin.Top + (plotHrMax-high) * plot.Height / (plotHrMax - plotHrMin), 0, 0);
+            hrRules.Margin = new Thickness(hrRules.Margin.Left, plot.Margin.Top + (plotHrMax - high) * plot.Height / (plotHrMax - plotHrMin), 0, 0);
         }
 
         private void duration_edited(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
@@ -496,7 +503,7 @@ namespace walk
             {
                 Description = "Folder to save log/summary files into after workouts (PNG+TXT)",
                 UseDescriptionForTitle = true,
-                SelectedPath = logdir.Text.ToString()+"\\",
+                SelectedPath = logdir.Text.ToString() + "\\",
                 ShowNewFolderButton = true
             };
 
@@ -506,11 +513,12 @@ namespace walk
             }
         }
 
-        private SolidColorBrush brush;              
+        private SolidColorBrush brush;
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (!running) End(); else
+            if (!running) End();
+            else
             {
                 MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show("Are you sure?", "Stop", System.Windows.MessageBoxButton.YesNo);
                 if (messageBoxResult == MessageBoxResult.Yes) End(); else e.Cancel = true;
@@ -519,7 +527,7 @@ namespace walk
 
         private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
-            win.Topmost = false;          
+            win.Topmost = false;
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
@@ -535,7 +543,7 @@ namespace walk
         private void gotFocus(object sender, RoutedEventArgs e)
         {
             ((TextBox)sender).SelectAll();
-        }      
+        }
 
         public MainWindow()
         {
@@ -543,7 +551,7 @@ namespace walk
             visibility();
             win.Height = WinH0;
 
-            duration_edited(null,null);
+            duration_edited(null, null);
 
             Debug.WriteLine("start");
             _ = HRinit();
@@ -554,13 +562,13 @@ namespace walk
         class BTItem : IEquatable<BTItem>
         {
             public string name;
-            public ulong address;           
+            public ulong address;
 
             public BTItem(ulong bluetoothAddress)
             {
                 address = bluetoothAddress;
             }
-            public BTItem(ulong bluetoothAddress,string name)
+            public BTItem(ulong bluetoothAddress, string name)
             {
                 address = bluetoothAddress;
                 this.name = name;
@@ -572,11 +580,11 @@ namespace walk
             }
         };
 
-        List<BTItem> BTDevices=new List<BTItem>();
+        List<BTItem> BTDevices = new List<BTItem>();
 
         async Task HRinit()
         {
-            if(hrdevice!=null)
+            if (hrdevice != null)
             {
                 await stopHR();
                 await Task.Delay(500);
@@ -586,9 +594,9 @@ namespace walk
 
             watcher = new BluetoothLEAdvertisementWatcher()
             {
-                ScanningMode = BluetoothLEScanningMode.Passive               
+                ScanningMode = BluetoothLEScanningMode.Passive
             };
-           
+
             watcher.Received += Watcher_Received;
             watcher.Start();
 
@@ -600,17 +608,20 @@ namespace walk
         BluetoothLEAdvertisementReceivedEventArgs args)
         {
             var device = await BluetoothLEDevice.FromBluetoothAddressAsync(args.BluetoothAddress);
-            if (device != null && device.DeviceInformation.Name.Length>0)
+            if (device != null && device.DeviceInformation.Name.Length > 0)
             {
-                Debug.WriteLine("BT.Addr: "+device.BluetoothAddress+"("+device.DeviceInformation.Name);
-                if (!BTDevices.Contains(new BTItem(device.BluetoothAddress))) {
+                Debug.WriteLine("BT.Addr: " + device.BluetoothAddress + "(" + device.DeviceInformation.Name);
+                if (!BTDevices.Contains(new BTItem(device.BluetoothAddress)))
+                {
                     BTDevices.Add(new BTItem(device.BluetoothAddress, device.DeviceInformation.Name));
-                } else
+                }
+                else
                 {
                     watcher.Stop();
 
                     Application.Current.Dispatcher.Invoke(() => {
-                        foreach (BTItem item in BTDevices) {
+                        foreach (BTItem item in BTDevices)
+                        {
                             btlist.Items.Add(item.name);
                             if (item.name == Settings.Default.BTHR)
                             {
@@ -618,7 +629,7 @@ namespace walk
                                 Debug.WriteLine("retrieved " + item.name);
                             }
                         }
-                        
+
                     });
                 }
             }
@@ -635,7 +646,7 @@ namespace walk
 
         private void Stop_click(object sender, RoutedEventArgs e)
         {
-            GetVidPid();           
+            GetVidPid();
             if (STOP != 0) press(STOP);
         }
 
@@ -644,7 +655,7 @@ namespace walk
             var loDataTable = new DataTable();
             var loDataColumn = new DataColumn("Eval", typeof(double), expression);
             loDataTable.Columns.Add(loDataColumn);
-            loDataTable.Rows.Add(0);           
+            loDataTable.Rows.Add(0);
             return (double)(loDataTable.Rows[0]["Eval"]);
         }
 
@@ -653,11 +664,11 @@ namespace walk
             time = "";
 
             if (!running)
-            {                             
-                Debug.WriteLine("start =======================");              
+            {
+                Debug.WriteLine("start =======================");
 
                 GetVidPid();
-                
+
                 sprdur.Background = Brushes.Transparent;
                 max.Background = Brushes.Transparent;
                 sprint.Background = Brushes.Transparent;
@@ -665,24 +676,24 @@ namespace walk
                 warmup.Background = Brushes.Transparent;
                 rep.Background = Brushes.Transparent;
                 progress.Background = Brushes.Transparent;
-                
-                Boolean fail=calcDur(false);
-               
+
+                Boolean fail = calcDur(false);
+
                 try { sdur = float.Parse(sprdur.Text) * 60; } catch { sdur = -1; }
-                if (sdur > 20 * 60) { sprdur.Background = Brushes.Yellow; fail = true; } 
+                if (sdur > 20 * 60) { sprdur.Background = Brushes.Yellow; fail = true; }
                 try { speed = float.Parse(max.Text); } catch { speed = -1; }
-                if (speed < 3 || speed > MAXSPEED) { max.Background = Brushes.Yellow; fail = true; } 
+                if (speed < 3 || speed > MAXSPEED) { max.Background = Brushes.Yellow; fail = true; }
                 try { sp = float.Parse(sprint.Text); } catch { sp = -1; }
                 if (sp < speed || sp > MAXSPEED) { sprint.Background = Brushes.Yellow; fail = true; }
                 try { hl = INCL_UP * INCL_DOWN != 0 ? float.Parse(hill.Text) : 0; } catch { hl = -1; }
                 if (hl < 0 || hl > MAXINCL) { hill.Background = Brushes.Yellow; fail = true; }
 
-                try { warm = 60f * float.Parse(warmup.Text);  } catch { warm = -1; }
-                if (warm < 1*60 || warm > 15*60) { warmup.Background = Brushes.Yellow; fail = true; }
-                try { reps = (int)float.Parse(rep.Text); } catch{ reps = -1; }
+                try { warm = 60f * float.Parse(warmup.Text); } catch { warm = -1; }
+                if (warm < 1 * 60 || warm > 15 * 60) { warmup.Background = Brushes.Yellow; fail = true; }
+                try { reps = (int)float.Parse(rep.Text); } catch { reps = -1; }
                 if (reps < 1 || reps > 30) { rep.Background = Brushes.Yellow; fail = true; }
 
-                try { tick = float.Parse(progress.Text) * 60; } catch{ tick = 0; }
+                try { tick = float.Parse(progress.Text) * 60; } catch { tick = 0; }
                 if (tick < 0 || tick > dur) { progress.Background = Brushes.Yellow; fail = true; }
 
                 if (win.Height > 200) Config_button(null, null);
@@ -704,32 +715,32 @@ namespace walk
                 sprdur.Opacity = 0.3f;
                 rep.Opacity = 0.3f;
 
-                running = true;               
+                running = true;
 
                 r = 0; s = 3.0f; startTick = 0;
 
                 buttonDownSec = Settings.Default.ButtonPressSec;
-                PRESSLEN = buttonDownSec + Settings.Default.ButtonReleaseSec;              
+                PRESSLEN = buttonDownSec + Settings.Default.ButtonReleaseSec;
 
-                while(dur<2*warm+reps*(sdur+180)) 
+                while (dur < 2 * warm + reps * (sdur + 180))
                 {
                     rep.Text = (--reps).ToString();
                 }
 
-                warm = warm  / (10f * (speed - 3.0f));        // - 10*PRESSLEN * (speed - 3.0f)
+                warm = warm / (10f * (speed - 3.0f));        // - 10*PRESSLEN * (speed - 3.0f)
 
-                Debug.WriteLine("Button press="+buttonDownSec.ToString());
-               
-                thread = Settings.Default.HEARTMODE ? new Thread(workout2) : new Thread(workout1);               
+                Debug.WriteLine("Button press=" + buttonDownSec.ToString());
+
+                thread = Settings.Default.HEARTMODE ? new Thread(workout2) : new Thread(workout1);
                 thread.Start();
 
                 timer = new DispatcherTimer();
                 timer.Interval = TimeSpan.FromSeconds(1);
                 timer.Tick += updateUI;
-                timer.Start();              
+                timer.Start();
 
                 brush = new SolidColorBrush();
-                brush.Color = Color.FromRgb(0,0,0);
+                brush.Color = Color.FromRgb(0, 0, 0);
                 brush.Opacity = 0.5f;
                 win.Background = brush;
 
@@ -737,15 +748,15 @@ namespace walk
 
                 plotWidth = (int)eRules.Width;
 
-                if (hr>10)
+                if (hr > 10)
                 {
                     hrplot = new int[(int)plot.Width];
-                    plotHrMin = (int.Parse(Settings.Default.Lowhr)+hr)/2;    // start to register half way between current and low target - this will not change
+                    plotHrMin = (int.Parse(Settings.Default.Lowhr) + hr) / 2;    // start to register half way between current and low target - this will not change
                     try { plotHrMax = int.Parse(Settings.Default.Highhr) + 5; } catch { }
 
                     splot.Points = new PointCollection();
                     iplot.Points = new PointCollection();
-                    
+
                     redrawPlot();
                 }
 
@@ -821,15 +832,15 @@ namespace walk
             INCL_UP = Settings.Default.INCL_UP;
         }
 
-        static string screenshot = null, meta="";
-        static int maxHR=0, ascend=0;
-        static float maxSpeed = 0, distance=0;        
+        static string screenshot = null, meta = "";
+        static int maxHR = 0, ascend = 0;
+        static float maxSpeed = 0, distance = 0;
 
         private void End()
         {
             Debug.WriteLine("End ================");
 
-            if(timer!=null) timer.Stop();
+            if (timer != null) timer.Stop();
             running = false;
             start.Content = "Start";
             dispTime.Content = "";
@@ -857,7 +868,7 @@ namespace walk
                 noUpdate = false;
             });
 
-            if (hrdevice!=null)
+            if (hrdevice != null)
             {
                 _ = stopHR();
                 Debug.WriteLine("closed BT");
@@ -867,7 +878,7 @@ namespace walk
 
         private void save()
         {
-            if ((lastX > 0 || win.Height>200) && Settings.Default.logdir.Length > 0)
+            if ((lastX > 0 || win.Height > 200) && Settings.Default.logdir.Length > 0)
             {
 
                 if (screenshot != null)
@@ -876,10 +887,10 @@ namespace walk
                     File.Delete(screenshot + ".png");  // if already saved delete that
                 }
 
-                if(win.Height<100) win.Height = WinH2;
+                if (win.Height < 100) win.Height = WinH2;
                 win.Width = WinW;
                 RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap(WinW, (int)win.Height, 96, 96, PixelFormats.Pbgra32);
-                if(win.Height < 200) renderTargetBitmap.Render(grid); else renderTargetBitmap.Render(win);
+                if (win.Height < 200) renderTargetBitmap.Render(grid); else renderTargetBitmap.Render(win);
                 PngBitmapEncoder pngImage = new PngBitmapEncoder();
                 pngImage.Frames.Add(BitmapFrame.Create(renderTargetBitmap));
 
@@ -891,7 +902,7 @@ namespace walk
                 var age = (DateTime.Today - Settings.Default.birthd).TotalDays / 365.25f;
 
                 dispHR.Content = string.Format("{0:F0}", totalHR / (dur / 60f));
-                dispSpeed.Content = string.Format("{0:F1}", (distance / 1000f) / (dur / 60f / 60f));               
+                dispSpeed.Content = string.Format("{0:F1}", (distance / 1000f) / (dur / 60f / 60f));
 
                 File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1} min (warm-up: {11:f1} min)\nHR Max: {0} bps Avg: {1:f2} bps Plot range: {8}…{9} bps\nSpeed Max: {2:F2} km/h Avg: {3:F2} km/h\nAscend: {4}\nDistance: {5:F0} m\nCalories: {6:F0} KCal\nSections:{7}\n({12} peaks)",
                     maxHR, totalHR / (dur / 60f),
@@ -900,9 +911,9 @@ namespace walk
                     (dur / 60) * (Settings.Default.FEMALE
                     ? (-20.4022 + (0.4472 * totalHR / (dur / 60f)) - (0.1263 * Settings.Default.weightkg) + (0.074 * age)) / 4.184
                     : (-55.0969 + (0.6309 * totalHR / (dur / 60f)) + (0.1988f * Settings.Default.weightkg) + (0.2017 * age)) / 4.184),
-                    meta, plotHrMin, plotHrMax, dur / 60f, warmuptime/60f, peak
+                    meta, plotHrMin, plotHrMax, dur / 60f, warmuptime / 60f, peak
                     ));
-                
+
                 using (Stream fileStream = File.Create(screenshot + ".png"))
                 {
                     pngImage.Save(fileStream);
@@ -914,12 +925,12 @@ namespace walk
         private void updateUI(object sender, EventArgs e)
         {
             if (noUpdate) return;   // save shows avg values
-            dispSpeed.Content = String.Format("{0:0.0}",s);
+            dispSpeed.Content = String.Format("{0:0.0}", s);
             dispIncl.Content = r < 0 ? 0 : r;
-            progress.Text = String.Format("{0:0.0}", (tick++-startTick) / 60f);
+            progress.Text = String.Format("{0:0.0}", (tick++ - startTick) / 60f);
 
             if (s > maxSpeed) maxSpeed = s;
-            if(s>0) distance += s / 3.6f;
+            if (s > 0) distance += s / 3.6f;
             if (r > 0) ascend += r;
 
             if (!running && timer != null)
@@ -927,20 +938,21 @@ namespace walk
                 End();
             }
 
-            if (time == "" || time=="0.0")
+            if (time == "" || time == "0.0")
             {
-                if (distance < 1000) {
-                    dispTime.Content = String.Format("{0:F0}",distance);
+                if (distance < 1000)
+                {
+                    dispTime.Content = String.Format("{0:F0}", distance);
                     mnext.Content = "m";
                 }
                 else if (distance < 10000)
                 {
-                    dispTime.Content = String.Format("{0:F2}", distance/1000f);
+                    dispTime.Content = String.Format("{0:F2}", distance / 1000f);
                     mnext.Content = "km";
                 }
                 else
                 {
-                    dispTime.Content = String.Format("{0:F1}", distance/1000f);
+                    dispTime.Content = String.Format("{0:F1}", distance / 1000f);
                     mnext.Content = "km";
                 }
                 lnext.Content = "Dist";
@@ -960,9 +972,9 @@ namespace walk
 
             p += PRESSLEN;
 
-            if (!caught_up && p<tick)    // not caught up or button not connected
+            if (!caught_up && p < tick)    // not caught up or button not connected
             {
-                Debug.WriteLine( "Press " + v);
+                Debug.WriteLine("Press " + v);
                 return;
             }
 
@@ -990,17 +1002,23 @@ namespace walk
                 }
                 dev.Dispose();
             }
-            catch (Exception) {               
+            catch (Exception)
+            {
                 System.Media.SystemSounds.Hand.Play();
             }
         }
 
         private static bool wait(float delay)   // delay in seconds
         {
-            return wait(0,delay);
+            return wait(noTargetHR, delay);
         }
 
-        private static bool wait(int hrTarget,float delay)   // delay in seconds
+        // hrTarget:
+        // = 0 no hr target
+        // < 0 break if hr<=minhr
+        // > 0 break if hr>=maxhr
+        static readonly int noTargetHR = 0, BreakOverUpperHR = 1, BreakBelowLowerHR = -1;
+        private static bool wait(int hrTarget, float delay)   // delay in seconds
         {
             if (delay < 0)
             {
@@ -1012,24 +1030,24 @@ namespace walk
 
             if (!caught_up && p < tick)
             {
-                Debug.Write(String.Format("wait {0} ({1:0.0}) → ", delay, p / 60f));               
+                Debug.Write(String.Format("wait {0} ({1:0.0}) → ", delay, p / 60f));
                 return !running;
             }
-           
+
             caught_up = true;
 
-            if(delay<1.5f)
+            if (delay < 1.5f)
             {
-                Thread.Sleep((int)(delay * 1000));                              
+                Thread.Sleep((int)(delay * 1000));
                 return false;
-            }           
+            }
 
-            while(p>tick)
+            while (p > tick)
             {
-                time = String.Format("{0:0.0}", (p-tick) / 60f);
-                Thread.Sleep(200);                    
+                time = String.Format("{0:0.0}", (p - tick) / 60f);
+                Thread.Sleep(200);
                 if (!running) return true;
-                if (hrTarget == minhr && hr <= minhr || hrTarget == maxhr && hr >= maxhr) break;                
+                if (hrTarget == BreakBelowLowerHR && hr <= lowerTargetHR || hrTarget == BreakOverUpperHR && hr >= upperTargetHR) break;
             }
             time = "";
 
@@ -1049,8 +1067,9 @@ namespace walk
                 USBDevice dev = new USBDevice(vid, pid, null, false, 31);
                 Relay(sw, val, dev);
                 dev.Dispose();
-            } 
-            catch(Exception) {
+            }
+            catch (Exception)
+            {
                 System.Media.SystemSounds.Hand.Play();
             }
         }
@@ -1072,13 +1091,13 @@ namespace walk
             }
         }
 
-        static int minhr=105, maxhr=120, TBA;
+        static int lowerTargetHR = 105, upperTargetHR = 120, TBA;
 
         private void workout2(object obj)
         {
 
             caught_up = true;
-            dummy_press = false;            
+            dummy_press = false;
 
             p = 0;
             caught_up = tick == 0;
@@ -1111,21 +1130,22 @@ namespace walk
 
             }
 
-            dummy_press = DUMMYMODE || DUMMYSTART;            
+            dummy_press = DUMMYMODE || DUMMYSTART;
 
-            readParams(30,105,120);            
+            readParams(30, 105, 120);
 
             // WARM UP
 
-            eRule("warmup↑" + minhr,lowhr,0);
+            eRule("warmup↑" + lowerTargetHR, lowhr, 0);
 
-            float tZone = 0;
+            float tZone;
 
-            if(warmuptime==0) {     // warmup only on first start
+            if (warmuptime == 0)
+            {     // warmup only on first start
 
-                while (hr<minhr)
+                while (hr < lowerTargetHR)
                 {
-                    if (wait(hr<(plotHrMin+minhr)/2 ? 4 : TBA/4)) return;         // increase speed quiker before HR shows up on plot
+                    if (wait(hr < (plotHrMin + lowerTargetHR) / 2 ? 4 : TBA / 4)) return;         // increase speed quiker before HR shows up on plot
                     sUP();
 
                     readParams();
@@ -1140,19 +1160,19 @@ namespace walk
                 warmuptime = (int)(tick - startTick);
             }
 
-            tZone = tick;          
+            tZone = tick;
 
-            while (tick-startTick<dur-warmuptime)
+            while (tick - startTick < dur - warmuptime)
             {
 
                 // HOLD LOW
 
-                eRule("→" + minhr, holdlow, 1);
+                eRule("→" + lowerTargetHR, holdlow, 1);
 
                 if (tZone > 0) while (tick < tZone + Settings.Default.holdlow)      // no longer needed here: && tick - startTick < dur - warmuptime
                     {
                         if (wait(3)) return;
-                        if (hr < minhr) sUP(); else if (hr == minhr + 1 && r > -2) rDOWN(); else if (hr > minhr) sDOWN();
+                        if (hr < lowerTargetHR) sUP(); else if (hr == lowerTargetHR + 1 && r > -2) rDOWN(); else if (hr > lowerTargetHR) sDOWN();
 
                         readParams();
                     }
@@ -1160,69 +1180,70 @@ namespace walk
 
                 // HIGH                
 
-                eRule("↑"+maxhr,highhr,-1);
+                eRule("↑" + upperTargetHR, highhr, -1);
 
                 tZone = 0;
 
                 bool incline = true;    // alternate half as many incline at lower speeds
 
-                while(hr<maxhr && tick-startTick<dur-warmuptime)
+                while (hr < upperTargetHR && tick - startTick < dur - warmuptime)
                 {
-                    if (wait(maxhr,TBA/Math.Max(1,maxhr-hr))) return;
+                    if (wait(BreakOverUpperHR, TBA / Math.Max(1, upperTargetHR - hr))) return;
                     sUP();
 
                     incline = !incline;
-                    if ((incline || s>=5.5f) && INCL_UP!=0 && hr <maxhr && tick - startTick < dur - warmuptime && r<hl)
+                    if ((incline || s >= 5.5f) && INCL_UP != 0 && hr < upperTargetHR && tick - startTick < dur - warmuptime && r < hl)
                     {
-                        if (wait(maxhr,TBA / Math.Max(1, (maxhr-hr)*2))) return;                  // wait half as much before ramp
+                        if (wait(BreakOverUpperHR, TBA / Math.Max(1, (upperTargetHR - hr) * 2))) return;                  // wait half as much before ramp
                         rUP();
                     }
 
                     readParams();
 
-                    if (tZone<1 && hr > maxhr - 2) tZone = tick;
+                    if (tZone < 1 && hr > upperTargetHR - 2) tZone = tick;
                 }
 
                 peak++;
 
                 // HOLD HIGH
 
-                eRule("→" + maxhr, holdhigh, 1);
+                eRule("→" + upperTargetHR, holdhigh, 1);
 
-                if (tZone>0) while (tick<tZone+ Settings.Default.holdhigh && tick - startTick < dur - warmuptime)
-                {
-                    if (wait(3)) return;
-                    if (hr < maxhr) sUP(); else if (hr==maxhr+1 && r>0) rDOWN(); else if (hr > maxhr) sDOWN();
+                if (tZone > 0) while (tick < tZone + Settings.Default.holdhigh && tick - startTick < dur - warmuptime)
+                    {
+                        if (wait(3)) return;
+                        if (hr < upperTargetHR) sUP(); else if (hr == upperTargetHR + 1 && r > 0) rDOWN(); else if (hr > upperTargetHR) sDOWN();
 
-                    readParams();
-                }
+                        readParams();
+                    }
 
                 readParams();
 
                 // LOW
 
-                eRule("↓" + minhr, lowhr, -1);
+                eRule("↓" + lowerTargetHR, lowhr, -1);
 
                 tZone = 0;
 
-                while (hr > minhr && (r>0 || s>4))
+                while (hr > lowerTargetHR && (r > 0 || s > 4))
                 {
-                    if (wait(minhr,TBA/Math.Max(1,hr-minhr))) return;
+                    if (wait(BreakBelowLowerHR, TBA / Math.Max(1, hr - lowerTargetHR))) return;
                     sDOWN();
-                    if(hr>minhr && r>-3) {
-                        if (wait(minhr,TBA / Math.Max(1, (hr - minhr)*2))) return;            // wait half as much before ramp
+                    if (hr > lowerTargetHR && r > -3)
+                    {
+                        if (wait(BreakBelowLowerHR, TBA / Math.Max(1, (hr - lowerTargetHR) * 2))) return;            // wait half as much before ramp
                         rDOWN();
                     }
 
                     readParams();
 
-                    if (tZone < 1 && hr < minhr + 2) tZone = tick;
+                    if (tZone < 1 && hr < lowerTargetHR + 2) tZone = tick;
                 }
                 if (r < 0) r = 0;
 
             }
 
-            eRule("cool↓3.0",null,0);
+            eRule("cool↓3.0", null, 0);
 
             // WIND DOWN
 
@@ -1230,12 +1251,13 @@ namespace walk
 
             while (s > 3.0f)
             {
-                if (wait((float)Math.Max(1,wdelay-(r>-3?1:0)))) return;
+                if (wait((float)Math.Max(1, wdelay - (r > -3 ? 1 : 0)))) return;
                 sDOWN();
-                if(r>-3) {
+                if (r > -3)
+                {
                     if (wait(1)) return;
                     rDOWN();
-                }                
+                }
             }
 
             if (r < 0) r = 0;
@@ -1246,14 +1268,14 @@ namespace walk
         private void readParams(int t, int l, int h)
         {
             try { TBA = int.Parse(Settings.Default.Tba); } catch { TBA = t; }
-            try { minhr = int.Parse(Settings.Default.Lowhr); } catch { minhr = l; }
-            try { maxhr = int.Parse(Settings.Default.Highhr); } catch { maxhr = h; }
+            try { lowerTargetHR = int.Parse(Settings.Default.Lowhr); } catch { lowerTargetHR = l; }
+            try { upperTargetHR = int.Parse(Settings.Default.Highhr); } catch { upperTargetHR = h; }
         }
         private void readParams()
         {
-            try { TBA = int.Parse(Settings.Default.Tba); } catch {  }
-            try { minhr = int.Parse(Settings.Default.Lowhr); } catch {  }
-            try { maxhr = int.Parse(Settings.Default.Highhr); } catch { }
+            try { TBA = int.Parse(Settings.Default.Tba); } catch { }
+            try { lowerTargetHR = int.Parse(Settings.Default.Lowhr); } catch { }
+            try { upperTargetHR = int.Parse(Settings.Default.Highhr); } catch { }
         }
 
         private void rUP()
@@ -1286,7 +1308,7 @@ namespace walk
             int min = (int)((tick - startTick - hr * 60 * 60) / 60);
             int sec = (int)(tick - startTick - hr * 60 * 60 - min * 60);
 
-            meta += string.Format("\n{0}:{1:D2}:{2:D2} {3} ({4:F1}/{5})", hr, min, sec,section,s,r);
+            meta += string.Format("\n{0}:{1:D2}:{2:D2} {3} ({4:F1}/{5})", hr, min, sec, section, s, r);
 
             int x = Math.Min((int)((tick - startTick) * plotWidth / dur), plotWidth - 1);
             Application.Current.Dispatcher.Invoke(() => {
@@ -1295,7 +1317,8 @@ namespace walk
                     eRules.Points.Add(new Point(x - (v < 0 ? 4 : 0), 1));
                     eRules.Points.Add(new Point(x, 5));
                     eRules.Points.Add(new Point(x + (v > 0 ? 4 : 0), 1));
-                } catch { }
+                }
+                catch { }
 
                 holdlow.Foreground = Brushes.Gray;
                 holdhigh.Foreground = Brushes.Gray;
@@ -1313,12 +1336,12 @@ namespace walk
             p = 0;
             caught_up = tick == 0;
 
-            if (tick==0 && https.StartsWith("http"))
+            if (tick == 0 && https.StartsWith("http"))
             {
-                WebClient webClient= new WebClient();
+                WebClient webClient = new WebClient();
                 webClient.DownloadString(https);
-                startTick +=7;
-                wait(7);               
+                startTick += 7;
+                wait(7);
             }
 
             AllOff();
@@ -1345,7 +1368,7 @@ namespace walk
 
             // Warm up
 
-            while (s < speed-0.02f)
+            while (s < speed - 0.02f)
             {
                 if (wait(warm - PRESSLEN)) return;
                 dur -= 2 * warm;             // up and down + 2x 500ms 
@@ -1358,11 +1381,11 @@ namespace walk
             // increase to sprint speed
             float stmp = speed;
             if (SPD6 != 0 && stmp < 6 && sp >= 6) { dur -= reps * PRESSLEN; stmp = 6; }
-            dur -= reps * (sp-stmp) *10 * PRESSLEN;
+            dur -= reps * (sp - stmp) * 10 * PRESSLEN;
             // decrease from sprint speed
             stmp = sp;
             if (SPD6 != 0 && stmp > 6 && speed <= 6) { dur -= reps * PRESSLEN; stmp = 6; }
-            dur -= reps * (stmp-speed) * 10 * PRESSLEN;
+            dur -= reps * (stmp - speed) * 10 * PRESSLEN;
 
             if (reps > 0)
             {
@@ -1413,12 +1436,12 @@ namespace walk
                             r--;
                             press(INCL_DOWN);
                         }
-                        
-                        if (wait(c>2f?c-1f:c)) return;
+
+                        if (wait(c > 2f ? c - 1f : c)) return;
 
                         press(INCL_DOWN);       // double down for zero
 
-                        if (c>2) if(wait(1f)) return;
+                        if (c > 2) if (wait(1f)) return;
                     }
                     else
                     {
@@ -1426,21 +1449,21 @@ namespace walk
                     }
 
                     // 5 min sprint
-                   
+
                     if (SPD6 != 0 && s < 6 && sp >= 6) { press(SPD6); s = 6; }
-                    while (s<sp-0.02f)
+                    while (s < sp - 0.02f)
                     {
                         s += 0.1f;
-                        press(SPEED_UP);                        
+                        press(SPEED_UP);
                     }
 
                     if (wait(sdur)) return;
-                   
-                    if(SPD6!=0 && s>6 && speed<=6 ) { press(SPD6); s = 6; }
-                    while(s>speed+0.02f)
+
+                    if (SPD6 != 0 && s > 6 && speed <= 6) { press(SPD6); s = 6; }
+                    while (s > speed + 0.02f)
                     {
                         s -= 0.1f;
-                        press(SPEED_DOWN);                        
+                        press(SPEED_DOWN);
                     }
 
                 }
@@ -1454,9 +1477,9 @@ namespace walk
             Debug.WriteLine("warm=" + warm);
 
             // finish
-            while (s>3.02f)
+            while (s > 3.02f)
             {
-                if (wait(warm-PRESSLEN)) return;
+                if (wait(warm - PRESSLEN)) return;
                 s -= 0.1f;
                 press(SPEED_DOWN);
             }
@@ -1490,26 +1513,27 @@ namespace walk
 
             s = 1;
 
-            if(wait(6f)) return;
+            if (wait(6f)) return;
 
             startTick += 6;
 
-            dur -= 6+PRESSLEN;
+            dur -= 6 + PRESSLEN;
 
             // Start up
 
-            if(SPD3 != 0)      // if quick button for speed 3 connected
+            if (SPD3 != 0)      // if quick button for speed 3 connected
             {
                 s = 3;
                 press(SPD3);
                 dur -= PRESSLEN;
-            } else for (float a = 1.1f; a <= dest; a += 0.1f)   // otherwise increase "manually"
-            {
-                //if (wait(0.2f)) return;
-                s += 0.1f;
-                press(SPEED_UP);
-                dur -= PRESSLEN;
-            }        
+            }
+            else for (float a = 1.1f; a <= dest; a += 0.1f)   // otherwise increase "manually"
+                {
+                    //if (wait(0.2f)) return;
+                    s += 0.1f;
+                    press(SPEED_UP);
+                    dur -= PRESSLEN;
+                }
         }
     }
 }
