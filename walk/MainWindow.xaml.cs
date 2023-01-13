@@ -667,14 +667,13 @@ namespace walk
             {
                 if (Settings.Default.HEARTMODE && hr < 10)
                 {
-                    dispHR.Background = Brushes.Yellow;
-                    var wasfg=heartMode.Foreground;
+                    dispHR.Background = Brushes.Yellow;                   
                     heartMode.Foreground = Brushes.Red;
                     Task.Delay(5000).ContinueWith(_ =>                          // retry in 5
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            heartMode.Foreground = wasfg;
+                            heartMode.Foreground = Brushes.Gray;
                             dispHR.Background = Brushes.Transparent;
                             if (hr > 10) Start_click(sender, e);
                         });
