@@ -665,6 +665,23 @@ namespace walk
 
             if (!running)
             {
+                if (Settings.Default.HEARTMODE && hr < 10)
+                {
+                    dispHR.Background = Brushes.Yellow;
+                    var wasfg=heartMode.Foreground;
+                    heartMode.Foreground = Brushes.Red;
+                    Task.Delay(5000).ContinueWith(_ =>                          // retry in 5
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            heartMode.Foreground = wasfg;
+                            dispHR.Background = Brushes.Transparent;
+                            if (hr > 10) Start_click(sender, e);
+                        });
+                    });
+                    return;
+                }
+
                 Debug.WriteLine("start =======================");
 
                 GetVidPid();
@@ -864,8 +881,11 @@ namespace walk
 
             Task.Delay(1000).ContinueWith(_ =>                     // retry
             {
-                save();
-                noUpdate = false;
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    save();
+                    noUpdate = false;
+                });
             });
 
             if (hrdevice != null)
@@ -1010,14 +1030,13 @@ namespace walk
 
         private static bool wait(float delay)   // delay in seconds
         {
-            return wait(noTargetHR, delay);
+            return wait(0, delay);
         }
 
         // hrTarget:
         // = 0 no hr target
-        // < 0 break if hr<=minhr
-        // > 0 break if hr>=maxhr
-        static readonly int noTargetHR = 0, BreakOverUpperHR = 1, BreakBelowLowerHR = -1;
+        // < 0 break if hr<=hrTarget
+        // > 0 break if hr>=hrTarget       
         private static bool wait(int hrTarget, float delay)   // delay in seconds
         {
             if (delay < 0)
@@ -1047,7 +1066,7 @@ namespace walk
                 time = String.Format("{0:0.0}", (p - tick) / 60f);
                 Thread.Sleep(200);
                 if (!running) return true;
-                if (hrTarget == BreakBelowLowerHR && hr <= lowerTargetHR || hrTarget == BreakOverUpperHR && hr >= upperTargetHR) break;
+                if (hr>0 && (hrTarget < 0 && hr <= hrTarget || hrTarget > 0 && hr >= hrTarget)) break;
             }
             time = "";
 
@@ -1145,7 +1164,7 @@ namespace walk
 
                 while (hr < lowerTargetHR)
                 {
-                    if (wait(hr < (plotHrMin + lowerTargetHR) / 2 ? 4 : TBA / 4)) return;         // increase speed quiker before HR shows up on plot
+                    if (wait(+lowerTargetHR,hr < (plotHrMin + lowerTargetHR) / 2 ? 4 : TBA / 4)) return;         // increase speed quiker before HR shows up on plot
                     sUP();
 
                     readParams();
@@ -1188,13 +1207,13 @@ namespace walk
 
                 while (hr < upperTargetHR && tick - startTick < dur - warmuptime)
                 {
-                    if (wait(BreakOverUpperHR, TBA / Math.Max(1, upperTargetHR - hr))) return;
+                    if (wait(+upperTargetHR, TBA / Math.Max(1, upperTargetHR - hr))) return;
                     sUP();
 
                     incline = !incline;
                     if ((incline || s >= 5.5f) && INCL_UP != 0 && hr < upperTargetHR && tick - startTick < dur - warmuptime && r < hl)
                     {
-                        if (wait(BreakOverUpperHR, TBA / Math.Max(1, (upperTargetHR - hr) * 2))) return;                  // wait half as much before ramp
+                        if (wait(+upperTargetHR, TBA / Math.Max(1, (upperTargetHR - hr) * 2))) return;                  // wait half as much before ramp
                         rUP();
                     }
 
@@ -1227,11 +1246,11 @@ namespace walk
 
                 while (hr > lowerTargetHR && (r > 0 || s > 4))
                 {
-                    if (wait(BreakBelowLowerHR, TBA / Math.Max(1, hr - lowerTargetHR))) return;
+                    if (wait(-lowerTargetHR, TBA / Math.Max(1, hr - lowerTargetHR))) return;
                     sDOWN();
                     if (hr > lowerTargetHR && r > -3)
                     {
-                        if (wait(BreakBelowLowerHR, TBA / Math.Max(1, (hr - lowerTargetHR) * 2))) return;            // wait half as much before ramp
+                        if (wait(-lowerTargetHR, TBA / Math.Max(1, (hr - lowerTargetHR) * 2))) return;            // wait half as much before ramp
                         rDOWN();
                     }
 
