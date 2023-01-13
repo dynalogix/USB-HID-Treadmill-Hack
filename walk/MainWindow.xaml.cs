@@ -43,7 +43,7 @@ namespace walk
         static int lasthr = 0, hr = 0,plotHrMin=85,plotHrMax=120;
         static int[] hrplot=null;
         static int warmuptime = 0, peak = 0;
-        static bool noUpdate = false;
+        bool noUpdate = false;
 
         private void Config_button(object sender, RoutedEventArgs e)
         {
