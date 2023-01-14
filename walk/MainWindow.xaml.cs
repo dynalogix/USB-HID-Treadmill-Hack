@@ -902,22 +902,34 @@ namespace walk
                 pngImage.Frames.Add(BitmapFrame.Create(renderTargetBitmap));
 
                 float totalHR = 0;
-                for (int x = 0; x <= lastX; x++) totalHR += hrplot[x] * ((dur / 60f) / lastX);
 
-                screenshot = Settings.Default.logdir + (Settings.Default.logdir.EndsWith("\\") ? "" : "\\") + String.Format("{0:yyyy-MM-dd HH.mm}", DateTime.Now);
+                float dur = tick - startTick <1 ? 1 : tick-startTick;
+
+                for (int x = 0; x <= lastX; x++) totalHR += hrplot[x] * ((dur / 60f) / lastX);
 
                 var age = (DateTime.Today - Settings.Default.birthd).TotalDays / 365.25f;
 
                 dispHR.Content = string.Format("{0:F0}", totalHR / (dur / 60f));
                 dispSpeed.Content = string.Format("{0:F1}", (distance / 1000f) / (dur / 60f / 60f));
 
+                int calorie = (int)((dur / 60) * (Settings.Default.FEMALE
+                    ? (-20.4022 + (0.4472 * totalHR / (dur / 60f)) - (0.1263 * Settings.Default.weightkg) + (0.074 * age)) / 4.184
+                    : (-55.0969 + (0.6309 * totalHR / (dur / 60f)) + (0.1988f * Settings.Default.weightkg) + (0.2017 * age)) / 4.184));
+
+                if (Settings.Default.deployment_id.Length > 5 && screenshot==null && lastX > 0)           // send to sheet only on first save   
+                {
+                    var sheetDate = 44927 + (DateTime.Today - new DateTime(2023, 1, 1)).TotalDays;
+                    scriptHTTP = string.Format("https://script.google.com/macros/s/{0}/exec?day={1}&dur={2}&dist={3}&cal={4}", Settings.Default.deployment_id, sheetDate, dur, distance, calorie);
+                    new Thread(call_script).Start();
+                }
+
+                screenshot = Settings.Default.logdir + (Settings.Default.logdir.EndsWith("\\") ? "" : "\\") + String.Format("{0:yyyy-MM-dd HH.mm}", DateTime.Now);
+
                 File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1} min (warm-up: {11:f1} min)\nHR Max: {0} bps Avg: {1:f2} bps Plot range: {8}…{9} bps\nSpeed Max: {2:F2} km/h Avg: {3:F2} km/h\nAscend: {4}\nDistance: {5:F0} m\nCalories: {6:F0} KCal\nSections:{7}\n({12} peaks)",
                     maxHR, totalHR / (dur / 60f),
                     maxSpeed, (distance / 1000) / (dur / 60f / 60f),
                     ascend, distance,
-                    (dur / 60) * (Settings.Default.FEMALE
-                    ? (-20.4022 + (0.4472 * totalHR / (dur / 60f)) - (0.1263 * Settings.Default.weightkg) + (0.074 * age)) / 4.184
-                    : (-55.0969 + (0.6309 * totalHR / (dur / 60f)) + (0.1988f * Settings.Default.weightkg) + (0.2017 * age)) / 4.184),
+                    calorie,
                     meta, plotHrMin, plotHrMax, dur / 60f, warmuptime / 60f, peak
                     ));
 
@@ -927,6 +939,16 @@ namespace walk
                 }
 
             }
+        }
+
+        string scriptHTTP;
+
+        void call_script(object obj)
+        {
+            try {
+                WebClient webClient = new WebClient();
+                webClient.DownloadString(scriptHTTP);
+            } catch {}
         }
 
         private void updateUI(object sender, EventArgs e)

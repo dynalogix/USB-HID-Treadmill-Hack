@@ -212,10 +212,10 @@
         <CheckBox HorizontalAlignment="Left" Margin="1559,231,0,0" VerticalAlignment="Top" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=DUMMYMODE, Mode=TwoWay}"/>
         <Label Content="DUMMY:" HorizontalAlignment="Left" Margin="1444,223,0,0" VerticalAlignment="Top" Height="26" />
         <Label Content="(press noaction button to avoid key repeat)" HorizontalAlignment="Left" Margin="1594,223,0,0" VerticalAlignment="Top" Height="26"  />
-        <TextBox HorizontalAlignment="Left" Margin="406,261,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="996" x:Name="http" Text="{Binding HTTP, Mode=TwoWay, Source={x:Static p:Settings.Default}}" />
+        <TextBox HorizontalAlignment="Left" MaxLines="1" Margin="406,261,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="419" x:Name="http" Text="{Binding HTTP, Mode=TwoWay, Source={x:Static p:Settings.Default}}" />
         <Label Content="HTTP on start:" HorizontalAlignment="Left" Margin="321,258,0,0" VerticalAlignment="Top" Height="24"/>
 
-        <TextBox HorizontalAlignment="Left" Margin="1021,233,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="381" x:Name="logdir" Text="{Binding logdir, Mode=TwoWay, Source={x:Static p:Settings.Default}}" Height="19" />
+        <TextBox HorizontalAlignment="Left" MaxLines="1" Margin="1021,233,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="381" x:Name="logdir" Text="{Binding logdir, Mode=TwoWay, Source={x:Static p:Settings.Default}}" Height="19" />
         <Label Content="Directory path for summary/log files (PNG+TXT):" HorizontalAlignment="Left" Margin="949,208,0,0" VerticalAlignment="Top" Height="32"/>
 
         <Label Content="BT♥:" x:Name="lbtlist" Margin="949,185,714,0" VerticalAlignment="Top" Height="26" RenderTransformOrigin="-2.988,-0.385" />
@@ -314,5 +314,9 @@
             BorderBrush="#00707070" Click="Config_button" Tag="diag" TabIndex="1" FontSize="20" Foreground="Gray" />
         <Button Content="Browse…" HorizontalAlignment="Left" Margin="954,232,0,0" VerticalAlignment="Top" Click="browse_button_click"/>
         <Label x:Name="bps" Content="bps" HorizontalContentAlignment="Right" HorizontalAlignment="Left" Margin="1690,57,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" Width="64" />
+        <TextBox HorizontalAlignment="Left" Margin="954,261,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="448" 
+                 MaxLines="1"
+                 Text="{Binding deployment_id, Mode=TwoWay, Source={x:Static p:Settings.Default}}" />
+        <Label Content="Script Deployment:" HorizontalAlignment="Left" Margin="838,256,0,0" VerticalAlignment="Top" Height="27"/>
     </Grid>
 </Window>
