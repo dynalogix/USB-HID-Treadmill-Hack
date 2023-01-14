@@ -919,6 +919,9 @@ namespace walk
                 if (Settings.Default.deployment_id.Length > 5 && screenshot==null && lastX > 0)           // send to sheet only on first save   
                 {
                     var sheetDate = 44927 + (DateTime.Today - new DateTime(2023, 1, 1)).TotalDays;
+
+                    if (DateTime.Now.Hour < 4) sheetDate--;     // if after midnight, it's previous day
+
                     scriptHTTP = string.Format("https://script.google.com/macros/s/{0}/exec?day={1}&dur={2}&dist={3}&cal={4}", Settings.Default.deployment_id, sheetDate, dur, distance, calorie);
                     new Thread(call_script).Start();
                 }
