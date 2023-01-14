@@ -476,7 +476,7 @@ namespace walk
             // rules
             low = int.Parse(Settings.Default.Lowhr);
             high = int.Parse(Settings.Default.Highhr);
-            hrRules.Height = (high - low) * plot.Height / (plotHrMax - plotHrMin);
+            hrRules.Height = Math.Max(1,high - low) * plot.Height / (plotHrMax - plotHrMin);
             hrRules.Margin = new Thickness(hrRules.Margin.Left, plot.Margin.Top + (plotHrMax - high) * plot.Height / (plotHrMax - plotHrMin), 0, 0);
         }
 
