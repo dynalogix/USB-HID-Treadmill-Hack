@@ -1,0 +1,103 @@
+// input: https://script.google.com/macros/s/DEPLOYMENT_ID/exec?day=44940&dur=600&dist=5200&cal=742
+// make sure sheet names are correct:
+// we use columns A,B,E,F in sheet "treadmill" 
+
+function doGet(e) {
+  var sheetID="1Os55S2YKyWo7M1vbtezS8SSOUVFZYqhbeGyT0B6yOUg"
+
+  var topdate = Sheets.Spreadsheets.Values.get(sheetID, 'treadmill!A2',{valueRenderOption:"UNFORMATTED_VALUE"}).values[0];   
+
+  var row=2;
+  try {
+    if(topdate<e.parameter.day) {
+     // insert new rows
+
+        var sheets = Sheets.Spreadsheets.get(sheetID).sheets;
+        for(i=0;i<sheets.length;i++) {                
+            if(sheets[i].properties.title=="treadmill") {                            
+                  day=Number(e.parameter.day)
+                  console.log(topdate+" = "+day);
+                  for(d=Number(topdate);d < Number(day);d++) {
+                    console.log(d);
+                    let req=Sheets.newBatchUpdateSpreadsheetRequest();    
+                    req.requests=[Sheets.newRequest(),Sheets.newRequest()];
+                    req.requests[0].insertDimension=Sheets.newInsertDimensionRequest();  
+                    req.requests[0].insertDimension.inheritFromBefore=true;
+                    req.requests[0].insertDimension.range=Sheets.newDimensionRange();  
+                    req.requests[0].insertDimension.range.dimension="ROWS";
+                    req.requests[0].insertDimension.range.startIndex=2;
+                    req.requests[0].insertDimension.range.endIndex=3;
+                    req.requests[0].insertDimension.range.sheetId=sheets[i].properties.sheetId;
+
+                    req.requests[1].copyPaste=Sheets.newCopyPasteRequest();
+                    req.requests[1].copyPaste.source=Sheets.newGridRange();
+                    req.requests[1].copyPaste.source.startRowIndex=1;
+                    req.requests[1].copyPaste.source.endRowIndex=2;
+                    req.requests[1].copyPaste.source.startColumnIndex=0;
+                    req.requests[1].copyPaste.source.endColumnIndex=26;
+                    req.requests[1].copyPaste.source.sheetId=sheets[i].properties.sheetId;
+
+                    req.requests[1].copyPaste.destination=Sheets.newGridRange();
+                    req.requests[1].copyPaste.destination.startRowIndex=2;
+                    req.requests[1].copyPaste.destination.endRowIndex=3;
+                    req.requests[1].copyPaste.destination.startColumnIndex=0;
+                    req.requests[1].copyPaste.destination.endColumnIndex=26;
+                    req.requests[1].copyPaste.destination.sheetId=sheets[i].properties.sheetId;
+
+                    req.requests[1].copyPaste.pasteOrientation="NORMAL"
+                    req.requests[1].copyPaste.pasteType="PASTE_NORMAL"
+
+                    Sheets.Spreadsheets.batchUpdate(req,sheetID);
+
+                    Sheets.Spreadsheets.Values.update( {
+                        majorDimension: "ROWS",      
+                        values: [[Number(d+1)]]
+                        },sheetID,'treadmill!A2',{valueInputOption:"RAW"});
+                  }
+            }
+        }
+        
+        row=2;             
+
+    } else {
+        row=topdate-e.parameter.day+2;
+    }
+  } catch(err) {
+  }
+
+  try {var dur=Sheets.Spreadsheets.Values.get(sheetID,'treadmill!B'+row,{valueRenderOption:"UNFORMATTED_VALUE"}).values[0];} catch(err) {dur=0}
+  try {var dist=Sheets.Spreadsheets.Values.get(sheetID,'treadmill!E'+row).values[0];} catch(err) {dist=0}
+  try {var cal=Sheets.Spreadsheets.Values.get(sheetID,'treadmill!F'+row).values[0];} catch(err) {cal=0}
+
+  try {
+    dur=Number(dur)+e.parameter.dur/(24*60*60);
+    dist=Number(dist)+e.parameter.dist/1000.0;
+    cal=Number(cal)+Number(e.parameter.cal);
+  } catch (err) {
+    try {
+      dur=e.parameter.dur/(24*60*60);
+      dist=e.parameter.dist/1000.0;
+      cal=e.parameter.cal;
+    } catch(err2) {
+      return;
+    }
+  }
+
+  console.log(dur);
+
+  Sheets.Spreadsheets.Values.update( {
+        majorDimension: "ROWS",      
+        values: [[dur]]
+    },sheetID,'treadmill!B'+row,{valueInputOption:"RAW"});
+  Sheets.Spreadsheets.Values.update({
+        majorDimension: "ROWS",      
+        values: [[dist]]
+    },sheetID,'treadmill!E'+row,{valueInputOption:"USER_ENTERED"});
+  Sheets.Spreadsheets.Values.update({
+        majorDimension: "ROWS",      
+        values: [[cal]]
+    },sheetID,'treadmill!F'+row,{valueInputOption:"USER_ENTERED"});
+
+  return ContentService.createTextOutput(dur+"-"+dist+"-"+cal).setMimeType(ContentService.MimeType.TEXT);
+
+}
