@@ -322,27 +322,7 @@ namespace walk
                         {
                             foreach (GattCharacteristic characteristic in cresult.Characteristics)
                             {
-                                /*
-                                if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Read))
-                                {
-                                    Debug.WriteLine(service.AttributeHandle + " can be read");
-                                    GattReadResult rresult = await characteristic.ReadValueAsync();
-                                    if (rresult.Status == GattCommunicationStatus.Success)
-                                    {
-                                        var reader = DataReader.FromBuffer(rresult.Value);
-                                        var len = reader.UnconsumedBufferLength;
-                                        byte[] input = new byte[len];
-                                        reader.ReadBytes(input);
-                                        // Utilize the data as needed
-                                        // for(int i=0;i<len;i++) Debug.WriteLine(i+" value="+input[i]);
-                                        if (len > 1) Debug.WriteLine("HR read=" + input[1]);
-                                    }
-                                }
-                                if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Indicate))
-                                {
-                                    Debug.WriteLine(service.AttributeHandle + " can indicate");
-                                }
-                                */
+
                                 if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Notify))
                                 {
 
@@ -366,7 +346,7 @@ namespace walk
                         if (cresult.Status == GattCommunicationStatus.Success)
                         {
                             foreach (GattCharacteristic characteristic in cresult.Characteristics)
-                            {   /*
+                            {   
                                 if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Read))
                                 {
                                     Debug.WriteLine(service.AttributeHandle + " can be read");
@@ -378,15 +358,22 @@ namespace walk
                                         byte[] input = new byte[len];
                                         reader.ReadBytes(input);
                                         // Utilize the data as needed
-                                        // for(int i=0;i<len;i++) Debug.WriteLine(i+" value="+input[i]);
-                                        if (len > 1) Debug.WriteLine("batt read=" + input[1]);
+                                        for(int i=0;i<len;i++) Debug.WriteLine(i+" value="+input[i]);
+                                        if (len > 0)
+                                        {
+                                            Debug.WriteLine("batt=" + input[0]);
+                                            Application.Current.Dispatcher.Invoke(() => {
+                                                bps.Content = String.Format("🔋{0}%", input[0]);
+                                                if (input[0] < 21) dispHR.Foreground = Brushes.Red;
+                                            });
+                                        }
                                     }
                                 }
                                 if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Indicate))
                                 {
                                     Debug.WriteLine(service.AttributeHandle + " can indicate");
                                 }
-                                */
+                                
                                 if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Notify))
                                 {
 
