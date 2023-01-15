@@ -589,16 +589,19 @@ namespace walk
 
             watcher.Received += Watcher_Received;
             watcher.Start();
-
-            await Task.Delay(10000);
+                   
+            await Task.Delay(10000);   
         }
 
         private async void Watcher_Received(
         BluetoothLEAdvertisementWatcher sender,
         BluetoothLEAdvertisementReceivedEventArgs args)
         {
-            var device = await BluetoothLEDevice.FromBluetoothAddressAsync(args.BluetoothAddress);
-            if (device != null && device.DeviceInformation.Name.Length > 0)
+            var device = await BluetoothLEDevice.FromBluetoothAddressAsync(args.BluetoothAddress);            
+            if (device != null 
+                && device.DeviceInformation!=null 
+                && device.DeviceInformation.Name!=null 
+                && device.DeviceInformation.Name.Length > 0)
             {
                 Debug.WriteLine("BT.Addr: " + device.BluetoothAddress + "(" + device.DeviceInformation.Name);
                 if (!BTDevices.Contains(new BTItem(device.BluetoothAddress)))
@@ -840,8 +843,8 @@ namespace walk
 
         static string screenshot = null, meta = "";
         static int maxHR = 0;
-        static float maxSpeed = 0, distance = 0;
-        static double ascend = 0;
+        static float maxSpeed = 0;
+        static double ascend = 0, distance = 0;
 
         private void End()
         {
