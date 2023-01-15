@@ -26,6 +26,8 @@ namespace walk
     public partial class MainWindow : Window
     {
         static int MAXSPEED = 16, MAXINCL = 15;
+        static float MINANGLE = 4.06f, MAXANGLE = 7.12f;        // KONDITION 4B550
+
         static int WinH = 293, WinH2 = 180, WinH0 = 84, WinW = 1848, plotWidth = 1000;
 
         static int ON = 1, OFF = 0, SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL = 9, START = 5, MODE = 6, STOP = 7, SPD3 = 8, SPD6 = 7;
@@ -837,8 +839,9 @@ namespace walk
         }
 
         static string screenshot = null, meta = "";
-        static int maxHR = 0, ascend = 0;
+        static int maxHR = 0;
         static float maxSpeed = 0, distance = 0;
+        static double ascend = 0;
 
         private void End()
         {
@@ -928,10 +931,10 @@ namespace walk
 
                 screenshot = Settings.Default.logdir + (Settings.Default.logdir.EndsWith("\\") ? "" : "\\") + String.Format("{0:yyyy-MM-dd HH.mm}", DateTime.Now);
 
-                File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1} min (warm-up: {11:f1} min)\nHR Max: {0} bps Avg: {1:f2} bps Plot range: {8}…{9} bps\nSpeed Max: {2:F2} km/h Avg: {3:F2} km/h\nAscend: {4}\nDistance: {5:F0} m\nCalories: {6:F0} KCal\nSections:{7}\n({12} peaks)",
+                File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1} min (warm-up: {11:f1} min)\nHR Max: {0} bps Avg: {1:f2} bps Plot range: {8}…{9} bps\nSpeed Max: {2:F2} km/h Avg: {3:F2} km/h\nAscend: {4} m\nDistance: {5:F0} m\nCalories: {6:F0} KCal\nSections:{7}\n({12} peaks)",
                     maxHR, totalHR / (dur / 60f),
                     maxSpeed, (distance / 1000) / (dur / 60f / 60f),
-                    ascend, distance,
+                    (int)ascend, distance,
                     calorie,
                     meta, plotHrMin, plotHrMax, dur / 60f, warmuptime / 60f, peak
                     ));
@@ -962,8 +965,11 @@ namespace walk
             progress.Text = String.Format("{0:0.0}", (tick++ - startTick) / 60f);
 
             if (s > maxSpeed) maxSpeed = s;
-            if (s > 0) distance += s / 3.6f;
-            if (r > 0) ascend += r;
+            if (s > 0) {
+                var dd = s / 3.6f;
+                distance += dd;
+                ascend+=Math.Sin(MINANGLE*Math.PI/180f + r * ((MAXANGLE-MINANGLE)*Math.PI/180f) / MAXINCL) * dd;
+            }            
 
             if (!running && timer != null)
             {
