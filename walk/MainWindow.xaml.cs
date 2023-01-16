@@ -28,6 +28,8 @@ namespace walk
         static int MAXSPEED = 16, MAXINCL = 15;
         static float MINANGLE = 4.06f, MAXANGLE = 7.12f;        // KONDITION 4B550
 
+        static int MINWALKSPEED = 4, MAXWALKSPEED = 8;
+
         static int WinH = 293, WinH2 = 180, WinH0 = 84, WinW = 1848, plotWidth = 1000;
 
         static int ON = 1, OFF = 0, SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL = 9, START = 5, MODE = 6, STOP = 7, SPD3 = 8, SPD6 = 7;
@@ -808,7 +810,7 @@ namespace walk
             }
 
             sRules.Points = new PointCollection();
-            for (int y = 4; y < 8; y += 2)
+            for (int y = MINWALKSPEED; y < MAXWALKSPEED; y += 2)
             {
                 sRules.Points.Add(new Point(0, sRules.Height - (y - 3) * sRules.Height / 5));
                 sRules.Points.Add(new Point(sRules.Width - 1, sRules.Height - (y - 3) * sRules.Height / 5));
@@ -1230,7 +1232,7 @@ namespace walk
 
                 bool incline = true;    // alternate half as many incline at lower speeds
 
-                while (hr < upperTargetHR && tick - startTick < dur - warmuptime)
+                while (hr < upperTargetHR && tick - startTick < dur - warmuptime && s<MAXWALKSPEED)
                 {
                     if (wait(+upperTargetHR, TBA / Math.Max(1, upperTargetHR - hr))) return;
                     sUP();
@@ -1269,7 +1271,7 @@ namespace walk
 
                 tZone = 0;
 
-                while (hr > lowerTargetHR && (r > 0 || s > 4))
+                while (hr > lowerTargetHR && (r > 0 || s > MINWALKSPEED))
                 {
                     if (wait(-lowerTargetHR, TBA / Math.Max(1, hr - lowerTargetHR))) return;
                     sDOWN();
