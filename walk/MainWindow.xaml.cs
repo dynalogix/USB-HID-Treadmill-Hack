@@ -919,6 +919,9 @@ namespace walk
 
                 dispHR.Content = string.Format("{0:F0}", totalHR / (dur / 60f));
                 dispSpeed.Content = string.Format("{0:F1}", (distance / 1000f) / (dur / 60f / 60f));
+                dispIncl.Content = string.Format("{0:F0}", ascend);
+                mincl.Visibility = Visibility.Visible;               
+                lDispIncl.Content = "ΣAscend📉";
 
                 int calorie = (int)((dur / 60) * (Settings.Default.FEMALE
                     ? (-20.4022 + (0.4472 * totalHR / (dur / 60f)) - (0.1263 * Settings.Default.weightkg) + (0.074 * age)) / 4.184

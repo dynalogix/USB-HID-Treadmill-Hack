@@ -318,5 +318,7 @@
                  MaxLines="1"
                  Text="{Binding deployment_id, Mode=TwoWay, Source={x:Static p:Settings.Default}}" />
         <Label Content="Script Deployment:" HorizontalAlignment="Left" Margin="838,256,0,0" VerticalAlignment="Top" Height="27"/>
+        <Label x:Name="mspeed" Content="km/h" HorizontalAlignment="Left" Margin="1470,60,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" />
+        <Label x:Name="mincl" Content="m" HorizontalAlignment="Left" Margin="1615,60,0,0" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top" Visibility="Hidden" />
     </Grid>
 </Window>
