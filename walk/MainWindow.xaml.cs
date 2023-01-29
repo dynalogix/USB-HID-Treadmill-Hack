@@ -436,7 +436,7 @@ namespace walk
                     hr = input[1];
                     if (hr > maxHR) maxHR = hr;
 
-                    int x = Math.Min((int)(tick * plotWidth / dur), (int)plotWidth - 1);
+                    int x = Math.Max(0,Math.Min((int)((tick - startTick) * plotWidth / dur), (int)plotWidth - 1));
                     int lhr = hr, lr = r;
                     float ls = s;
                     if (noUpdate) return;       // save shows avg values
@@ -939,12 +939,14 @@ namespace walk
 
                 screenshot = Settings.Default.logdir + (Settings.Default.logdir.EndsWith("\\") ? "" : "\\") + String.Format("{0:yyyy-MM-dd HH.mm}", DateTime.Now);
 
-                File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1} min (warm-up: {11:f1} min)\nHR Max: {0} bps Avg: {1:f2} bps Plot range: {8}…{9} bps\nSpeed Max: {2:F2} km/h Avg: {3:F2} km/h\nAscend: {4} m\nDistance: {5:F0} m\nCalories: {6:F0} KCal\nSections:{7}\n({12} peaks)",
+                File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1} min (warm-up: {11:f1} min)\nHR Max: {0} bps Avg: {1:f2} bps Targets: {13}/{14} Plot range: {8}…{9} bps\nSpeed Max: {2:F2} km/h Avg: {3:F2} km/h\nAscend: {4} m\nDistance: {5:F0} m\nCalories: {6:F0} KCal\nSections:{7}\n({12} peaks)",
                     maxHR, totalHR / (dur / 60f),
                     maxSpeed, (distance / 1000) / (dur / 60f / 60f),
                     (int)ascend, distance,
                     calorie,
-                    meta, plotHrMin, plotHrMax, dur / 60f, warmuptime / 60f, peak
+                    meta, plotHrMin, plotHrMax, dur / 60f, warmuptime / 60f, 
+                    peak,    // 12
+                    Settings.Default.Lowhr, Settings.Default.Highhr    // 13-14
                     ));
 
                 using (Stream fileStream = File.Create(screenshot + ".png"))

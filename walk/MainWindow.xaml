@@ -268,7 +268,7 @@
         <Label x:Name="mtba" Content="sec" HorizontalAlignment="Left" Margin="421,236,0,-17" Foreground="#FF3C3C3C" RenderTransformOrigin="0.5,0.5" Padding="0,0,0,0" Height="19" VerticalAlignment="Top"  />
 
         <Polyline x:Name="sRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Blue" Opacity="0.9" StrokeThickness="1" />
-        <Polyline x:Name="vRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Gray" Opacity="0.5" StrokeThickness="1" />
+        <Polyline x:Name="vRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Gray" Opacity="0.3" StrokeThickness="1" />
         <Polyline x:Name="eRules" HorizontalAlignment="Left" Height="88" Margin="9,84,0,0" VerticalAlignment="Top" Width="1831" Stroke="Green" Opacity="0.9" StrokeThickness="1" />
         <Border x:Name="hrRules" HorizontalAlignment="Center" Height="88" Margin="0,84,0,0" VerticalAlignment="Top" Width="1831" BorderThickness="1" BorderBrush="Red" />
 
