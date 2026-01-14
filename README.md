@@ -15,7 +15,7 @@ Hardware:
 * Minimum 4 Channel HID Drive-free USB Delay Relay Interface Board Module Optocoupler:
   * QYF-UR04 ("ucreatefun.com" with CH551G USB chip) e.g. https://www.ebay.co.uk/itm/283294148232
 or
-  * HW341 ("dcttech.com" with ULN2803 chip) e.g. https://www.ebay.com/itm/1-2-4-8-Channel-USB-Relay-Control-Switch-Computer-Control-for-Intelligent-Home
+  * HW341 ("dcttech.com" with ULN2803 chip) e.g. [https://s.click.aliexpress.com/e/_EvVz8K8](https://s.click.aliexpress.com/e/_EvVz8K8)
 * Windows PC near treadmill, 1 USB port
 
 ![Relay board](relay.jpg?raw=true "board")
