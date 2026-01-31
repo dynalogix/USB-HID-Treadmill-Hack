@@ -33,9 +33,10 @@ namespace walk
         static int WinH = 293, WinH2 = 180, WinH0 = 84, WinW = 1848, plotWidth = 1000;
 
         static int ON = 1, OFF = 0, SPEED_UP = 1, SPEED_DOWN = 2, INCL_UP = 3, INCL_DOWN = 4, ALL = 9, START = 5, MODE = 6, STOP = 7, SPD3 = 8, SPD6 = 7;
+        static int INC_ON = 0, INC_D_U = 0;
         static bool HW341 = false, CH551G = true, DUMMYSTART = false, DUMMYMODE = false;
 
-        static float buttonDownSec = 0.5f, PRESSLEN = 0.6f;
+        static float buttonDownSec = 0.5f, PRESSLEN = 0.6f, incLEN=0f;
 
         static ushort vid, pid = 0x3f;
 
@@ -80,6 +81,15 @@ namespace walk
             if (Settings.Default.ButtonPressSec < 0.05f || Settings.Default.ButtonPressSec > 2f) { fButtonPressSec.Background = Brushes.Yellow; fail = true; }
             fButtonReleaseSec.Background = Brushes.Transparent;
             if (Settings.Default.ButtonReleaseSec < 0.05f || Settings.Default.ButtonReleaseSec > 2f) { fButtonReleaseSec.Background = Brushes.Yellow; fail = true; }
+            if(Settings.Default.Inc15Sec<0.1f)
+            {
+                lbsp3.Content = "SPD-3";
+                lbsp6.Content = "SPD-6";
+            } else
+            {
+                lbsp6.Content = "UP/DN";
+                lbsp3.Content = "IncON";
+            }
 
             win.Width = WinW;
 
@@ -121,7 +131,7 @@ namespace walk
         DispatcherTimer timer = null;
 
         Thread thread = null;
-        static bool running = false, caught_up = false, dummy_press = false;
+        static bool running = false, caught_up = false, dummy_press = false, paused=false;
 
         BluetoothLEDevice hrdevice;
 
@@ -300,7 +310,8 @@ namespace walk
             hrdevice = await BluetoothLEDevice.FromBluetoothAddressAsync(address);
             Debug.WriteLine("BT connected");
 
-            GattDeviceServicesResult result = await hrdevice.GetGattServicesAsync();
+            // before AI: GattDeviceServicesResult result = await hrdevice.GetGattServicesAsync();
+            GattDeviceServicesResult result = await hrdevice.GetGattServicesAsync(BluetoothCacheMode.Uncached);
 
             if (result.Status == GattCommunicationStatus.Success)
             {
@@ -329,17 +340,47 @@ namespace walk
 
                                 if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Notify))
                                 {
-
                                     Debug.WriteLine(service.AttributeHandle + " can be subscribed to");
                                     notifyingCharacteristic = characteristic;
+
                                     GattCommunicationStatus status = await characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
                                         GattClientCharacteristicConfigurationDescriptorValue.Notify);
+
                                     if (status == GattCommunicationStatus.Success)
                                     {
                                         Debug.WriteLine("subscribed");
                                         characteristic.ValueChanged += HRChanged;
+
+                                        // Recommended: Mark as 'changed' here so the 15s timer doesn't kill 
+                                        // the connection if the sensor is on but hasn't sent the first heartbeat yet.
+                                        hrChanged = true;
+                                    }
+                                    else  // <--- ADD THIS ELSE BLOCK
+                                    {
+                                        Debug.WriteLine("Failed to subscribe to HR - Retrying...");
+
+                                        // Force a reset/retry immediately on the UI thread
+                                        Application.Current.Dispatcher.Invoke(() => {
+                                            dispHR_MouseUp(null, null);
+                                        });
+                                        return; // Stop execution here
                                     }
                                 }
+
+                                // before AI fix:
+                                //if (characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Notify))
+                                //{
+
+                                //    Debug.WriteLine(service.AttributeHandle + " can be subscribed to");
+                                //    notifyingCharacteristic = characteristic;
+                                //    GattCommunicationStatus status = await characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
+                                //        GattClientCharacteristicConfigurationDescriptorValue.Notify);
+                                //    if (status == GattCommunicationStatus.Success)
+                                //    {
+                                //        Debug.WriteLine("subscribed");
+                                //        characteristic.ValueChanged += HRChanged;
+                                //    }
+                                //}
                             }
                         }
                     }
@@ -418,7 +459,92 @@ namespace walk
 
         int lastX = -1;
         bool hrChanged = false;
+
         private void HRChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
+        {
+            hrChanged = true;
+            var reader = DataReader.FromBuffer(args.CharacteristicValue);
+            var len = reader.UnconsumedBufferLength;
+            byte[] input = new byte[len];
+            reader.ReadBytes(input);
+
+            if (len > 1)
+            {
+                Debug.WriteLine("HR=" + input[1]);
+                if (input[1] > 10 && input[1] < 200)
+                {
+                    lasthr = hr;
+                    hr = input[1];
+                    if (hr > maxHR) maxHR = hr;
+
+                    // Calculate current X position
+                    int x = Math.Max(0, Math.Min((int)((tick - startTick) * plotWidth / dur), (int)plotWidth - 1));
+
+                    int lhr = hr;
+                    int lr = r;
+                    float ls = s;
+                   
+                    if (noUpdate) return;
+
+                    Application.Current.Dispatcher.Invoke(() => {
+                        dispHR.Content = hr;
+
+                        if (!running || paused) return;
+
+                        if (hrplot != null)
+                        {
+                            // Update data array
+                            try
+                            {
+                                hrplot[x] = lhr;
+                                // Fill gaps for smooth line if tick moved fast
+                                if (x > 0 && hrplot[x - 1] == 0) hrplot[x - 1] = lhr;
+                            }
+                            catch { }
+
+                            // Parse current settings to see if targets changed
+                            int targetLow = int.Parse(Settings.Default.Lowhr);
+                            int targetHigh = int.Parse(Settings.Default.Highhr);
+                            bool targetsChanged = (low != targetLow || high != targetHigh);
+
+                            // Check if we need to rescale
+                            bool scaleChanged = false;
+                            if (lhr > plotHrMax)
+                            {
+                                plotHrMax = lhr + 5;
+                                scaleChanged = true;
+                            }
+
+                            // Add secondary lines
+                            if (x > lastX)
+                            {
+                                splot.Points.Add(new Point(x, splot.Height - Math.Min(5f, Math.Max(0f, ls - 3f)) * splot.Height / 5f));
+                                iplot.Points.Add(new Point(x, iplot.Height - Math.Min(15f, Math.Max(0f, lr)) * iplot.Height / 15f));
+                            }
+
+                            // DECISION: Append point OR Redraw all?
+                            if (!scaleChanged && !targetsChanged)
+                            {
+                                // Optimization: Just add the new point
+                                if (x > lastX)
+                                {
+                                    plot.Points.Add(new Point(x, plot.Height - Math.Max(0, hrplot[x] - plotHrMin) * plot.Height / (plotHrMax - plotHrMin)));
+                                }
+                            }
+                            else
+                            {
+                                // Scale or targets changed, must redraw everything
+                                redrawPlot();
+                            }
+
+                            lastX = x;
+                        }
+                    });
+                }
+            }
+        }
+
+        private void HRChanged_beforeAI(GattCharacteristic sender, GattValueChangedEventArgs args)
         {
             hrChanged = true;
             var reader = DataReader.FromBuffer(args.CharacteristicValue);
@@ -527,6 +653,20 @@ namespace walk
             win.Topmost = true;
         }
 
+        private void i15sec_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (Settings.Default.Inc15Sec < 0.1f)
+            {
+                lbsp3.Content = "SPD-3";
+                lbsp6.Content = "SPD-6";
+            }
+            else
+            {
+                lbsp6.Content = "UP/DN";
+                lbsp3.Content = "IncON";
+            }
+        }
+
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
@@ -633,16 +773,20 @@ namespace walk
         private void visibility()
         {
             breakbutton.Visibility = Settings.Default.STOP != 0 ? Visibility.Visible : Visibility.Hidden;
-            hill.Visibility = Settings.Default.INCL_UP * Settings.Default.INCL_DOWN != 0 ? Visibility.Visible : Visibility.Hidden;
-            lHill.Visibility = Settings.Default.INCL_UP * Settings.Default.INCL_DOWN != 0 ? Visibility.Visible : Visibility.Hidden;
-            dispIncl.Visibility = Settings.Default.INCL_UP * Settings.Default.INCL_DOWN != 0 ? Visibility.Visible : Visibility.Hidden;
-            lDispIncl.Visibility = Settings.Default.INCL_UP * Settings.Default.INCL_DOWN != 0 ? Visibility.Visible : Visibility.Hidden;
+            Visibility vis= Settings.Default.INCL_UP * Settings.Default.INCL_DOWN + Settings.Default.Inc15Sec * Settings.Default.SPD3 * Settings.Default.SPD6 != 0 ? Visibility.Visible : Visibility.Hidden; ;
+            hill.Visibility = vis;
+            lHill.Visibility = vis;
+            dispIncl.Visibility = vis;
+            lDispIncl.Visibility = vis;
         }
 
         private void Stop_click(object sender, RoutedEventArgs e)
         {
-            GetVidPid();
-            if (STOP != 0) press(STOP);
+            if(Settings.Default.STOP!=0) { 
+                GetVidPid();
+                if (STOP != 0) press(STOP);
+            }
+            End();
         }
 
         static double Evaluate(string expression)
@@ -677,6 +821,26 @@ namespace walk
                 }
 
                 Debug.WriteLine("start =======================");
+
+                // 1. Reset Logic Variables
+                distance = 0;
+                ascend = 0;
+                tick = 0;
+                startTick = 0;
+                peak = 0;
+                warmuptime = 0;
+
+                // 2. Reset Graph
+                lastX = -1;
+                if (hrplot != null) Array.Clear(hrplot, 0, hrplot.Length); // Clear old data
+                if (plot != null) plot.Points.Clear();
+                if (splot != null) splot.Points.Clear();
+                if (iplot != null) iplot.Points.Clear();
+                if (eRules != null) eRules.Points.Clear();
+
+                // 3. Reset UI
+                progress.Text = "0.0";
+                dispTime.Content = "0.00";
 
                 GetVidPid();
 
@@ -728,14 +892,23 @@ namespace walk
 
                 running = true;
 
+                paused = false;
+                start.Content = "Pause";
+                start.Opacity = 1.0f;
+
                 r = 0; s = 3.0f; startTick = 0;
 
                 buttonDownSec = Settings.Default.ButtonPressSec;
                 PRESSLEN = buttonDownSec + Settings.Default.ButtonReleaseSec;
+                incLEN = Settings.Default.Inc15Sec/MAXINCL;
 
                 while (dur < 2 * warm + reps * (sdur + 180))
                 {
-                    rep.Text = (--reps).ToString();
+                    // single line before AI: rep.Text = (--reps).ToString();
+
+                    reps--;
+                    rep.Text = reps.ToString();
+                    if (reps <= 0) break; // Prevent infinite loop
                 }
 
                 warm = warm / (10f * (speed - 3.0f));        // - 10*PRESSLEN * (speed - 3.0f)
@@ -778,7 +951,25 @@ namespace walk
             }
             else
             {
-                End();
+                // End();
+                paused = !paused;
+
+                if (paused)
+                {
+                    start.Content = "Resume";
+                    start.Background = Brushes.Yellow; // Visual cue
+                                                       // Note: The treadmill will keep running at the current speed,
+                                                       // but the graph and automatic speed changes will freeze.
+
+                    breakbutton.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    start.Content = "Pause";
+                    start.Background = Brushes.Transparent;
+                    start.Opacity = 0.3f; // Restore the "dimmed" look while running
+                    breakbutton.Visibility = Settings.Default.STOP != 0 ? Visibility.Visible : Visibility.Hidden;
+                }
             }
 
         }
@@ -832,8 +1023,19 @@ namespace walk
             START = Settings.Default.START;
             STOP = Settings.Default.STOP;
             MODE = Settings.Default.MODE;
-            SPD3 = Settings.Default.SPD3;
-            SPD6 = Settings.Default.SPD6;
+            if(Settings.Default.Inc15Sec<1f) {
+                SPD3 = Settings.Default.SPD3;
+                SPD6 = Settings.Default.SPD6;
+                INC_ON = 0;
+                INC_D_U = 0;
+            }
+            else
+            {
+                INC_ON = Settings.Default.SPD3;
+                INC_D_U = Settings.Default.SPD6;
+                SPD3 = 0;
+                SPD6 = 0;
+            }  
             DUMMYSTART = Settings.Default.DUMMYSTART;
             DUMMYMODE = Settings.Default.DUMMYMODE;
             ALL = Settings.Default.ALL;
@@ -852,8 +1054,9 @@ namespace walk
         {
             Debug.WriteLine("End ================");
 
+            noUpdate = true;
             if (timer != null) timer.Stop();
-            running = false;
+            running = false;          
             start.Content = "Start";
             dispTime.Content = "";
             start.Opacity = 1f;
@@ -871,7 +1074,7 @@ namespace walk
 
             win.Background = brush;
 
-            noUpdate = true;
+
             save();
 
             Task.Delay(1000).ContinueWith(_ =>                     // retry
@@ -883,17 +1086,135 @@ namespace walk
                 });
             });
 
-            if (hrdevice != null)
-            {
-                _ = stopHR();
-                Debug.WriteLine("closed BT");
-            }
+            //if (hrdevice != null)
+            //{
+            //    _ = stopHR();
+            //    Debug.WriteLine("closed BT");
+            //}
 
         }
 
         private void save()
         {
-            if ((lastX > 0 || win.Height > 200) && Settings.Default.logdir.Length > 0)
+            // FIX 1: Allow save if Graph exists OR if Distance > 10 meters
+            // This ensures workout1 saves even without a Heart Rate strap.
+            if ((lastX > 0 || distance > 10 || win.Height > 200) && Settings.Default.logdir.Length > 0)
+            {
+                if (screenshot != null)
+                {
+                    File.Delete(screenshot + ".txt");
+                    File.Delete(screenshot + ".png");
+                }
+
+                if (win.Height < 100) win.Height = WinH2;
+                win.Width = WinW;
+                RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap(WinW, (int)win.Height, 96, 96, PixelFormats.Pbgra32);
+                if (win.Height < 200) renderTargetBitmap.Render(grid); else renderTargetBitmap.Render(win);
+                PngBitmapEncoder pngImage = new PngBitmapEncoder();
+                pngImage.Frames.Add(BitmapFrame.Create(renderTargetBitmap));
+
+                float totalHR = 0;
+                float durVal = tick - startTick < 1 ? 1 : tick - startTick; // Renamed variable to avoid confusion
+
+                // Only calculate HR average if we actually have data
+                if (lastX > 0)
+                {
+                    for (int x = 0; x <= lastX; x++) totalHR += hrplot[x] * ((durVal / 60f) / lastX);
+                }
+
+                var age = (DateTime.Today - Settings.Default.birthd).TotalDays / 365.25f;
+
+                // Visual updates
+                dispHR.Content = string.Format("{0:F0}", totalHR / (durVal / 60f));
+                dispSpeed.Content = string.Format("{0:F1}", (distance / 1000f) / (durVal / 60f / 60f));
+                dispIncl.Content = string.Format("{0:F0}", ascend);
+                mincl.Visibility = Visibility.Visible;
+                lDispIncl.Content = "ΣAscend📉";
+
+                // Fallback for Calories if HR is missing
+                // If totalHR is 0, the standard formula might result in negative numbers.
+                // We use a simple fallback: if HR is missing, assume a light workout HR (e.g. 100) or just accept 0.
+                // For now, let's keep your formula but clamp it so it doesn't go negative.
+
+                int calorie = 0;
+                double avgHR = (lastX > 0) ? totalHR / (durVal / 60f) : 0;
+                double minutes = durVal / 60.0;
+
+                if (avgHR > 10) // If we have valid Heart Rate data
+                {
+                    // YOUR ORIGINAL FORMULA (HR Based)
+                    calorie = (int)(minutes * (Settings.Default.FEMALE
+                        ? (-20.4022 + (0.4472 * avgHR) - (0.1263 * Settings.Default.weightkg) + (0.074 * age)) / 4.184
+                        : (-55.0969 + (0.6309 * avgHR) + (0.1988f * Settings.Default.weightkg) + (0.2017 * age)) / 4.184));
+                }
+                else
+                {
+                    // FALLBACK FORMULA (Physics Based / ACSM)
+                    // Uses Speed + Incline + Weight
+                    if (distance > 0 && minutes > 0)
+                    {
+                        double speedMetersPerMin = distance / minutes;
+                        double grade = ascend / distance; // Rise / Run (e.g. 50m up / 1000m fwd = 0.05 grade)
+
+                        double vo2; // Volume of Oxygen (ml/kg/min)
+
+                        // Running implies a "flight phase" which burns more energy, usually > 6km/h (100 m/min)
+                        if (speedMetersPerMin > 100)
+                        {
+                            // ACSM Running Equation
+                            // Horizontal + Vertical + Resting
+                            vo2 = (0.2 * speedMetersPerMin) + (0.9 * speedMetersPerMin * grade) + 3.5;
+                        }
+                        else
+                        {
+                            // ACSM Walking Equation
+                            // Note: Vertical work is 'taxed' higher in walking (1.8 factor) because there is no elastic recoil
+                            vo2 = (0.1 * speedMetersPerMin) + (1.8 * speedMetersPerMin * grade) + 3.5;
+                        }
+
+                        // Convert VO2 to Calories
+                        // Formula: (VO2 * Weight(kg)) / 200 = Kcal/min
+                        double kcalPerMin = (vo2 * Settings.Default.weightkg) / 200.0;
+
+                        calorie = (int)(kcalPerMin * minutes);
+                    }
+                }
+
+                if (calorie < 0) calorie = 0; // Safety check
+
+                // FIX 2: Allow sending to sheet if Distance > 10m
+                if (Settings.Default.deployment_id.Length > 5 && screenshot == null && (lastX > 0 || distance > 10))
+                {
+                    var sheetDate = 44927 + (DateTime.Today - new DateTime(2023, 1, 1)).TotalDays;
+                    if (DateTime.Now.Hour < 4) sheetDate--;
+
+                    scriptHTTP = string.Format("https://script.google.com/macros/s/{0}/exec?day={1}&dur={2}&dist={3}&cal={4}",
+                        Settings.Default.deployment_id, sheetDate, durVal, distance, calorie);
+                    new Thread(call_script).Start();
+                }
+
+                screenshot = Settings.Default.logdir + (Settings.Default.logdir.EndsWith("\\") ? "" : "\\") + String.Format("{0:yyyy-MM-dd HH.mm}", DateTime.Now);
+
+                File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1} min (warm-up: {11:f1} min)\nHR Max: {0} bps Avg: {1:f2} bps Targets: {13}/{14} Plot range: {8}…{9} bps\nSpeed Max: {2:F2} km/h Avg: {3:F2} km/h\nAscend: {4} m\nDistance: {5:F0} m\nCalories: {6:F0} KCal\nSections:{7}\n({12} peaks)",
+                    maxHR, avgHR,
+                    maxSpeed, (distance / 1000) / (durVal / 60f / 60f),
+                    (int)ascend, distance,
+                    calorie,
+                    meta, plotHrMin, plotHrMax, durVal / 60f, warmuptime / 60f,
+                    peak,
+                    Settings.Default.Lowhr, Settings.Default.Highhr
+                    ));
+
+                using (Stream fileStream = File.Create(screenshot + ".png"))
+                {
+                    pngImage.Save(fileStream);
+                }
+            }
+        }
+
+        private void save_was()
+        {
+            if ((lastX > 0 || distance > 10 || win.Height > 200) && Settings.Default.logdir.Length > 0)
             {
 
                 if (screenshot != null)
@@ -911,7 +1232,7 @@ namespace walk
 
                 float totalHR = 0;
 
-                float dur = tick - startTick <1 ? 1 : tick-startTick;
+                float durVal = tick - startTick <1 ? 1 : tick-startTick;
 
                 for (int x = 0; x <= lastX; x++) totalHR += hrplot[x] * ((dur / 60f) / lastX);
 
@@ -923,11 +1244,58 @@ namespace walk
                 mincl.Visibility = Visibility.Visible;               
                 lDispIncl.Content = "ΣAscend📉";
 
-                int calorie = (int)((dur / 60) * (Settings.Default.FEMALE
-                    ? (-20.4022 + (0.4472 * totalHR / (dur / 60f)) - (0.1263 * Settings.Default.weightkg) + (0.074 * age)) / 4.184
-                    : (-55.0969 + (0.6309 * totalHR / (dur / 60f)) + (0.1988f * Settings.Default.weightkg) + (0.2017 * age)) / 4.184));
+                //int calorie = (int)((dur / 60) * (Settings.Default.FEMALE
+                //    ? (-20.4022 + (0.4472 * totalHR / (dur / 60f)) - (0.1263 * Settings.Default.weightkg) + (0.074 * age)) / 4.184
+                //    : (-55.0969 + (0.6309 * totalHR / (dur / 60f)) + (0.1988f * Settings.Default.weightkg) + (0.2017 * age)) / 4.184));
 
-                if (Settings.Default.deployment_id.Length > 5 && screenshot==null && lastX > 0)           // send to sheet only on first save   
+                int calorie = 0;
+                double avgHR = (lastX > 0) ? totalHR / (durVal / 60f) : 0;
+                double minutes = durVal / 60.0;
+
+                if (avgHR > 10) // If we have valid Heart Rate data
+                {
+                    // YOUR ORIGINAL FORMULA (HR Based)
+                    calorie = (int)(minutes * (Settings.Default.FEMALE
+                        ? (-20.4022 + (0.4472 * avgHR) - (0.1263 * Settings.Default.weightkg) + (0.074 * age)) / 4.184
+                        : (-55.0969 + (0.6309 * avgHR) + (0.1988f * Settings.Default.weightkg) + (0.2017 * age)) / 4.184));
+                }
+                else
+                {
+                    // FALLBACK FORMULA (Physics Based / ACSM)
+                    // Uses Speed + Incline + Weight
+                    if (distance > 0 && minutes > 0)
+                    {
+                        double speedMetersPerMin = distance / minutes;
+                        double grade = ascend / distance; // Rise / Run (e.g. 50m up / 1000m fwd = 0.05 grade)
+
+                        double vo2; // Volume of Oxygen (ml/kg/min)
+
+                        // Running implies a "flight phase" which burns more energy, usually > 6km/h (100 m/min)
+                        if (speedMetersPerMin > 100)
+                        {
+                            // ACSM Running Equation
+                            // Horizontal + Vertical + Resting
+                            vo2 = (0.2 * speedMetersPerMin) + (0.9 * speedMetersPerMin * grade) + 3.5;
+                        }
+                        else
+                        {
+                            // ACSM Walking Equation
+                            // Note: Vertical work is 'taxed' higher in walking (1.8 factor) because there is no elastic recoil
+                            vo2 = (0.1 * speedMetersPerMin) + (1.8 * speedMetersPerMin * grade) + 3.5;
+                        }
+
+                        // Convert VO2 to Calories
+                        // Formula: (VO2 * Weight(kg)) / 200 = Kcal/min
+                        double kcalPerMin = (vo2 * Settings.Default.weightkg) / 200.0;
+
+                        calorie = (int)(kcalPerMin * minutes);
+                    }
+                }
+
+                if (calorie < 0) calorie = 0; // Safety check
+
+
+                if (Settings.Default.deployment_id.Length > 5 && screenshot==null && (lastX > 0 || distance > 10))           // send to sheet only on first save   
                 {
                     var sheetDate = 44927 + (DateTime.Today - new DateTime(2023, 1, 1)).TotalDays;
 
@@ -969,6 +1337,14 @@ namespace walk
 
         private void updateUI(object sender, EventArgs e)
         {
+            if (paused)
+            {
+                // Flash the Start/Pause button to show we are paused
+                if (DateTime.Now.Millisecond < 500) start.Opacity = 1; else start.Opacity = 0.5;
+                return;
+            }
+
+
             if (noUpdate) return;   // save shows avg values
             dispSpeed.Content = String.Format("{0:0.0}", s);
             dispIncl.Content = r < 0 ? 0 : r;
@@ -1014,9 +1390,43 @@ namespace walk
 
         }
 
+        private static float RelayInclineUp(Boolean Up)
+        {
+            if (INC_ON == 0) return 0;
+            try
+            {
+                USBDevice dev = new USBDevice(vid, pid, null, false, 31);
+                Relay(INC_D_U, Up ? OFF : ON, dev); 
+                Relay(INC_ON, ON, dev);
+                wait(incLEN);
+                Relay(INC_ON, OFF, dev);
+                return incLEN;
+            }
+            catch (Exception)
+            {
+                System.Media.SystemSounds.Hand.Play();
+            }
+            return 0;
+        }
+        private static void RelayInclineDown(Boolean TurnON)
+        {
+            if (INC_ON == 0) return;
+            try
+            {
+                USBDevice dev = new USBDevice(vid, pid, null, false, 31);
+                Relay(INC_D_U, ON, dev);
+                Relay(INC_ON, TurnON ? ON : OFF, dev); 
+            }
+            catch (Exception)
+            {
+                System.Media.SystemSounds.Hand.Play();
+            }
+        }
+
         private static void press(int v)
         {
             if (v == 0) return;
+            if (!running && v!=STOP) return;
 
             p += PRESSLEN;
 
@@ -1107,6 +1517,8 @@ namespace walk
 
         private static void toggle(int sw, int val)
         {
+            if (!running) return;
+
             if (!caught_up || sw == 0)    // not caught up or button not connected
             {
                 Debug.WriteLineIf(val == 1, "Press " + sw);
@@ -1163,19 +1575,24 @@ namespace walk
 
             AllOff();
 
+            float calLimit = p + (incLEN * MAXINCL) + 1.0f;
+            bool calibrating = true;
+            RelayInclineDown(true);
+
             if (START != 0)
             {          // the 4B-550 has START and STOP buttons and speed starts at 1.0
 
                 press(SPEED_DOWN);  // wake up treadmill
                 startTick++;
                 wait(1f);
-                if (MODE != 0)
-                {
-                    press(MODE);        // MODE MODE → target distance                   
-                    press(MODE);
-                    press(SPEED_DOWN);  // set target distance 99km → maximum length workout                    
-                    dur -= 3 * PRESSLEN;
-                }
+
+                //if (MODE != 0)
+                //{
+                //    press(MODE);        // MODE MODE → target distance                   
+                //    press(MODE);
+                //    press(SPEED_DOWN);  // set target distance 99km → maximum length workout                    
+                //    dur -= 3 * PRESSLEN;
+                //}
 
                 startup(3f);  // initial speed raise 1 to 3                
 
@@ -1201,6 +1618,12 @@ namespace walk
 
                     readParams();
 
+                    if (calibrating && p >= calLimit)
+                    {
+                        RelayInclineDown(false);
+                        calibrating = false;
+                    }
+
                     //if (tZone < 1 && hr > minhr - 2) tZone = tick;                // first hold should hold at minhr
                 }
 
@@ -1210,6 +1633,8 @@ namespace walk
                 peak = 0;           // count number of peaks
                 warmuptime = (int)(tick - startTick);
             }
+
+            RelayInclineDown(false);
 
             tZone = tick;
 
@@ -1222,9 +1647,18 @@ namespace walk
 
                 if (tZone > 0) while (tick < tZone + Settings.Default.holdlow)      // no longer needed here: && tick - startTick < dur - warmuptime
                     {
-                        if (wait(3)) return;
-                        if (hr < lowerTargetHR) sUP(); else if (hr == lowerTargetHR + 1 && r > -2) rDOWN(); else if (hr > lowerTargetHR) sDOWN();
-
+                        
+                        if (hr < lowerTargetHR) {
+                            if (wait(3)) return;
+                            sUP();
+                        }
+                        else if (hr == lowerTargetHR + 1 && r > -2) {
+                            rDOWN();
+                            if (wait(3-RelayInclineUp(false))) return;
+                        } else if (hr > lowerTargetHR) {
+                            if (wait(3)) return;
+                            sDOWN();
+                        }
                         readParams();
                     }
 
@@ -1243,10 +1677,10 @@ namespace walk
                     sUP();
 
                     incline = !incline;
-                    if ((incline || s >= 5.5f) && INCL_UP != 0 && hr < upperTargetHR && tick - startTick < dur - warmuptime && r < hl)
+                    if ((incline || s >= 5.5f) && INCL_UP+INC_D_U*INC_ON != 0 && hr < upperTargetHR && tick - startTick < dur - warmuptime && r < hl)
                     {
-                        if (wait(+upperTargetHR, TBA / Math.Max(1, (upperTargetHR - hr) * 2))) return;                  // wait half as much before ramp
                         rUP();
+                        if (wait(+upperTargetHR, TBA / Math.Max(1, (upperTargetHR - hr) * 2)-RelayInclineUp(true))) return;                  // wait half as much before ramp
                     }
 
                     readParams();
@@ -1262,8 +1696,16 @@ namespace walk
 
                 if (tZone > 0) while (tick < tZone + Settings.Default.holdhigh && tick - startTick < dur - warmuptime)
                     {
-                        if (wait(3)) return;
-                        if (hr < upperTargetHR) sUP(); else if (hr == upperTargetHR + 1 && r > 0) rDOWN(); else if (hr > upperTargetHR) sDOWN();
+                        if (hr < upperTargetHR) {
+                            if (wait(3)) return;
+                            sUP(); 
+                        } else if (hr == upperTargetHR + 1 && r > 0) {
+                            rDOWN();
+                            if (wait(3-RelayInclineUp(false))) return;
+                        } else if (hr > upperTargetHR) {
+                            if (wait(3)) return;
+                            sDOWN(); 
+                        }
 
                         readParams();
                     }
@@ -1282,8 +1724,8 @@ namespace walk
                     sDOWN();
                     if (hr > lowerTargetHR && r > -3)
                     {
-                        if (wait(-lowerTargetHR, TBA / Math.Max(1, (hr - lowerTargetHR) * 2))) return;            // wait half as much before ramp
                         rDOWN();
+                        if (wait(-lowerTargetHR, TBA / Math.Max(1, (hr - lowerTargetHR) * 2)-RelayInclineUp(false))) return;            // wait half as much before ramp
                     }
 
                     readParams();
@@ -1311,12 +1753,14 @@ namespace walk
                 sDOWN();
                 if (r > -3)
                 {
-                    if (wait(1)) return;
                     rDOWN();
+                    if (wait(2-RelayInclineUp(false))) return;
                 }
             }
 
             if (r < 0) r = 0;
+
+            if (STOP != 0) press(STOP);
 
             running = false;
         }
@@ -1412,13 +1856,14 @@ namespace walk
                 press(SPEED_DOWN);  // wake up treadmill
                 startTick++;
                 wait(1f);
-                if (MODE != 0)
-                {
-                    press(MODE);        // MODE MODE → target distance                   
-                    press(MODE);
-                    press(SPEED_DOWN);  // set target distance 99km → maximum length workout                    
-                    dur -= 3 * PRESSLEN;
-                }
+                
+                //if (MODE != 0)            // new controller doesn't need this
+                //{
+                //    press(MODE);        // MODE MODE → target distance                   
+                //    press(MODE);
+                //    press(SPEED_DOWN);  // set target distance 99km → maximum length workout                    
+                //    dur -= 3 * PRESSLEN;
+                //}
 
                 startup(3f);  // initial speed raise 1 to 3                
 
@@ -1428,13 +1873,25 @@ namespace walk
 
             // Warm up
 
+            float calLimit = p + (incLEN * MAXINCL) + 1.0f;
+            bool calibrating = true; 
+            RelayInclineDown(true);
+
             while (s < speed - 0.02f)
             {
-                if (wait(warm - PRESSLEN)) return;
+                if (wait(warm - PRESSLEN)) return;            // relay incline go down to 0 at the same time
                 dur -= 2 * warm;             // up and down + 2x 500ms 
                 s += 0.1f;
                 press(SPEED_UP);
+
+                if (calibrating && p >= calLimit)
+                {
+                    RelayInclineDown(false);
+                    calibrating = false;
+                }
             }
+
+            RelayInclineDown(false);
 
             dur -= reps * sdur;                    // 2x sprint 
 
@@ -1466,7 +1923,7 @@ namespace walk
                 for (int a = 1; a <= reps; a++)
                 {
 
-                    if (INCL_UP != 0 && INCL_DOWN != 0 && dur > 100)
+                    if (((INCL_UP != 0 && INCL_DOWN != 0) || (INC_D_U!=0 && INC_ON!=0)) && dur > 100)
                     {
 
                         float c = 2;
@@ -1479,25 +1936,25 @@ namespace walk
                         float first = c;        // wait double before raising (adjustted by correction at half time)
 
                         // climb to 10/4 → 10,8,5,3; 9/3 → 9,6,3
-
+                      
                         for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
                         {
-                            if (wait(c + first)) return;
-                            first = 0;
                             r++;
-                            press(INCL_UP);
+                            press(INCL_UP); 
+                            if (wait(c + first-RelayInclineUp(true))) return;
+                            first = 0;
                         }
 
                         // descend from 6 later 4
 
                         for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
                         {
-                            if (wait(c)) return;
                             r--;
                             press(INCL_DOWN);
+                            if (wait(c-RelayInclineUp(false))) return;
                         }
 
-                        if (wait(c > 2f ? c - 1f : c)) return;
+                        if (wait((c > 2f ? c - 1f : c)-RelayInclineUp(false))) return;
 
                         press(INCL_DOWN);       // double down for zero
 
@@ -1544,6 +2001,8 @@ namespace walk
                 press(SPEED_DOWN);
             }
 
+            if (STOP != 0) press(STOP);
+
             running = false;
         }
 
@@ -1563,15 +2022,16 @@ namespace walk
                 toggle(STOP, OFF);
                 toggle(START, OFF);
                 toggle(SPD3, OFF);
+                toggle(INC_ON, OFF);
             }
         }
 
         private void startup(float dest)
-        {
+        {           
 
             press(START);
 
-            s = 1;
+            s = 3;
 
             if (wait(6f)) return;
 
@@ -1587,7 +2047,7 @@ namespace walk
                 press(SPD3);
                 dur -= PRESSLEN;
             }
-            else for (float a = 1.1f; a <= dest; a += 0.1f)   // otherwise increase "manually"
+            else if(s<3) for (float a = 1.1f; a <= dest; a += 0.1f)   // otherwise increase "manually"
                 {
                     //if (wait(0.2f)) return;
                     s += 0.1f;

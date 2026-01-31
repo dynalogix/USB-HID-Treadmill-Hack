@@ -130,7 +130,22 @@ namespace walk.Properties {
                 this["SprintDuration"] = value;
             }
         }
-        
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.0")]
+        public float Inc15Sec
+        {
+            get
+            {
+                return ((float)(this["Inc15Sec"]));
+            }
+            set
+            {
+                this["Inc15Sec"] = value;
+            }
+        }
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0.3")]

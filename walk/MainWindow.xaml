@@ -201,9 +201,12 @@
         <TextBox x:Name="bStop" HorizontalAlignment="Left" Margin="1594,189,0,0" Text="{Binding STOP, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
         <Label Content="STOP" HorizontalAlignment="Left" Margin="1594,207,0,0" VerticalAlignment="Top" Height="26" Width="43" />
         <TextBox x:Name="b3" HorizontalAlignment="Left" Margin="1644,189,0,0" Text="{Binding SPD3, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
-        <Label Content="SPD-3" HorizontalAlignment="Left" Margin="1644,207,0,0" VerticalAlignment="Top" Height="26" />
+        <Label Content="SPD-3" x:Name="lbsp3" HorizontalAlignment="Left" Margin="1644,207,0,0" VerticalAlignment="Top" Height="26" />
         <TextBox x:Name="b6" HorizontalAlignment="Left" Margin="1694,189,0,0" Text="{Binding SPD6, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
-        <Label Content="SPD-6" HorizontalAlignment="Left" Margin="1694,207,0,0" VerticalAlignment="Top" Height="26" />
+        <Label Content="SPD-6" x:Name="lbsp6" HorizontalAlignment="Left" Margin="1694,207,0,0" VerticalAlignment="Top" Height="26" />
+
+        <TextBox x:Name="i15sec" HorizontalAlignment="Left" Margin="1745,212,0,0" Text="{Binding Inc15Sec, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" RenderTransformOrigin="0.744,-1.782" TextChanged="i15sec_TextChanged"/>
+        <Label Content="Up(s)" HorizontalAlignment="Left" Margin="1745,189,0,0" VerticalAlignment="Top" Height="26" />
 
         <TextBox x:Name="bAll" HorizontalAlignment="Left" Margin="1794,189,0,0" Text="{Binding ALL, Mode=TwoWay, Source={x:Static p:Settings.Default}}" TextWrapping="Wrap" VerticalAlignment="Top" Width="43" TextAlignment="Center"  />
         <Label Content="ALL" HorizontalAlignment="Left" Margin="1794,207,0,0" VerticalAlignment="Top" Height="26" Width="43" />
@@ -216,7 +219,7 @@
         <Label Content="HTTP on start:" HorizontalAlignment="Left" Margin="321,258,0,0" VerticalAlignment="Top" Height="24"/>
 
         <TextBox HorizontalAlignment="Left" MaxLines="1" Margin="1021,233,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="381" x:Name="logdir" Text="{Binding logdir, Mode=TwoWay, Source={x:Static p:Settings.Default}}" Height="19" />
-        <Label Content="Directory path for summary/log files (PNG+TXT):" HorizontalAlignment="Left" Margin="949,208,0,0" VerticalAlignment="Top" Height="32"/>
+        <Label Content="Directory path for summary/log files (PNG+TXT): v2.0" HorizontalAlignment="Left" Margin="949,208,0,0" VerticalAlignment="Top" Height="32"/>
 
         <Label Content="BT♥:" x:Name="lbtlist" Margin="949,185,714,0" VerticalAlignment="Top" Height="26" RenderTransformOrigin="-2.988,-0.385" />
         <ComboBox x:Name="btlist" HorizontalAlignment="Left" Margin="987,187,0,0" VerticalAlignment="Top" Width="142" SelectionChanged="btlist_SelectionChanged" />
