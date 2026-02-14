@@ -63,6 +63,11 @@ namespace walk
         static int lastScreenR = 0; // Tracks the value shown on the treadmill display
         static DateTime? errorStartTime = null; // Tracks when the connection FIRST failed
 
+        // variables used for save
+        static double sentDist = 0;
+        static float sentDur = 0;
+        static int sentCal = 0;
+
         private void Config_button(object sender, RoutedEventArgs e)
         {
             Settings.Default.Save();
@@ -494,30 +499,30 @@ namespace walk
 
                     // Calculate current X position
                     // int x = Math.Max(0, Math.Min((int)((tick - startTick) * plotWidth / dur), (int)plotWidth - 1));
-                    int x = Math.Max(0, Math.Min((int)((tick - startTick) * plotWidth / totalDur), (int)plotWidth - 1));
+                    // int x = Math.Max(0, Math.Min((int)((tick - startTick) * plotWidth / totalDur), (int)plotWidth - 1));
 
                     if (noUpdate) return;
 
                     Application.Current.Dispatcher.Invoke(() => {
                         dispHR.Content = hr;
 
-                        if (!running || paused || hrplot == null) return;
+                        //if (!running || paused || hrplot == null) return;
 
 
-                        // Update data array
-                        hrplot[x] = hr;
+                        //// Update data array
+                        //hrplot[x] = hr;
 
-                        // Check if we need a full redraw (Scale change or Settings change)
-                        if (hr > plotHrMax || low != int.Parse(Settings.Default.Lowhr) || high != int.Parse(Settings.Default.Highhr))
-                        {
-                            if (hr > plotHrMax) plotHrMax = hr + 5;
-                            redrawPlot();
-                        }
-                        else
-                        {
-                            // Just add the green point
-                            plot.Points.Add(new Point(x, plot.Height - Math.Max(0, hr - plotHrMin) * plot.Height / (plotHrMax - plotHrMin)));
-                        }
+                        //// Check if we need a full redraw (Scale change or Settings change)
+                        //if (hr > plotHrMax || low != int.Parse(Settings.Default.Lowhr) || high != int.Parse(Settings.Default.Highhr))
+                        //{
+                        //    if (hr > plotHrMax) plotHrMax = hr + 5;
+                        //    redrawPlot();
+                        //}
+                        //else
+                        //{
+                        //    // Just add the green point
+                        //    plot.Points.Add(new Point(x, plot.Height - Math.Max(0, hr - plotHrMin) * plot.Height / (plotHrMax - plotHrMin)));
+                        //}
 
                     });
                 }
@@ -819,6 +824,12 @@ namespace walk
                 peak = 0;
                 warmuptime = 0;
 
+                // === NEW: Reset Cloud Trackers & Filename ===
+                sentDist = 0;
+                sentDur = 0;
+                sentCal = 0;
+                screenshot = null; // This forces save() to create a NEW file
+
                 // 2. Reset Graph
                 lastX = -1;
                 if (hrplot != null) Array.Clear(hrplot, 0, hrplot.Length); // Clear old data
@@ -1105,11 +1116,18 @@ namespace walk
             // This ensures workout1 saves even without a Heart Rate strap.
             if ((lastX > 0 || distance > 10 || win.Height > 200) && Settings.Default.logdir.Length > 0)
             {
-                if (screenshot != null)
+
+                if (screenshot == null)
                 {
-                    File.Delete(screenshot + ".txt");
-                    File.Delete(screenshot + ".png");
+                    screenshot = Settings.Default.logdir +
+                                 (Settings.Default.logdir.EndsWith("\\") ? "" : "\\") +
+                                 String.Format("{0:yyyy-MM-dd HH.mm}", DateTime.Now);
                 }
+                //if (screenshot != null)
+                //{
+                //    File.Delete(screenshot + ".txt");
+                //    File.Delete(screenshot + ".png");
+                //}
 
                 if (win.Height < 100) win.Height = WinH2;
                 win.Width = WinW;
@@ -1136,6 +1154,7 @@ namespace walk
                 mincl.Visibility = Visibility.Visible;
                 lDispIncl.Content = "ΣAscend📉";
 
+                // restore distance to UI
                 if (distance < 1000)
                 {
                     dispTime.Content = String.Format("{0:F0}", distance);
@@ -1156,6 +1175,8 @@ namespace walk
                 int calorie = 0;
                 double avgHR = (lastX > 0) ? totalHR / (durVal / 60f) : 0;
                 double minutes = durVal / 60.0;
+
+                // Calorie calculation
 
                 if (avgHR > 10) // If we have valid Heart Rate data
                 {
@@ -1200,17 +1221,38 @@ namespace walk
                 if (calorie < 0) calorie = 0; // Safety check
 
                 // FIX 2: Allow sending to sheet if Distance > 10m
-                if (Settings.Default.deployment_id.Length > 5 && screenshot == null && (lastX > 0 || distance > 10))
+                double deltaDist = distance - sentDist;
+                float deltaDur = durVal - sentDur;
+                int deltaCal = calorie - sentCal;
+
+                // Send only if there is new data (> 5 meters)
+
+                if (Settings.Default.deployment_id.Length > 5 && deltaDist > 5)
                 {
                     var sheetDate = 44927 + (DateTime.Today - new DateTime(2023, 1, 1)).TotalDays;
                     if (DateTime.Now.Hour < 4) sheetDate--;
 
                     scriptHTTP = string.Format("https://script.google.com/macros/s/{0}/exec?day={1}&dur={2}&dist={3}&cal={4}",
-                        Settings.Default.deployment_id, sheetDate, durVal, distance, calorie);
+                        Settings.Default.deployment_id, sheetDate, deltaDur, deltaDist, deltaCal);
                     new Thread(call_script).Start();
+
+                    // Update trackers
+                    sentDist = distance;
+                    sentDur = durVal;
+                    sentCal = calorie;
                 }
 
-                screenshot = Settings.Default.logdir + (Settings.Default.logdir.EndsWith("\\") ? "" : "\\") + String.Format("{0:yyyy-MM-dd HH.mm}", DateTime.Now);
+                //if (Settings.Default.deployment_id.Length > 5 && screenshot == null && (lastX > 0 || distance > 10))
+                //{
+                //    var sheetDate = 44927 + (DateTime.Today - new DateTime(2023, 1, 1)).TotalDays;
+                //    if (DateTime.Now.Hour < 4) sheetDate--;
+
+                //    scriptHTTP = string.Format("https://script.google.com/macros/s/{0}/exec?day={1}&dur={2}&dist={3}&cal={4}",
+                //        Settings.Default.deployment_id, sheetDate, durVal, distance, calorie);
+                //    new Thread(call_script).Start();
+                //}
+
+                //screenshot = Settings.Default.logdir + (Settings.Default.logdir.EndsWith("\\") ? "" : "\\") + String.Format("{0:yyyy-MM-dd HH.mm}", DateTime.Now);
 
                 File.WriteAllText(screenshot + ".txt", String.Format("Duration: {10:f1} min (warm-up: {11:f1} min)\nHR Max: {0} bps Avg: {1:f2} bps Targets: {13}/{14} Plot range: {8}…{9} bps\nSpeed Max: {2:F2} km/h Avg: {3:F2} km/h\nAscend: {4} m\nDistance: {5:F0} m\nCalories: {6:F0} KCal\nSections:{7}\n({12} peaks)",
                     maxHR, avgHR,
@@ -1408,16 +1450,18 @@ namespace walk
                     {
                         hrWatchdog++; // Increment every second
 
-                        if (hrWatchdog > 30)
-                        {
-                            hr = 0; // Data is "stale" after 5 seconds of silence
-                        }
+                        if (hrWatchdog > 30) hr = 0; // Data is "stale" after 30 seconds of silence                       
 
                         hrplot[x] = hr; // Use the sticky value or the expired 0
 
                         // Draw the HR point in updateUI to ensure it draws even if HRChanged is silent
                         if (hr > 10)
                         {
+                            if (hr > plotHrMax)
+                            {
+                                plotHrMax = hr + 5;
+                                redrawPlot();
+                            }
                             plot.Points.Add(new Point(x, plot.Height - Math.Max(0, hr - plotHrMin) * plot.Height / (plotHrMax - plotHrMin)));
                         }
                     }
@@ -1471,15 +1515,14 @@ namespace walk
                 Thread.Sleep((int)(incLEN * 1000));
 
                 RawRelaySend(INC_ON, OFF, dev);
-                inclineRunawayStart = null;
-                if (Up) lastPhysicalR++; else lastPhysicalR--;
-
+                inclineRunawayStart = null;              
             });
 
             if (success)
             {
                 // Operation completed normally.
                 inclineRunawayStart = null; // Clear the danger flag
+                if (Up) lastPhysicalR++; else lastPhysicalR--;
             }
             // If !success, inclineRunawayStart remains set, and PerformResync will see it.
 
@@ -1506,11 +1549,11 @@ namespace walk
                 RawRelaySend(INC_ON, TurnON ? ON : OFF, dev);
             });
 
-            if (success)
+            if (success && !TurnON)
             {
                 // If we successfully turned it OFF, clear the flag.
                 // If we turned it ON, the flag remains until the OFF command succeeds.
-                if (!TurnON) inclineRunawayStart = null;
+                inclineRunawayStart = null;
             }
         }
 
@@ -1531,12 +1574,16 @@ namespace walk
                 Thread.Sleep((int)(buttonDownSec * 1000));
                 RawRelaySend(v, OFF, dev);
 
+             
+            });
+            if(success)
+            {
                 // Update trackers ONLY if the hardware actually clicked
                 if (v == SPEED_UP) lastPhysicalS += 0.1f;
                 else if (v == SPEED_DOWN) lastPhysicalS -= 0.1f;
                 else if (v == INCL_UP) lastScreenR++;
                 else if (v == INCL_DOWN) lastScreenR--;
-            });
+            }
 
             wait(PRESSLEN - buttonDownSec);
         }
@@ -1684,7 +1731,7 @@ namespace walk
                 // AUTO-PAUSE if > 30 seconds
                 if (running && !paused && errorStartTime != null)
                 {
-                    if ((DateTime.Now - errorStartTime.Value).TotalSeconds > 30) // 30s Grace Period
+                    if ((DateTime.Now - errorStartTime.Value).TotalSeconds > 15) // 15s Grace Period
                     {
                         TriggerAutoPause();
                     }
@@ -1694,11 +1741,19 @@ namespace walk
 
         public void TriggerAutoPause()
         {
-            if (!paused)
+
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                Start_click(null, null); // Toggle Pause
-                if (errDisp != null) errDisp.Text = "⛔ PAUSED: Connection lost > 10s";
-            }
+                if (!paused)
+                {
+                    paused = true;
+                    start.Content = "Resume";
+                    start.Background = Brushes.Yellow;
+                    start.Opacity = 1.0f; // Ensure visible
+                    breakbutton.Visibility = Visibility.Visible;
+                    if (errDisp != null) errDisp.Text = "⛔ PAUSED: Connection lost > 15s";
+                }
+            });
         }
 
         private void PerformResync(USBDevice dev)
@@ -1745,6 +1800,16 @@ namespace walk
                 // Clear the flag
                 inclineRunawayStart = null;
             }
+
+            if (errorStartTime != null && (DateTime.Now - errorStartTime.Value).TotalSeconds > 15)
+            {
+                s = lastPhysicalS;
+                r = lastScreenR; // Sync to display (assumes it didn't change during error)
+                lastPhysicalR = r; // Align motor tracker too, since board didn't move
+                Debug.WriteLine("Long USB error: Reset software s/r to last confirmed physical/display state.");
+            }
+
+
             // ============================================================
             // PART 2: SYNC PHYSICAL MOTOR TO 'r'
             // ============================================================
@@ -1761,8 +1826,8 @@ namespace walk
                     RawRelaySend(INC_ON, ON, dev);
                     for (int i = 0; i < moveTime*10; i++) { if (!running) break; Thread.Sleep(100); }  // p += 100;
                     RawRelaySend(INC_ON, OFF, dev);
-                }
-                lastPhysicalR = r; // Motor is now synced
+                    lastPhysicalR = r; // Motor is now synced
+                }             
             }
 
             // ============================================================
@@ -2054,9 +2119,9 @@ namespace walk
 
         private void rUP()
         {
-            if (r < 0) r = 0;
+            if (r < 0) r = 0;      
             press(INCL_UP);
-            r++;
+            if(r<MAXINCL) r++;
         }
 
         private void rDOWN()
