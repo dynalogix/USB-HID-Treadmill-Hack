@@ -68,6 +68,9 @@ namespace walk
         static float sentDur = 0;
         static int sentCal = 0;
 
+        static string currentActivity = "Init"; // Tracks "Warmup", "High", "Pressing Speed", etc.
+        static string lastMetaLog = "";         // For de-duplicating the text file
+
         private void Config_button(object sender, RoutedEventArgs e)
         {
             Settings.Default.Save();
@@ -1721,7 +1724,10 @@ namespace walk
             if (errorStartTime == null) errorStartTime = DateTime.Now; // Start timer
 
             System.Media.SystemSounds.Hand.Play();
-            try { File.AppendAllText(logFilePath, $"{DateTime.Now}: {msg}\n"); } catch { }
+            try {
+                File.AppendAllText(logFilePath, $"{DateTime.Now}: {msg} | State: {currentActivity}\n");
+            }
+            catch { }
 
             // Update UI and Check Timeout
             Application.Current.Dispatcher.Invoke(() =>
@@ -1791,7 +1797,7 @@ namespace walk
                     int direction = inclineRunawayDirUp ? OFF : ON; // OFF=UP, ON=DOWN
                     RawRelaySend(INC_D_U, direction, dev);
                     RawRelaySend(INC_ON, ON, dev);
-                    for (int i = 0; i < calibrationMs/100; i++) { if (!running) break; Thread.Sleep(100); }    // p += 100;
+                    for (int i = 0; i < calibrationMs/100; i++) { if (!running) break; Thread.Sleep(100); p += 0.1f; }    // p += 100;
                     RawRelaySend(INC_ON, OFF, dev);
 
                     lastPhysicalR = inclineRunawayDirUp ? MAXINCL : 0;
@@ -1824,7 +1830,7 @@ namespace walk
 
                     float moveTime = Math.Abs(motorDiff) * incLEN;
                     RawRelaySend(INC_ON, ON, dev);
-                    for (int i = 0; i < moveTime*10; i++) { if (!running) break; Thread.Sleep(100); }  // p += 100;
+                    for (int i = 0; i < moveTime*10; i++) { if (!running) break; Thread.Sleep(100); p += 0.1f; }  // p += 100;
                     RawRelaySend(INC_ON, OFF, dev);
                     lastPhysicalR = r; // Motor is now synced
                 }             
@@ -1859,10 +1865,10 @@ namespace walk
                 if (!running) break;
                 RawRelaySend(btn, ON, dev);
                 Thread.Sleep((int)(buttonDownSec * 1000));
-                // p += buttonDownSec * 1000;
+                p += buttonDownSec;
                 RawRelaySend(btn, OFF, dev);
                 Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000));
-                // p += (int)((PRESSLEN - buttonDownSec) * 1000);
+                p += PRESSLEN - buttonDownSec;
             }
         }
 
@@ -2077,6 +2083,7 @@ namespace walk
                 {
                     if (wait(upperTargetHR, TBA)) return;
                 }
+                Thread.Sleep(50);
 
             }
 
@@ -2147,6 +2154,7 @@ namespace walk
 
         private void eRule(string section, TextBox red, int v)
         {
+            currentActivity = $"{section} (S:{s:0.0}/R:{r})";
 
             if (lowerTargetHR != upperTargetHR)
             {
@@ -2154,7 +2162,14 @@ namespace walk
                 int min = (int)((tick - startTick - hr * 60 * 60) / 60);
                 int sec = (int)(tick - startTick - hr * 60 * 60 - min * 60);
 
-                meta += string.Format("\n{0}:{1:D2}:{2:D2} {3} ({4:F1}/{5})", hr, min, sec, section, s, r);
+                //meta += string.Format("\n{0}:{1:D2}:{2:D2} {3} ({4:F1}/{5})", hr, min, sec, section, s, r);
+                string newLogLine = string.Format("\n{0}:{1:D2}:{2:D2} {3} ({4:F1}/{5})", hr, min, sec, section, s, r);
+
+                if (newLogLine != lastMetaLog)
+                {
+                    meta += newLogLine;
+                    lastMetaLog = newLogLine;
+                }
             }
 
             int x = Math.Min((int)((tick - startTick) * plotWidth / dur), plotWidth - 1);
