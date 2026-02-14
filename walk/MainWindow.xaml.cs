@@ -1063,7 +1063,7 @@ namespace walk
             if (timer != null) timer.Stop();
             running = false;
             start.Content = "Start";
-            dispTime.Content = "";
+            dispTime.Content = "End";
             start.Opacity = 1f;
             len.Opacity = 1f;
             warmup.Opacity = 1f;
@@ -1135,6 +1135,18 @@ namespace walk
                 dispIncl.Content = string.Format("{0:F0}", ascend);
                 mincl.Visibility = Visibility.Visible;
                 lDispIncl.Content = "ΣAscend📉";
+
+                if (distance < 1000)
+                {
+                    dispTime.Content = String.Format("{0:F0}", distance);
+                    mnext.Content = "m";
+                }
+                else
+                {
+                    dispTime.Content = String.Format("{0:F2}", distance / 1000f);
+                    mnext.Content = "km";
+                }
+                lnext.Content = "Dist";
 
                 // Fallback for Calories if HR is missing
                 // If totalHR is 0, the standard formula might result in negative numbers.
@@ -1344,8 +1356,12 @@ namespace walk
 
         private void updateUI(object sender, EventArgs e)
         {
+
             if (paused)
             {
+
+                // Ensure the text says Resume
+                if (start.Content.ToString() != "Resume") start.Content = "Resume";
                 // Flash the Start/Pause button to show we are paused
                 if (DateTime.Now.Millisecond < 500) start.Opacity = 1; else start.Opacity = 0.5;
                 return;
@@ -1466,6 +1482,8 @@ namespace walk
                 inclineRunawayStart = null; // Clear the danger flag
             }
             // If !success, inclineRunawayStart remains set, and PerformResync will see it.
+
+            p += incLEN;
 
             return incLEN;
         }
@@ -1653,9 +1671,9 @@ namespace walk
         private void HandleUsbError(string msg)
         {
             isUsbError = true;
-            System.Media.SystemSounds.Hand.Play();
+            if (errorStartTime == null) errorStartTime = DateTime.Now; // Start timer
 
-            // Log to file
+            System.Media.SystemSounds.Hand.Play();
             try { File.AppendAllText(logFilePath, $"{DateTime.Now}: {msg}\n"); } catch { }
 
             // Update UI and Check Timeout
@@ -1718,7 +1736,7 @@ namespace walk
                     int direction = inclineRunawayDirUp ? OFF : ON; // OFF=UP, ON=DOWN
                     RawRelaySend(INC_D_U, direction, dev);
                     RawRelaySend(INC_ON, ON, dev);
-                    for (int i = 0; i < calibrationMs/100; i++) { if (!running) break; Thread.Sleep(100); }
+                    for (int i = 0; i < calibrationMs/100; i++) { if (!running) break; Thread.Sleep(100); }    // p += 100;
                     RawRelaySend(INC_ON, OFF, dev);
 
                     lastPhysicalR = inclineRunawayDirUp ? MAXINCL : 0;
@@ -1741,7 +1759,7 @@ namespace walk
 
                     float moveTime = Math.Abs(motorDiff) * incLEN;
                     RawRelaySend(INC_ON, ON, dev);
-                    for (int i = 0; i < moveTime; i++) { if (!running) break; Thread.Sleep(1000); }
+                    for (int i = 0; i < moveTime*10; i++) { if (!running) break; Thread.Sleep(100); }  // p += 100;
                     RawRelaySend(INC_ON, OFF, dev);
                 }
                 lastPhysicalR = r; // Motor is now synced
@@ -1776,8 +1794,10 @@ namespace walk
                 if (!running) break;
                 RawRelaySend(btn, ON, dev);
                 Thread.Sleep((int)(buttonDownSec * 1000));
+                // p += buttonDownSec * 1000;
                 RawRelaySend(btn, OFF, dev);
                 Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000));
+                // p += (int)((PRESSLEN - buttonDownSec) * 1000);
             }
         }
 
