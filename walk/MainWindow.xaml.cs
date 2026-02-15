@@ -1505,20 +1505,23 @@ namespace walk
         {
             if (INC_ON == 0) return 0;
 
-            // 1. Mark the start of a dangerous operation
-            inclineRunawayDirUp = Up;
-            inclineRunawayStart = DateTime.Now;
-
             bool success = TryUSBOperation((dev) =>
             {
                 RawRelaySend(INC_D_U, Up ? OFF : ON, dev);
+                Thread.Sleep((int)((PRESSLEN - buttonDownSec)*1000)); p += (PRESSLEN - buttonDownSec);
                 RawRelaySend(INC_ON, ON, dev);
 
                 // If we crash here (during sleep), inclineRunawayStart remains SET.
+
+                inclineRunawayDirUp = Up;
+                inclineRunawayStart = DateTime.Now;
+
                 Thread.Sleep((int)(incLEN * 1000));
 
                 RawRelaySend(INC_ON, OFF, dev);
-                inclineRunawayStart = null;              
+                Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000)); p += (PRESSLEN - buttonDownSec);
+                inclineRunawayStart = null;        
+                
             });
 
             if (success)
@@ -1531,7 +1534,7 @@ namespace walk
 
             p += incLEN;
 
-            return incLEN;
+            return incLEN+2* (PRESSLEN - buttonDownSec); // account for two mindelay commands
         }
 
         private void RelayInclineDown(Boolean TurnON)
@@ -1540,16 +1543,23 @@ namespace walk
 
             // Calibration (Down) is dangerous too, so we track it.
             // If turning ON, we mark the start. If turning OFF, we clear it.
-            if (TurnON)
-            {
-                inclineRunawayDirUp = false; // Down
-                inclineRunawayStart = DateTime.Now;
-            }
+
 
             bool success = TryUSBOperation((dev) =>
             {
                 RawRelaySend(INC_D_U, ON, dev);
+                Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000)); p += (PRESSLEN - buttonDownSec);
                 RawRelaySend(INC_ON, TurnON ? ON : OFF, dev);
+                Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000)); p += (PRESSLEN - buttonDownSec);
+
+                if (TurnON)
+                {
+                    inclineRunawayDirUp = false; // Down
+                    inclineRunawayStart = DateTime.Now;
+                } else
+                {
+                    inclineRunawayStart = null;
+                }
             });
 
             if (success && !TurnON)
@@ -1827,11 +1837,13 @@ namespace walk
                 {
                     int dir = (motorDiff > 0) ? OFF : ON; // OFF=UP
                     RawRelaySend(INC_D_U, dir, dev);
+                    Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000)); p += (PRESSLEN - buttonDownSec);
 
                     float moveTime = Math.Abs(motorDiff) * incLEN;
                     RawRelaySend(INC_ON, ON, dev);
                     for (int i = 0; i < moveTime*10; i++) { if (!running) break; Thread.Sleep(100); p += 0.1f; }  // p += 100;
                     RawRelaySend(INC_ON, OFF, dev);
+                    Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000)); p += (PRESSLEN - buttonDownSec);
                     lastPhysicalR = r; // Motor is now synced
                 }             
             }
@@ -1840,36 +1852,48 @@ namespace walk
             // PART 3: SYNC SCREEN / SPEED (Button Clicking)
             // ============================================================
 
-            // A. Sync Speed Numbers
-            int speedClicks = (int)Math.Round((s - lastPhysicalS) * 10);
-            SyncClicks(speedClicks, SPEED_UP, SPEED_DOWN, dev);
-            lastPhysicalS = s;
-
-            // B. Sync Screen Incline Numbers
-            // This runs independently of the motor logic above!
-            int screenClicks = r - lastScreenR;
-            SyncClicks(screenClicks, INCL_UP, INCL_DOWN, dev);
-            lastScreenR = r;
-        }
-
-        // Helper to avoid code duplication for button mashing
-        private void SyncClicks(int diff, int btnUp, int btnDown, USBDevice dev)
-        {
-            if (diff == 0) return;
-
-            int btn = (diff > 0) ? btnUp : btnDown;
-            int count = Math.Abs(diff);
-
-            for (int i = 0; i < count; i++)
+            while (Math.Abs(s - lastPhysicalS) > 0.05f) // Using 0.05 tolerance for float comparison
             {
                 if (!running) break;
+
+                int btn = (s > lastPhysicalS) ? SPEED_UP : SPEED_DOWN;
+
+                // Attempt one click
                 RawRelaySend(btn, ON, dev);
                 Thread.Sleep((int)(buttonDownSec * 1000));
                 p += buttonDownSec;
+
                 RawRelaySend(btn, OFF, dev);
                 Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000));
                 p += PRESSLEN - buttonDownSec;
+
+                // IMMEDIATE UPDATE: If we got here, the click worked.
+                if (btn == SPEED_UP) lastPhysicalS += 0.1f; else lastPhysicalS -= 0.1f;
             }
+            // Snap to exact value to fix floating point drift
+            lastPhysicalS = s;
+
+
+            // B. Sync Screen Incline Numbers (Incremental Update)
+            while (r != lastScreenR)
+            {
+                if (!running) break;
+
+                int btn = (r > lastScreenR) ? INCL_UP : INCL_DOWN;
+
+                // Attempt one click
+                RawRelaySend(btn, ON, dev);
+                Thread.Sleep((int)(buttonDownSec * 1000));
+                p += buttonDownSec;
+
+                RawRelaySend(btn, OFF, dev);
+                Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000));
+                p += PRESSLEN - buttonDownSec;
+
+                // IMMEDIATE UPDATE: If we got here, the click worked.
+                if (r > lastScreenR) lastScreenR++; else lastScreenR--;
+            }
+            lastScreenR = r;
         }
 
         // Keep your existing RawRelay logic but put it in a separate function to avoid recursion
