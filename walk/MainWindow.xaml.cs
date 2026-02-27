@@ -1570,7 +1570,7 @@ namespace walk
             }
         }
 
-        private void press(int v)
+        private void press_before_claude(int v)
         {
             if (v == 0) return;
             if (!running && v != STOP) return;
@@ -1599,6 +1599,36 @@ namespace walk
             }
 
             wait(PRESSLEN - buttonDownSec);
+        }
+
+        private bool press(int v)
+        {
+            if (v == 0) return false;
+            if (!running && v != STOP) return false;
+
+            p += PRESSLEN;
+            if (!caught_up && p < tick) { Debug.WriteLine("Press " + v); return false; }
+            caught_up = true;
+            p -= PRESSLEN;
+
+            bool success = TryUSBOperation((dev) =>
+            {
+                RawRelaySend(v, ON, dev);
+                Thread.Sleep((int)(buttonDownSec * 1000));
+                RawRelaySend(v, OFF, dev);
+            });
+
+            if (success)
+            {
+                if (v == SPEED_UP) lastPhysicalS += 0.1f;
+                else if (v == SPEED_DOWN) lastPhysicalS -= 0.1f;
+                else if (v == INCL_UP) lastScreenR++;
+                else if (v == INCL_DOWN) lastScreenR--;
+            }
+
+            wait(PRESSLEN - buttonDownSec); // ALWAYS advance p, even on failure
+
+            return success;
         }
 
 
@@ -1685,7 +1715,7 @@ namespace walk
         // Delegate for wrapping our actions
         private delegate void UsbAction(USBDevice dev);
 
-        private bool TryUSBOperation(UsbAction action)
+        private bool TryUSBOperation_before_claude(UsbAction action)
         {
             try
             {
@@ -1717,6 +1747,39 @@ namespace walk
                     action(dev);
 
                     // 3. SUCCESS
+                    lastUsbSuccess = DateTime.Now;
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                HandleUsbError(ex.Message);
+                return false;
+            }
+        }
+
+        private bool TryUSBOperation(UsbAction action)
+        {
+            try
+            {
+                using (USBDevice dev = new USBDevice(vid, pid, null, false, 31))
+                {
+                    if (isUsbError)
+                    {
+                        Debug.WriteLine("USB RECOVERED! Resyncing...");
+                        RawRelaySend(ALL, OFF, dev);
+                        PerformResync(dev);
+                        isUsbError = false;
+                        errorStartTime = null;
+                        Application.Current.Dispatcher.Invoke(() => {
+                            if (errDisp != null) errDisp.Text = "USB recovered.";
+                        });
+                        action(dev); // execute the pending operation that triggered recovery
+                        lastUsbSuccess = DateTime.Now;
+                        return true;
+                    }
+
+                    action(dev);
                     lastUsbSuccess = DateTime.Now;
                     return true;
                 }
@@ -2148,28 +2211,63 @@ namespace walk
             try { upperTargetHR = int.Parse(Settings.Default.Highhr); } catch { }
         }
 
-        private void rUP()
+        private void rUP_before_claude()
         {
             if (r < 0) r = 0;      
             press(INCL_UP);
             if(r<MAXINCL) r++;
         }
-
+        private void rUP()
+        {
+            if (r < 0) r = 0;
+            if (press(INCL_UP) && r < MAXINCL) r++;
+        }
         private void rDOWN()
+        {
+            if (r > MAXINCL) r = MAXINCL;
+            if (press(INCL_DOWN)) r--;
+        }
+
+        private void rDOWN_before_claude()
         {
             if (r > MAXINCL) r = MAXINCL;             // TODO: turn it into parameter
             press(INCL_DOWN);
             r--;
         }
 
-        private void sUP()
+        private void sUP_before_claude()
         {
             float ss = s+0.1f;
             if (Math.Abs(ss - 6.0f) < 0.05f && SPD6 != 0) press(SPD6); else if (Math.Abs(ss - 3.0f) < 0.05f && SPD3 != 0) press(SPD3); else press(SPEED_UP);
             s += 0.1f;
         }
-
+        private void sUP()
+        {
+            float ss = s + 0.1f;
+            bool ok;
+            if (Math.Abs(ss - 6.0f) < 0.05f && SPD6 != 0) ok = press(SPD6);
+            else if (Math.Abs(ss - 3.0f) < 0.05f && SPD3 != 0) ok = press(SPD3);
+            else ok = press(SPEED_UP);
+            if (ok)
+            {
+                s += 0.1f;
+                s = (float)Math.Round(s, 1);
+            }
+        }
         private void sDOWN()
+        {
+            float ss = s - 0.1f;
+            bool ok;
+            if (Math.Abs(ss - 6.0f) < 0.05f && SPD6 != 0) ok = press(SPD6);
+            else if (Math.Abs(ss - 3.0f) < 0.05f && SPD3 != 0) ok = press(SPD3);
+            else ok = press(SPEED_DOWN);
+            if (ok)
+            {
+                s -= 0.1f;
+                s = (float)Math.Round(s, 1);
+            }
+        }
+        private void sDOWN_before_claude()
         {
             float ss = s-0.1f;
             if (Math.Abs(ss - 6.0f) < 0.05f && SPD6 != 0) press(SPD6); else if (Math.Abs(ss - 3.0f) < 0.05f && SPD3 != 0) press(SPD3); else press(SPEED_DOWN);
