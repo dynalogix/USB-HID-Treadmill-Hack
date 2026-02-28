@@ -25,7 +25,7 @@ namespace walk
     /// </summary>
     public partial class MainWindow : Window
     {
-        static int MAXSPEED = 16, MAXINCL = 15;
+        static int MAXSPEED = 16, MAXINCL = 15, MINSPEED =3;
         static float MINANGLE = 4.06f, MAXANGLE = 7.12f;        // KONDITION 4B550
 
         static int MINWALKSPEED = 4, MAXWALKSPEED = 8;
@@ -2217,15 +2217,34 @@ namespace walk
             press(INCL_UP);
             if(r<MAXINCL) r++;
         }
-        private void rUP()
-        {
-            if (r < 0) r = 0;
-            if (press(INCL_UP) && r < MAXINCL) r++;
-        }
         private void rDOWN()
         {
             if (r > MAXINCL) r = MAXINCL;
-            if (press(INCL_DOWN)) r--;
+            if (r <= 0)
+            {
+                r = 0;     // clamp — already at zero, return without pressing or re-syncing
+                return;
+            }
+            if (press(INCL_DOWN))
+            {
+                r--;
+                if (r == 0) SyncInclineToZero();  // just arrived at zero — sync display + motor
+            }
+        }
+
+        private void rUP()
+        {
+            if (r < 0) r = 0;
+            if (r >= MAXINCL)
+            {
+                r = MAXINCL;   // clamp — already at ceiling
+                return;
+            }
+            if (press(INCL_UP) && r < MAXINCL)
+            {
+                r++;
+                if (r == MAXINCL) SyncInclineToMax();  // just arrived at ceiling — sync display + motor
+            }
         }
 
         private void rDOWN_before_claude()
@@ -2256,22 +2275,144 @@ namespace walk
         }
         private void sDOWN()
         {
+            if (s <= MINSPEED + 0.05f)
+            {
+                s = MINSPEED;   // clamp but do NOT press or sync — already at minimum,
+                return;     // calling SyncToMinSpeed() every tick would stall the workout
+            }
+
             float ss = s - 0.1f;
             bool ok;
             if (Math.Abs(ss - 6.0f) < 0.05f && SPD6 != 0) ok = press(SPD6);
             else if (Math.Abs(ss - 3.0f) < 0.05f && SPD3 != 0) ok = press(SPD3);
             else ok = press(SPEED_DOWN);
+
             if (ok)
             {
                 s -= 0.1f;
                 s = (float)Math.Round(s, 1);
+                if (s <= MINSPEED)
+                {
+                    s = MINSPEED;
+                    SyncToMinSpeed();  // just arrived at minimum — one-shot sync hold
+                }
             }
         }
+
         private void sDOWN_before_claude()
         {
             float ss = s-0.1f;
             if (Math.Abs(ss - 6.0f) < 0.05f && SPD6 != 0) press(SPD6); else if (Math.Abs(ss - 3.0f) < 0.05f && SPD3 != 0) press(SPD3); else press(SPEED_DOWN);
             s -= 0.1f;
+        }
+
+        private void SyncToMinSpeed()
+        {
+            s = MINSPEED;
+            
+
+            // Hold SPEED_DOWN for 3 seconds. Key-repeat on the treadmill controller
+            // will rapidly drive speed to minimum regardless of how far it has drifted.
+            if (SPEED_DOWN != 0)
+            {
+                bool OK=TryUSBOperation((dev) =>
+                {
+                    RawRelaySend(SPEED_DOWN, ON, dev);
+                    for (int i = 0; i < 30 && running; i++) { Thread.Sleep(100); p += 0.1f; }
+                    RawRelaySend(SPEED_DOWN, OFF, dev);
+                });
+                if(OK) lastPhysicalS = MINSPEED;
+                wait(PRESSLEN - buttonDownSec);
+            }
+        }
+
+        private void SyncInclineToZero()
+        {
+            r = 0;
+
+            // Step 1: Long-press INCL_DOWN for 5 seconds.
+            // Key-repeat rushes the display value to 0 from anywhere.
+            if (INCL_DOWN != 0)
+            {
+                bool OK=TryUSBOperation((dev) =>
+                {
+                    RawRelaySend(INCL_DOWN, ON, dev);
+                    for (int i = 0; i < 50 && running; i++) { Thread.Sleep(100); p += 0.1f; }
+                    RawRelaySend(INCL_DOWN, OFF, dev);
+                });
+                if (OK) lastScreenR = 0;
+                wait(PRESSLEN - buttonDownSec);
+            }
+
+            // Step 2: Run AC motor DOWN for Inc15Sec seconds to guarantee physical zero.
+            // The motor hitting the bottom limit switch is the true calibration reference.
+            if (INC_ON != 0 && Settings.Default.Inc15Sec > 0)
+            {
+                inclineRunawayDirUp = false;
+                inclineRunawayStart = DateTime.Now;
+
+                bool OK=TryUSBOperation((dev) =>
+                {
+                    RawRelaySend(INC_D_U, ON, dev);   // Direction = DOWN
+                    Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000));
+                    p += (PRESSLEN - buttonDownSec);
+                    RawRelaySend(INC_ON, ON, dev);
+                    float runTime = Settings.Default.Inc15Sec;
+                    for (int i = 0; i < (int)(runTime * 10) && running; i++) { Thread.Sleep(100); p += 0.1f; }
+                    RawRelaySend(INC_ON, OFF, dev);
+                    Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000));
+                    p += (PRESSLEN - buttonDownSec);
+                });
+                if (OK)
+                {
+                    lastPhysicalR = 0;
+                    inclineRunawayStart = null;
+                }
+            }
+        }
+
+        private void SyncInclineToMax()
+        {
+            r = MAXINCL;
+            
+            // Step 1: Long-press INCL_UP for 5 seconds to rush display to MAXINCL.
+            if (INCL_UP != 0)
+            {
+                bool OK=TryUSBOperation((dev) =>
+                {
+                    RawRelaySend(INCL_UP, ON, dev);
+                    for (int i = 0; i < 50 && running; i++) { Thread.Sleep(100); p += 0.1f; }
+                    RawRelaySend(INCL_UP, OFF, dev);
+                });
+                if(OK) lastScreenR = MAXINCL;
+                wait(PRESSLEN - buttonDownSec);
+            }
+
+            // Step 2: Run AC motor UP for Inc15Sec seconds to guarantee physical max.
+            if (INC_ON != 0 && Settings.Default.Inc15Sec > 0)
+            {
+                inclineRunawayDirUp = true;
+                inclineRunawayStart = DateTime.Now;
+
+                bool OK = TryUSBOperation((dev) =>
+                  {
+                      RawRelaySend(INC_D_U, OFF, dev);  // Direction = UP
+                      Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000));
+                      p += (PRESSLEN - buttonDownSec);
+                      RawRelaySend(INC_ON, ON, dev);
+                      float runTime = Settings.Default.Inc15Sec;
+                      for (int i = 0; i < (int)(runTime * 10) && running; i++) { Thread.Sleep(100); p += 0.1f; }
+                      RawRelaySend(INC_ON, OFF, dev);
+                      Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000));
+                      p += (PRESSLEN - buttonDownSec);
+                      
+                  });
+                if (OK)
+                {
+                    inclineRunawayStart = null;
+                    lastPhysicalR = MAXINCL;
+                }
+            }
         }
 
         private void eRule(string section, TextBox red, int v)
@@ -2419,8 +2560,8 @@ namespace walk
 
                         for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
                         {
-                            press(INCL_UP);
-                            r++;
+                            if (press(INCL_UP)) r++; else b--;
+                            
                             if (wait(c + first - RelayInclineUp(true))) return;
                             first = 0;
                         }
@@ -2429,8 +2570,8 @@ namespace walk
 
                         for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
                         {
-                            press(INCL_DOWN);
-                            r--;
+                            if (press(INCL_DOWN)) r--; else b--;
+                         
                             if (wait(c - RelayInclineUp(false))) return;
                         }
 
@@ -2450,8 +2591,7 @@ namespace walk
                     if (SPD6 != 0 && s < 6 && sp >= 6) { press(SPD6); s = 6; }
                     while (s < sp - 0.02f)
                     {
-                        press(SPEED_UP);
-                        s += 0.1f;
+                        if(press(SPEED_UP)) s += 0.1f;
                     }
 
                     if (wait(sdur)) return;
@@ -2459,8 +2599,7 @@ namespace walk
                     if (SPD6 != 0 && s > 6 && speed <= 6) { press(SPD6); s = 6; }
                     while (s > speed + 0.02f)
                     {
-                        press(SPEED_DOWN);
-                        s -= 0.1f;
+                        if(press(SPEED_DOWN)) s -= 0.1f;
                     }
 
                 }
@@ -2474,11 +2613,10 @@ namespace walk
             Debug.WriteLine("warm=" + warm);
 
             // finish
-            while (s > 3.02f)
+            while (s > MINSPEED + .02f)
             {
                 if (wait(warm - PRESSLEN)) return;
-                press(SPEED_DOWN);
-                s -= 0.1f;
+                if(press(SPEED_DOWN)) s -= 0.1f;
             }
 
             if (STOP != 0) press(STOP);
@@ -2511,7 +2649,7 @@ namespace walk
 
             press(START);
 
-            s = 3;
+            s = MINSPEED;
 
             if (wait(6f)) return;
 
