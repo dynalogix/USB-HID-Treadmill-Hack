@@ -1505,10 +1505,12 @@ namespace walk
         {
             if (INC_ON == 0) return 0;
 
+            float timeConsumed = incLEN + 2 * (PRESSLEN - buttonDownSec);
+
             bool success = TryUSBOperation((dev) =>
             {
                 RawRelaySend(INC_D_U, Up ? OFF : ON, dev);
-                Thread.Sleep((int)((PRESSLEN - buttonDownSec)*1000)); p += (PRESSLEN - buttonDownSec);
+                Thread.Sleep((int)((PRESSLEN - buttonDownSec)*1000)); // p += (PRESSLEN - buttonDownSec);
                 RawRelaySend(INC_ON, ON, dev);
 
                 // If we crash here (during sleep), inclineRunawayStart remains SET.
@@ -1519,7 +1521,7 @@ namespace walk
                 Thread.Sleep((int)(incLEN * 1000));
 
                 RawRelaySend(INC_ON, OFF, dev);
-                Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000)); p += (PRESSLEN - buttonDownSec);
+                Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000)); //p += (PRESSLEN - buttonDownSec);
                 inclineRunawayStart = null;        
                 
             });
@@ -1532,7 +1534,8 @@ namespace walk
             }
             // If !success, inclineRunawayStart remains set, and PerformResync will see it.
 
-            p += incLEN;
+            //p += incLEN;
+            p += timeConsumed;
 
             return incLEN+2* (PRESSLEN - buttonDownSec); // account for two mindelay commands
         }
@@ -1544,13 +1547,14 @@ namespace walk
             // Calibration (Down) is dangerous too, so we track it.
             // If turning ON, we mark the start. If turning OFF, we clear it.
 
+            float timeConsumed = 2 * (PRESSLEN - buttonDownSec);
 
             bool success = TryUSBOperation((dev) =>
             {
                 RawRelaySend(INC_D_U, ON, dev);
-                Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000)); p += (PRESSLEN - buttonDownSec);
+                Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000)); //p += (PRESSLEN - buttonDownSec);
                 RawRelaySend(INC_ON, TurnON ? ON : OFF, dev);
-                Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000)); p += (PRESSLEN - buttonDownSec);
+                Thread.Sleep((int)((PRESSLEN - buttonDownSec) * 1000)); //p += (PRESSLEN - buttonDownSec);
 
                 if (TurnON)
                 {
@@ -1568,6 +1572,8 @@ namespace walk
                 // If we turned it ON, the flag remains until the OFF command succeeds.
                 inclineRunawayStart = null;
             }
+
+            p += timeConsumed;
         }
 
         private void press_before_claude(int v)
@@ -2502,8 +2508,7 @@ namespace walk
             {
                 if (wait(warm - PRESSLEN)) return;            // relay incline go down to 0 at the same time
                 dur -= 2 * warm;             // up and down + 2x 500ms 
-                press(SPEED_UP);
-                s += 0.1f;
+                if(press(SPEED_UP)) s += 0.1f;
 
                 if (calibrating && p >= calLimit)
                 {
@@ -2560,8 +2565,7 @@ namespace walk
 
                         for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
                         {
-                            if (press(INCL_UP)) r++; else b--;
-                            
+                            if (press(INCL_UP)) r++; else b--;                            
                             if (wait(c + first - RelayInclineUp(true))) return;
                             first = 0;
                         }
@@ -2571,7 +2575,7 @@ namespace walk
                         for (int b = 0; b < (reps + 1 - a) * hl / reps; b++)
                         {
                             if (press(INCL_DOWN)) r--; else b--;
-                         
+                           
                             if (wait(c - RelayInclineUp(false))) return;
                         }
 
@@ -2592,6 +2596,7 @@ namespace walk
                     while (s < sp - 0.02f)
                     {
                         if(press(SPEED_UP)) s += 0.1f;
+                        if (!running) break; // <--- ADD THIS
                     }
 
                     if (wait(sdur)) return;
@@ -2600,6 +2605,7 @@ namespace walk
                     while (s > speed + 0.02f)
                     {
                         if(press(SPEED_DOWN)) s -= 0.1f;
+                        if (!running) break; // <--- ADD THIS
                     }
 
                 }
@@ -2617,6 +2623,7 @@ namespace walk
             {
                 if (wait(warm - PRESSLEN)) return;
                 if(press(SPEED_DOWN)) s -= 0.1f;
+                if (!running) break; // <--- ADD THIS
             }
 
             if (STOP != 0) press(STOP);
